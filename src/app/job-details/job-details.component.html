@@ -1,0 +1,279 @@
+<div class="container mx-auto px-4 py-8">
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="text-center py-12">
+    <i class="fas fa-spinner fa-spin text-blue-600 text-4xl"></i>
+    <p class="text-gray-500 mt-4">Loading job details...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="!isLoading && errorMessage" class="text-center py-12">
+    <i class="fas fa-exclamation-circle text-red-500 text-6xl mb-4"></i>
+    <h3 class="text-xl font-bold text-gray-700 mb-2">{{ errorMessage }}</h3>
+    <button 
+      (click)="goBack()"
+      class="bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 transition-colors duration-300 font-medium mt-4"
+    >
+      Back to Jobs
+    </button>
+  </div>
+
+  <!-- Job Details Content -->
+  <div *ngIf="!isLoading && job">
+    <!-- Back Button -->
+    <div class="mb-6">
+      <button 
+        (click)="goBack()"
+        class="flex items-center text-blue-600 hover:text-blue-800 transition-colors duration-300"
+      >
+        <i class="fas fa-arrow-left mr-2"></i>
+        <span>Back to Jobs</span>
+      </button>
+    </div>
+
+    <!-- Job Header -->
+    <div class="bg-white rounded-2xl shadow-md p-6 mb-6 border border-gray-100">
+      <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+        <div class="flex items-start space-x-4">
+          <div class="w-16 h-16 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-lg">
+            {{ getCompanyInitials(job.company_name) }}
+          </div>
+          <div>
+            <h1 class="text-2xl font-bold text-gray-800 mb-2">{{ job.job_title }}</h1>
+            <div class="flex items-center space-x-4 mb-3">
+              <p class="text-gray-600">{{ job.company_name }}</p>
+              <span class="text-gray-400">•</span>
+              <div class="flex items-center text-gray-500">
+                <i class="fas fa-map-marker-alt mr-1"></i>
+                <span>{{ job.location }}</span>
+              </div>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <span [class]="'px-3 py-1 rounded-lg text-sm font-medium border ' + getJobTypeBadgeClass(job.job_type)">
+                {{ job.job_type }}
+              </span>
+              <span *ngIf="job.location_type" class="bg-blue-50 text-blue-700 px-3 py-1 rounded-lg text-sm font-medium border border-blue-100">
+                {{ job.location_type }}
+              </span>
+              <span *ngIf="job.experience_level" class="bg-purple-50 text-purple-700 px-3 py-1 rounded-lg text-sm font-medium border border-purple-100">
+                {{ job.experience_level }}
+              </span>
+            </div>
+          </div>
+        </div>
+        <div class="flex items-center space-x-4">
+          <button 
+            (click)="toggleSaveJob()"
+            [class]="isSaved ? 'text-yellow-400 transition-colors duration-300 text-xl' : 'text-gray-400 hover:text-yellow-400 transition-colors duration-300 text-xl'"
+          >
+            <i [class]="isSaved ? 'fas fa-bookmark' : 'far fa-bookmark'"></i>
+          </button>
+          <button 
+            (click)="applyToJob()"
+            class="bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 transition-colors duration-300 font-medium"
+          >
+            Apply Now
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <!-- Main Content -->
+      <div class="lg:col-span-3 space-y-6">
+        <!-- Job Overview -->
+        <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
+          <h2 class="text-xl font-bold text-gray-800 mb-4">Job Overview</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="flex items-center space-x-3">
+              <div class="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center text-blue-600">
+                <i class="fas fa-money-bill-wave"></i>
+              </div>
+              <div>
+                <p class="text-sm text-gray-500">Salary Range</p>
+                <p class="font-medium text-gray-800">{{ formatSalary(job) }}</p>
+              </div>
+            </div>
+            <div *ngIf="job.experience_level" class="flex items-center space-x-3">
+              <div class="w-10 h-10 bg-green-50 rounded-lg flex items-center justify-center text-green-600">
+                <i class="fas fa-briefcase"></i>
+              </div>
+              <div>
+                <p class="text-sm text-gray-500">Experience</p>
+                <p class="font-medium text-gray-800">{{ job.experience_level }}</p>
+              </div>
+            </div>
+            <div *ngIf="job.education_required" class="flex items-center space-x-3">
+              <div class="w-10 h-10 bg-purple-50 rounded-lg flex items-center justify-center text-purple-600">
+                <i class="fas fa-graduation-cap"></i>
+              </div>
+              <div>
+                <p class="text-sm text-gray-500">Education</p>
+                <p class="font-medium text-gray-800">{{ job.education_required }}</p>
+              </div>
+            </div>
+            <div class="flex items-center space-x-3">
+              <div class="w-10 h-10 bg-orange-50 rounded-lg flex items-center justify-center text-orange-600">
+                <i class="fas fa-clock"></i>
+              </div>
+              <div>
+                <p class="text-sm text-gray-500">Posted</p>
+                <p class="font-medium text-gray-800">{{ formatDate(job.created_at) }}</p>
+              </div>
+            </div>
+            <div *ngIf="job.positions_available" class="flex items-center space-x-3">
+              <div class="w-10 h-10 bg-pink-50 rounded-lg flex items-center justify-center text-pink-600">
+                <i class="fas fa-users"></i>
+              </div>
+              <div>
+                <p class="text-sm text-gray-500">Positions</p>
+                <p class="font-medium text-gray-800">{{ job.positions_available }} available</p>
+              </div>
+            </div>
+            <div *ngIf="job.application_deadline" class="flex items-center space-x-3">
+              <div class="w-10 h-10 bg-red-50 rounded-lg flex items-center justify-center text-red-600">
+                <i class="fas fa-calendar-alt"></i>
+              </div>
+              <div>
+                <p class="text-sm text-gray-500">Deadline</p>
+                <p class="font-medium text-gray-800">{{ formatDate(job.application_deadline) }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Job Description -->
+        <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
+          <h2 class="text-xl font-bold text-gray-800 mb-4">Job Description</h2>
+          <div class="prose max-w-none">
+            <p class="text-gray-700 mb-4 whitespace-pre-line">{{ job.job_description }}</p>
+            
+            <div *ngIf="job.responsibilities && job.responsibilities.length > 0">
+              <h3 class="text-lg font-bold text-gray-800 mt-6 mb-3">Key Responsibilities</h3>
+              <ul class="text-gray-700 list-disc list-inside space-y-2 mb-6">
+                <li *ngFor="let responsibility of job.responsibilities">{{ responsibility }}</li>
+              </ul>
+            </div>
+
+            <div *ngIf="job.qualifications && job.qualifications.length > 0">
+              <h3 class="text-lg font-bold text-gray-800 mt-6 mb-3">Requirements</h3>
+              <ul class="text-gray-700 list-disc list-inside space-y-2">
+                <li *ngFor="let qualification of job.qualifications">{{ qualification }}</li>
+              </ul>
+            </div>
+
+            <div *ngIf="job.benefits && job.benefits.length > 0">
+              <h3 class="text-lg font-bold text-gray-800 mt-6 mb-3">Benefits</h3>
+              <ul class="text-gray-700 list-disc list-inside space-y-2">
+                <li *ngFor="let benefit of job.benefits">{{ benefit }}</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Skills & Technologies -->
+        <div *ngIf="job.skills_required && job.skills_required.length > 0" class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
+          <h2 class="text-xl font-bold text-gray-800 mb-4">Skills & Technologies</h2>
+          <div class="flex flex-wrap gap-3">
+            <span 
+              *ngFor="let skill of job.skills_required; let i = index" 
+              [class]="'px-4 py-2 rounded-lg text-sm border font-medium ' + getSkillBadgeClass(i)"
+            >
+              {{ skill }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Company Information -->
+        <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
+          <h2 class="text-xl font-bold text-gray-800 mb-4">About {{ job.company_name }}</h2>
+          <div class="flex items-start space-x-4">
+            <div class="w-16 h-16 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-sm">
+              {{ getCompanyInitials(job.company_name) }}
+            </div>
+            <div class="flex-1">
+              <p class="text-gray-700 mb-4">
+                {{ job.company_name }} is looking for talented individuals to join their team. 
+                For more information about the company, visit their website.
+              </p>
+              <div class="flex flex-wrap gap-4 text-sm text-gray-600">
+                <div *ngIf="job.industry" class="flex items-center">
+                  <i class="fas fa-industry mr-2"></i>
+                  <span>{{ job.industry }}</span>
+                </div>
+                <div *ngIf="job.company_website" class="flex items-center">
+                  <i class="fas fa-globe mr-2"></i>
+                  <a [href]="job.company_website" target="_blank" class="text-blue-600 hover:underline">
+                    {{ job.company_website }}
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Application Information -->
+        <div class="bg-blue-50 rounded-2xl p-6 border border-blue-100">
+          <h3 class="text-lg font-bold text-gray-800 mb-3">How to Apply</h3>
+          <p class="text-gray-700 mb-4">
+            Interested candidates should click the "Apply Now" button above or contact us using the information below.
+          </p>
+          <div class="space-y-2">
+            <div *ngIf="job.application_email" class="flex items-center text-gray-700">
+              <i class="fas fa-envelope mr-3 text-blue-600"></i>
+              <a [href]="'mailto:' + job.application_email" class="text-blue-600 hover:underline">
+                {{ job.application_email }}
+              </a>
+            </div>
+            <div *ngIf="job.application_url" class="flex items-center text-gray-700">
+              <i class="fas fa-link mr-3 text-blue-600"></i>
+              <a [href]="job.application_url" target="_blank" class="text-blue-600 hover:underline">
+                Apply via external link
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Related Jobs -->
+    <div *ngIf="relatedJobs.length > 0" class="mt-12">
+      <h2 class="text-2xl font-bold text-gray-800 mb-6">Similar Jobs You Might Like</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div 
+          *ngFor="let relJob of relatedJobs"
+          (click)="viewRelatedJob(relJob.id)"
+          class="bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 p-5 cursor-pointer card-hover border border-gray-100"
+        >
+          <div class="flex justify-between items-start mb-4">
+            <div class="flex items-center space-x-3">
+              <div class="w-12 h-12 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center text-white font-bold shadow-sm">
+                {{ getCompanyInitials(relJob.company_name) }}
+              </div>
+              <div>
+                <h3 class="text-lg font-bold text-gray-800">{{ relJob.job_title }}</h3>
+                <p class="text-gray-500 text-sm">{{ relJob.company_name }}</p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="flex items-center space-x-2 mb-3">
+            <span [class]="'px-2 py-1 rounded-lg text-xs font-medium border ' + getJobTypeBadgeClass(relJob.job_type)">
+              {{ relJob.job_type }}
+            </span>
+            <span class="text-gray-400 text-xs">•</span>
+            <span class="text-gray-500 text-xs">{{ formatSalary(relJob) }}</span>
+          </div>
+          
+          <p class="text-gray-600 text-sm mb-4 line-clamp-2">{{ relJob.job_description }}</p>
+          
+          <div class="flex justify-between items-center pt-3 border-t border-gray-100">
+            <span class="text-xs text-gray-500">{{ formatDate(relJob.created_at) }}</span>
+            <button class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+              View Details
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

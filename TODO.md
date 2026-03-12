@@ -1,0 +1,4 @@
+- [x] Add click functionality to "Create Event" button in admin-events.component.html to navigate to create-event component
+- [x] Update admin-events.component.ts to import Router and add navigation method
+- [x] Add click functionality to "Back" button in create-event.component.html to navigate back to admin-events component
+- [x] Update create-event.component.ts to import Router and add navigation method

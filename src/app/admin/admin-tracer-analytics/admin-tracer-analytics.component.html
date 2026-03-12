@@ -1,0 +1,367 @@
+<!-- src/app/admin/admin-tracer-analytics/admin-tracer-analytics.component.html -->
+<div class="min-h-screen bg-gray-50">
+  <!-- Sidebar -->
+  <app-sidebar></app-sidebar>
+
+  <!-- Main Content -->
+  <div class="lg:ml-64 transition-all duration-300">
+    <div class="p-4 md:p-6 lg:p-8">
+      
+      <!-- Header -->
+      <div class="container mx-auto">
+        <div class="bg-gradient-to-r from-primary to-accent text-white rounded-2xl shadow-lg p-6 mb-6 slide-in relative overflow-hidden">
+          <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-32 translate-x-32"></div>
+          <div class="relative z-10">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
+              <div>
+                <button (click)="goBack()" class="text-white/80 hover:text-white mb-3 flex items-center text-sm">
+                  <i class="fas fa-arrow-left mr-2"></i>Back to Tracer Management
+                </button>
+                <h1 class="text-3xl font-bold mb-2">Tracer Survey Analytics</h1>
+                <p class="opacity-90">Comprehensive visual insights from alumni responses</p>
+              </div>
+              <div class="mt-4 md:mt-0 flex flex-col items-end space-y-2">
+                <div class="bg-white/20 backdrop-blur-sm rounded-xl px-4 py-2">
+                  <p class="text-sm opacity-80">Total Responses</p>
+                  <p class="text-2xl font-bold">{{ analytics?.overview?.total_responses || 0 }}</p>
+                </div>
+                <div class="bg-white/20 backdrop-blur-sm rounded-xl px-4 py-2">
+                  <p class="text-sm opacity-80">Employment Rate</p>
+                  <p class="text-2xl font-bold">{{ employmentRate | number:'1.1-1' }}%</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      <div *ngIf="isLoading" class="bg-white rounded-2xl shadow-sm p-12 text-center">
+        <i class="fas fa-spinner fa-spin text-4xl text-primary mb-4"></i>
+        <p class="text-gray-600">Loading analytics...</p>
+      </div>
+
+      <!-- Analytics Content -->
+      <div *ngIf="!isLoading && analytics" class="space-y-8">
+
+        <!-- ============================================ -->
+        <!-- SECTION 1: DEMOGRAPHICS -->
+        <!-- ============================================ -->
+        <div>
+          <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
+            <i class="fas fa-users text-primary mr-3"></i>
+            Demographics
+          </h2>
+          
+          <!-- First row: Gender, Age, Location -->
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+            <!-- Gender Distribution -->
+            <div class="bg-white rounded-2xl shadow-sm p-6">
+              <div style="height: 300px;">
+                <canvas id="genderChart"></canvas>
+              </div>
+            </div>
+
+            <!-- Age Range -->
+            <div class="bg-white rounded-2xl shadow-sm p-6">
+              <div style="height: 300px;">
+                <canvas id="ageRangeChart"></canvas>
+              </div>
+            </div>
+
+            <!-- Location Type -->
+            <div class="bg-white rounded-2xl shadow-sm p-6">
+              <div style="height: 300px;">
+                <canvas id="locationTypeChart"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Second row: Programme of Study & Graduation Year -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Programme of Study -->
+            <div class="bg-white rounded-2xl shadow-sm p-6">
+              <div style="height: 400px;">
+                <canvas id="programmeOfStudyChart"></canvas>
+              </div>
+            </div>
+
+            <!-- Graduation Year -->
+            <div class="bg-white rounded-2xl shadow-sm p-6">
+              <div style="height: 400px;">
+                <canvas id="graduationYearChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- SECTION 2: CURRENT STATUS & EMPLOYMENT -->
+        <!-- ============================================ -->
+        <div>
+          <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
+            <i class="fas fa-briefcase text-primary mr-3"></i>
+            Current Status & Employment
+          </h2>
+          
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <!-- Current Status -->
+            <div class="bg-white rounded-2xl shadow-sm p-6">
+              <div style="height: 350px;">
+                <canvas id="currentStatusChart"></canvas>
+              </div>
+            </div>
+
+            <!-- Employment Type -->
+            <div class="bg-white rounded-2xl shadow-sm p-6">
+              <div style="height: 350px;">
+                <canvas id="employmentTypeChart"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <!-- Time to First Job -->
+            <div class="bg-white rounded-2xl shadow-sm p-6">
+              <div style="height: 350px;">
+                <canvas id="timeToJobChart"></canvas>
+              </div>
+            </div>
+
+            <!-- Sector Distribution -->
+            <div class="bg-white rounded-2xl shadow-sm p-6">
+              <div style="height: 350px;">
+                <canvas id="sectorChart"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <!-- Industry Distribution -->
+            <div class="bg-white rounded-2xl shadow-sm p-6 lg:col-span-2">
+              <div style="height: 400px;">
+                <canvas id="industryChart"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Job Related to Field -->
+            <div class="bg-white rounded-2xl shadow-sm p-6">
+              <div style="height: 300px;">
+                <canvas id="jobRelatedChart"></canvas>
+              </div>
+            </div>
+
+            <!-- Income Range -->
+            <div class="bg-white rounded-2xl shadow-sm p-6">
+              <div style="height: 300px;">
+                <canvas id="incomeRangeChart"></canvas>
+              </div>
+            </div>
+
+            <!-- Job Level -->
+            <div class="bg-white rounded-2xl shadow-sm p-6">
+              <div style="height: 300px;">
+                <canvas id="jobLevelChart"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-1 gap-6 mt-6">
+            <!-- How Found Job -->
+            <div class="bg-white rounded-2xl shadow-sm p-6">
+              <div style="height: 350px;">
+                <canvas id="howFoundJobChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- SECTION 3: SELF-EMPLOYMENT -->
+        <!-- ============================================ -->
+        <div>
+          <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
+            <i class="fas fa-store text-primary mr-3"></i>
+            Self-Employment
+          </h2>
+          
+          <div class="grid grid-cols-1 gap-6">
+            <!-- Business Sector -->
+            <div class="bg-white rounded-2xl shadow-sm p-6">
+              <div style="height: 350px;">
+                <canvas id="businessSectorChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- SECTION 4: UNEMPLOYMENT -->
+        <!-- ============================================ -->
+        <div>
+          <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
+            <i class="fas fa-user-clock text-primary mr-3"></i>
+            Unemployment Insights
+          </h2>
+          
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Unemployment Duration -->
+            <div class="bg-white rounded-2xl shadow-sm p-6">
+              <div style="height: 350px;">
+                <canvas id="unemploymentDurationChart"></canvas>
+              </div>
+            </div>
+
+            <!-- Main Challenges -->
+            <div class="bg-white rounded-2xl shadow-sm p-6">
+              <div style="height: 350px;">
+                <canvas id="mainChallengeChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- SECTION 5: FURTHER STUDIES -->
+        <!-- ============================================ -->
+        <div>
+          <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
+            <i class="fas fa-graduation-cap text-primary mr-3"></i>
+            Further Studies
+          </h2>
+          
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Study Type -->
+            <div class="bg-white rounded-2xl shadow-sm p-6">
+              <div style="height: 350px;">
+                <canvas id="furtherStudyTypeChart"></canvas>
+              </div>
+            </div>
+
+            <!-- Study Field Relation -->
+            <div class="bg-white rounded-2xl shadow-sm p-6">
+              <div style="height: 350px;">
+                <canvas id="studyFieldChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- SECTION 6: SKILLS & SATISFACTION -->
+        <!-- ============================================ -->
+        <div>
+          <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
+            <i class="fas fa-star text-primary mr-3"></i>
+            Skills & Satisfaction Ratings
+          </h2>
+          
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <!-- Skills Relevance -->
+            <div class="bg-white rounded-2xl shadow-sm p-6">
+              <div style="height: 350px;">
+                <canvas id="skillsRelevanceChart"></canvas>
+              </div>
+            </div>
+
+            <!-- Job Satisfaction -->
+            <div class="bg-white rounded-2xl shadow-sm p-6">
+              <div style="height: 350px;">
+                <canvas id="jobSatisfactionChart"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Programme Quality -->
+            <div class="bg-white rounded-2xl shadow-sm p-6">
+              <div style="height: 350px;">
+                <canvas id="programmeQualityChart"></canvas>
+              </div>
+            </div>
+
+            <!-- Recommendation -->
+            <div class="bg-white rounded-2xl shadow-sm p-6">
+              <div style="height: 350px;">
+                <canvas id="recommendationChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- SECTION 7: ALUMNI ENGAGEMENT -->
+        <!-- ============================================ -->
+        <div>
+          <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
+            <i class="fas fa-handshake text-primary mr-3"></i>
+            Alumni Engagement
+          </h2>
+          
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <!-- Alumni Membership -->
+            <div class="bg-white rounded-2xl shadow-sm p-6">
+              <div style="height: 300px;">
+                <canvas id="alumniMemberChart"></canvas>
+              </div>
+            </div>
+
+            <!-- Mentoring Willingness -->
+            <div class="bg-white rounded-2xl shadow-sm p-6">
+              <div style="height: 300px;">
+                <canvas id="mentoringChart"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Collaboration Willingness -->
+            <div class="bg-white rounded-2xl shadow-sm p-6">
+              <div style="height: 300px;">
+                <canvas id="collaborationChart"></canvas>
+              </div>
+            </div>
+
+            <!-- Contact Method -->
+            <div class="bg-white rounded-2xl shadow-sm p-6">
+              <div style="height: 300px;">
+                <canvas id="contactMethodChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- SECTION 8: PROGRAMME ANALYSIS -->
+        <!-- ============================================ -->
+        <div>
+          <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
+            <i class="fas fa-chart-bar text-primary mr-3"></i>
+            Programme Analysis
+          </h2>
+          
+          <div class="grid grid-cols-1 gap-6 mb-6">
+            <!-- Programme Distribution -->
+            <div class="bg-white rounded-2xl shadow-sm p-6">
+              <div style="height: 400px;">
+                <canvas id="programmeDistributionChart"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 gap-6">
+            <!-- Employment by Programme -->
+            <div class="bg-white rounded-2xl shadow-sm p-6">
+              <div style="height: 450px;">
+                <canvas id="employmentByProgrammeChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>

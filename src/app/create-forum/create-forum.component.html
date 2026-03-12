@@ -1,0 +1,227 @@
+<div class="container mx-auto px-4 py-8">
+  <!-- Header -->
+  <div class="bg-gradient-to-r from-primary to-accent text-white rounded-2xl shadow-lg p-6 mb-8 slide-in relative overflow-hidden">
+    <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-32 translate-x-32"></div>
+    <div class="relative z-10">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
+        <div>
+          <h1 class="text-3xl font-bold mb-2">Create New Forum Topic</h1>
+          <p class="opacity-90 text-sm">Start a new discussion in the ATU Alumni Forum</p>
+        </div>
+        <div class="flex space-x-3 mt-4 md:mt-0">
+          <button (click)="navigateBackToForum()" class="bg-white/20 text-white px-4 py-2.5 rounded-xl hover:bg-white/30 transition-all duration-300 font-medium text-sm border border-white/30 flex items-center">
+            <i class="fas fa-arrow-left mr-2"></i>Back to Forum
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Success Message -->
+  <div *ngIf="successMessage" class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl mb-6 animate-fade-in">
+    <div class="flex items-center">
+      <i class="fas fa-check-circle mr-3"></i>
+      <span>{{ successMessage }}</span>
+    </div>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="errorMessage" class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-6">
+    <div class="flex items-center">
+      <i class="fas fa-exclamation-circle mr-3"></i>
+      <span>{{ errorMessage }}</span>
+    </div>
+  </div>
+
+  <!-- Progress Steps -->
+  <div class="bg-white rounded-xl shadow-sm p-5 mb-6 border border-gray-100">
+    <div class="flex items-center justify-between max-w-2xl mx-auto">
+      <div class="flex flex-col items-center">
+        <div class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm">1</div>
+        <span class="text-xs mt-2 font-medium text-primary">Topic Details</span>
+      </div>
+      <div class="h-1 flex-1 bg-primary mx-2"></div>
+      <div class="flex flex-col items-center">
+        <div class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm">2</div>
+        <span class="text-xs mt-2 font-medium text-primary">Content</span>
+      </div>
+      <div class="h-1 flex-1 bg-gray-200 mx-2"></div>
+      <div class="flex flex-col items-center">
+        <div class="w-10 h-10 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center font-bold text-sm">3</div>
+        <span class="text-xs mt-2 font-medium text-gray-500">Publish</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Forum Topic Form -->
+  <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 mb-6">
+    <h2 class="text-lg font-bold text-gray-800 mb-6">Topic Information</h2>
+
+    <form (ngSubmit)="submitForm($event)" id="createForumForm">
+      <!-- Title & Category Row -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            Topic Title *
+            <span class="text-xs text-gray-500 font-normal ml-2">({{ formData.title.length }}/255)</span>
+          </label>
+          <input
+            type="text"
+            [(ngModel)]="formData.title"
+            name="title"
+            maxlength="255"
+            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
+            placeholder="Enter your topic title"
+            required
+          >
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Category *</label>
+          <select 
+            [(ngModel)]="formData.category_id"
+            name="category"
+            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent appearance-none bg-white text-sm"
+            required>
+            <option [value]="0">Select category</option>
+            <option *ngFor="let category of categories" [value]="category.id">
+              {{ category.name }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Description -->
+      <div class="mb-6">
+        <label class="block text-sm font-medium text-gray-700 mb-2">
+          Topic Description *
+          <span class="text-xs text-gray-500 font-normal ml-2">({{ formData.content.length }}/10000)</span>
+        </label>
+        <textarea
+          [(ngModel)]="formData.content"
+          name="content"
+          rows="6"
+          maxlength="10000"
+          class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
+          placeholder="Describe your topic in detail. What would you like to discuss? Provide context and any specific questions you have..."
+          required
+        ></textarea>
+      </div>
+
+      <!-- Tags -->
+      <div class="mb-6">
+        <label class="block text-sm font-medium text-gray-700 mb-2">Tags (Optional)</label>
+        <input
+          type="text"
+          [(ngModel)]="formData.tags"
+          name="tags"
+          class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
+          placeholder="Add tags separated by commas (e.g., react, javascript, career)"
+        >
+        <p class="text-xs text-gray-500 mt-1">Tags help others find your topic more easily (max 10 tags)</p>
+      </div>
+
+      <!-- Additional Settings -->
+      <div class="mb-6">
+        <h3 class="text-md font-medium text-gray-800 mb-4">Additional Settings</h3>
+
+        <div class="space-y-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <label class="text-sm font-medium text-gray-700">Allow Comments</label>
+              <p class="text-xs text-gray-500">Users can comment on this topic</p>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input 
+                type="checkbox" 
+                [(ngModel)]="formData.allow_comments"
+                name="allow_comments"
+                class="sr-only peer">
+              <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+            </label>
+          </div>
+
+          <div *ngIf="isAdmin()" class="flex items-center justify-between">
+            <div>
+              <label class="text-sm font-medium text-gray-700">Pin Topic</label>
+              <p class="text-xs text-gray-500">Keep this topic at the top of the forum</p>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input 
+                type="checkbox" 
+                [(ngModel)]="formData.is_pinned"
+                name="is_pinned"
+                class="sr-only peer">
+              <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+            </label>
+          </div>
+
+          <div class="flex items-center justify-between">
+            <div>
+              <label class="text-sm font-medium text-gray-700">Send Notification</label>
+              <p class="text-xs text-gray-500">Notify alumni about this new topic</p>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input 
+                type="checkbox" 
+                [(ngModel)]="formData.send_notification"
+                name="send_notification"
+                class="sr-only peer">
+              <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Form Actions -->
+      <div class="flex flex-col sm:flex-row justify-between items-center pt-6 border-t border-gray-200 gap-4">
+        <div class="text-sm text-gray-500">
+          <i class="fas fa-info-circle mr-1"></i>
+          All fields marked with * are required
+        </div>
+        <div class="flex space-x-3">
+          <button 
+            type="button" 
+            (click)="saveAsDraft()"
+            [disabled]="isSubmitting"
+            class="px-6 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors duration-300 text-sm font-medium disabled:opacity-50">
+            Save as Draft
+          </button>
+          <button 
+            type="submit" 
+            [disabled]="isSubmitting"
+            class="bg-primary text-white px-6 py-3 rounded-xl hover:bg-opacity-90 transition-colors duration-300 text-sm font-medium flex items-center disabled:opacity-50 disabled:cursor-not-allowed">
+            <i *ngIf="!isSubmitting" class="fas fa-paper-plane mr-2"></i>
+            <i *ngIf="isSubmitting" class="fas fa-spinner fa-spin mr-2"></i>
+            {{ isSubmitting ? 'Publishing...' : 'Publish Topic' }}
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- Quick Tips -->
+  <div class="bg-blue-50 rounded-xl p-5 border border-blue-100">
+    <h3 class="text-md font-medium text-blue-800 mb-3 flex items-center">
+      <i class="fas fa-lightbulb mr-2"></i>Forum Topic Tips
+    </h3>
+    <ul class="text-sm text-blue-700 space-y-2">
+      <li class="flex items-start">
+        <i class="fas fa-check-circle mr-2 mt-0.5 text-blue-500"></i>
+        Use clear, descriptive titles that accurately represent your topic
+      </li>
+      <li class="flex items-start">
+        <i class="fas fa-check-circle mr-2 mt-0.5 text-blue-500"></i>
+        Choose the most relevant category to help others find your discussion
+      </li>
+      <li class="flex items-start">
+        <i class="fas fa-check-circle mr-2 mt-0.5 text-blue-500"></i>
+        Provide detailed context in your description to encourage meaningful responses
+      </li>
+      <li class="flex items-start">
+        <i class="fas fa-check-circle mr-2 mt-0.5 text-blue-500"></i>
+        Use tags to make your topic more discoverable
+      </li>
+    </ul>
+  </div>
+</div>

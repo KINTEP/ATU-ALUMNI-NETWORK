@@ -1,0 +1,196 @@
+<!-- Navigation Bar -->
+<nav class="gradient-bg text-white shadow-lg sticky top-0 z-50">
+  <div class="container mx-auto px-4">
+    <div class="flex justify-between items-center py-3">
+      <!-- Logo -->
+      <div class="flex items-center space-x-2">
+        <div class="bg-white rounded-full p-2">
+          <img src="atu logo.png" alt="ATU Logo" class="w-8 h-8 object-contain">
+        </div>
+        <span class="text-xl font-bold">ATU Alumni</span>
+      </div>
+      
+      <!-- Desktop Navigation -->
+      <div class="hidden md:flex items-center space-x-8">
+        <a routerLink="/" routerLinkActive="font-bold text-yellow-300" [routerLinkActiveOptions]="{exact: true}"
+           class="hover:text-secondary transition-colors duration-300 flex flex-col items-center">
+          <i class="fas fa-home text-xl"></i>
+          <span class="text-xs mt-1">Home</span>
+        </a>
+        <a routerLink="/networks" routerLinkActive="font-bold text-yellow-300"
+           class="hover:text-secondary transition-colors duration-300 flex flex-col items-center">
+          <i class="fas fa-users text-xl"></i>
+          <span class="text-xs mt-1">Networks</span>
+        </a>
+        <a routerLink="/events" routerLinkActive="font-bold text-yellow-300"
+           class="hover:text-secondary transition-colors duration-300 flex flex-col items-center">
+          <i class="fas fa-calendar-alt text-xl"></i>
+          <span class="text-xs mt-1">Events</span>
+        </a>
+        <a routerLink="/jobs" routerLinkActive="font-bold text-yellow-300"
+           class="hover:text-secondary transition-colors duration-300 flex flex-col items-center">
+          <i class="fas fa-briefcase text-xl"></i>
+          <span class="text-xs mt-1">Jobs</span>
+        </a>
+        <a routerLink="/tracer" routerLinkActive="font-bold text-yellow-300"
+           class="hover:text-secondary transition-colors duration-300 flex flex-col items-center">
+          <i class="fas fa-clipboard-list text-xl"></i>
+          <span class="text-xs mt-1">Tracer</span>
+        </a>
+        <a routerLink="/news" routerLinkActive="font-bold text-yellow-300"
+           class="hover:text-secondary transition-colors duration-300 flex flex-col items-center">
+          <i class="fas fa-newspaper text-xl"></i>
+          <span class="text-xs mt-1">News</span>
+        </a>
+        <a routerLink="/projects" routerLinkActive="font-bold text-yellow-300"
+          class="hover:text-secondary transition-colors duration-300 flex flex-col items-center">
+          <i class="fas fa-project-diagram text-xl"></i>
+          <span class="text-xs mt-1">Projects</span>
+        </a>
+        <a routerLink="/forum" routerLinkActive="font-bold text-yellow-300"
+           class="hover:text-secondary transition-colors duration-300 flex flex-col items-center">
+          <i class="fas fa-comments text-xl"></i>
+          <span class="text-xs mt-1">Forums</span>
+        </a>
+      </div>
+      
+      <!-- Right Side: Notifications, Messages, User Menu -->
+      <div class="flex items-center space-x-4">
+        <!-- Notifications -->
+        <button routerLink="/notifications" class="relative hover:text-secondary transition-colors duration-300">
+          <i class="fas fa-bell text-xl"></i>
+          <span *ngIf="unreadNotificationCount > 0"
+                class="absolute -top-1 -right-1 bg-secondary text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold animate-pulse">
+            {{ unreadNotificationCount > 9 ? '9+' : unreadNotificationCount }}
+          </span>
+        </button>
+        
+        <!-- Messages -->
+        <button routerLink="/messages" class="relative hover:text-secondary transition-colors duration-300">
+          <i class="fas fa-envelope text-xl"></i>
+          <span *ngIf="unreadMessageCount > 0"
+                class="absolute -top-1 -right-1 bg-secondary text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold animate-pulse">
+            {{ unreadMessageCount > 9 ? '9+' : unreadMessageCount }}
+          </span>
+        </button>
+
+        <!-- User Dropdown -->
+        <div class="relative">
+          <button (click)="toggleUserMenu()"
+                  class="flex flex-col items-center focus:outline-none hover:opacity-80 transition-opacity">
+
+            <!-- Profile Picture or Initials (Top Bar Avatar) -->
+            <div *ngIf="currentUser?.profile_picture; else userInitials"
+                 class="w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-sm">
+              <img [src]="profilePictureUrl"
+                   [alt]="currentUser?.first_name || 'User'"
+                   class="w-full h-full object-cover"
+                   (error)="onImageError($event)">
+            </div>
+
+            <ng-template #userInitials>
+              <div class="w-10 h-10 bg-secondary rounded-full flex items-center justify-center text-primary font-bold border-2 border-white shadow-sm">
+                {{ getUserInitials() }}
+              </div>
+            </ng-template>
+          </button>
+
+          <!-- Dropdown Menu -->
+          <div *ngIf="showUserMenu"
+               class="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl py-2 z-50 border border-gray-100"
+               (click)="$event.stopPropagation()">
+
+            <!-- User Info Header -->
+            <div class="px-4 py-3 border-b border-gray-100">
+              <div class="flex items-center space-x-3">
+                <!-- Profile Picture in Dropdown -->
+                <div *ngIf="currentUser?.profile_picture; else dropdownInitials"
+                     class="w-12 h-12 rounded-full overflow-hidden border-2 border-primary flex-shrink-0">
+                  <img [src]="profilePictureUrl"
+                       [alt]="currentUser?.first_name || 'User'"
+                       class="w-full h-full object-cover"
+                       (error)="onImageError($event)">
+                </div>
+
+                <ng-template #dropdownInitials>
+                  <div class="w-12 h-12 bg-gradient-to-r from-primary to-accent rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
+                    {{ getUserInitials() }}
+                  </div>
+                </ng-template>
+                
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-semibold text-gray-800 truncate">
+                    {{ currentUser?.first_name }} {{ currentUser?.last_name }}
+                  </p>
+                  <p class="text-xs text-gray-500 truncate">{{ currentUser?.email }}</p>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Menu Items -->
+            <button (click)="goToProfile()"
+                    class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center transition-colors">
+              <i class="fas fa-user mr-3 text-primary w-4"></i>
+              My Profile
+            </button>
+            <button (click)="goToSettings()"
+                    class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center transition-colors">
+              <i class="fas fa-cog mr-3 text-primary w-4"></i>
+              Settings
+            </button>
+            
+            <div class="border-t border-gray-100 my-2"></div>
+            
+            <button (click)="logout()"
+                    class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center transition-colors">
+              <i class="fas fa-sign-out-alt mr-3 w-4"></i>
+              Logout
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- Mobile Bottom Navigation -->
+<div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 py-3 px-6 flex justify-between items-center md:hidden z-40">
+  <a routerLink="/" routerLinkActive="text-primary" [routerLinkActiveOptions]="{exact: true}"
+     class="flex flex-col items-center text-gray-500 transition-colors">
+    <i class="fas fa-home text-lg"></i>
+    <span class="text-xs mt-1">Home</span>
+  </a>
+  <a routerLink="/networks" routerLinkActive="text-primary"
+     class="flex flex-col items-center text-gray-500 transition-colors">
+    <i class="fas fa-users text-lg"></i>
+    <span class="text-xs mt-1">Networks</span>
+  </a>
+  <a routerLink="/events" routerLinkActive="text-primary"
+     class="flex flex-col items-center text-gray-500 transition-colors">
+    <i class="fas fa-calendar-alt text-lg"></i>
+    <span class="text-xs mt-1">Events</span>
+  </a>
+  <a routerLink="/jobs" routerLinkActive="text-primary"
+     class="flex flex-col items-center text-gray-500 transition-colors">
+    <i class="fas fa-briefcase text-lg"></i>
+    <span class="text-xs mt-1">Jobs</span>
+  </a>
+  <a routerLink="/news" routerLinkActive="text-primary"
+     class="flex flex-col items-center text-gray-500 transition-colors">
+    <i class="fas fa-newspaper text-lg"></i>
+    <span class="text-xs mt-1">News</span>
+  </a>
+  <a routerLink="/projects" routerLinkActive="text-primary"
+    class="flex flex-col items-center text-gray-500 transition-colors">
+    <i class="fas fa-project-diagram text-lg"></i>
+    <span class="text-xs mt-1">Projects</span>
+  </a>
+  <a routerLink="/forum" routerLinkActive="text-primary"
+     class="flex flex-col items-center text-gray-500 transition-colors">
+    <i class="fas fa-comments text-lg"></i>
+    <span class="text-xs mt-1">Forums</span>
+  </a>
+</div>
+
+<!-- Click Outside to Close Dropdown -->
+<div *ngIf="showUserMenu" class="fixed inset-0 z-40" (click)="closeUserMenu()"></div>

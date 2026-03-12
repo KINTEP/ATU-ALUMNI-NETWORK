@@ -1,0 +1,326 @@
+<div class="min-h-screen bg-gray-50">
+  <!-- Sidebar -->
+  <app-sidebar></app-sidebar>
+
+  <!-- Main Content -->
+  <div class="ml-64 p-8">
+    <!-- Controls Section -->
+    <div class="bg-white rounded-xl shadow-md p-5 mb-6 slide-in">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <!-- Search Bar -->
+        <div class="relative flex-1 max-w-md">
+          <input 
+            type="text" 
+            [(ngModel)]="searchQuery"
+            (keyup.enter)="searchEvents()"
+            placeholder="Search events by title, location, or description..." 
+            class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+          <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+        </div>
+        
+        <!-- Filter Dropdowns -->
+        <div class="flex flex-wrap gap-3">
+          <div class="relative">
+            <select 
+              [(ngModel)]="selectedType"
+              (change)="filterByType(selectedType)"
+              class="appearance-none w-32 pl-4 pr-10 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-sm">
+              <option value="all">All Types</option>
+              <option value="Networking">Networking</option>
+              <option value="Workshop">Workshop</option>
+              <option value="Conference">Conference</option>
+              <option value="Social">Social</option>
+              <option value="Career Fair">Career Fair</option>
+              <option value="Webinar">Webinar</option>
+              <option value="Reunion">Reunion</option>
+              <option value="Sports">Sports</option>
+            </select>
+            <i class="fas fa-chevron-down absolute right-3 top-3 text-gray-400 pointer-events-none"></i>
+          </div>
+          
+          <div class="relative">
+            <select 
+              [(ngModel)]="selectedStatus"
+              (change)="filterByStatus(selectedStatus)"
+              class="appearance-none w-32 pl-4 pr-10 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-sm">
+              <option value="all">All Status</option>
+              <option value="upcoming">Upcoming</option>
+              <option value="ongoing">Ongoing</option>
+              <option value="completed">Completed</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+            <i class="fas fa-chevron-down absolute right-3 top-3 text-gray-400 pointer-events-none"></i>
+          </div>
+          
+          <button 
+            (click)="navigateToCreateEvent()" 
+            class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-opacity-90 transition-colors duration-300 text-sm flex items-center space-x-2">
+            <i class="fas fa-calendar-plus"></i>
+            <span>Create Event</span>
+          </button>
+        </div>
+      </div>
+      
+      <!-- Tabs -->
+      <div class="flex mt-4 border-b border-gray-200">
+        <button 
+          (click)="changeTab('all')"
+          [class]="currentTab === 'all' 
+            ? 'px-4 py-2 font-medium rounded-t-lg transition-colors duration-300 bg-primary text-white text-sm' 
+            : 'px-4 py-2 font-medium text-gray-600 rounded-t-lg hover:bg-gray-100 transition-colors duration-300 text-sm'">
+          All Events ({{ stats.total }})
+        </button>
+        <button 
+          (click)="changeTab('upcoming')"
+          [class]="currentTab === 'upcoming' 
+            ? 'px-4 py-2 font-medium rounded-t-lg transition-colors duration-300 bg-primary text-white text-sm' 
+            : 'px-4 py-2 font-medium text-gray-600 rounded-t-lg hover:bg-gray-100 transition-colors duration-300 text-sm'">
+          Upcoming ({{ stats.upcoming }})
+        </button>
+        <button 
+          (click)="changeTab('ongoing')"
+          [class]="currentTab === 'ongoing' 
+            ? 'px-4 py-2 font-medium rounded-t-lg transition-colors duration-300 bg-primary text-white text-sm' 
+            : 'px-4 py-2 font-medium text-gray-600 rounded-t-lg hover:bg-gray-100 transition-colors duration-300 text-sm'">
+          Ongoing ({{ stats.ongoing }})
+        </button>
+        <button 
+          (click)="changeTab('past')"
+          [class]="currentTab === 'past' 
+            ? 'px-4 py-2 font-medium rounded-t-lg transition-colors duration-300 bg-primary text-white text-sm' 
+            : 'px-4 py-2 font-medium text-gray-600 rounded-t-lg hover:bg-gray-100 transition-colors duration-300 text-sm'">
+          Past ({{ stats.past }})
+        </button>
+      </div>
+    </div>
+
+    <!-- Events Statistics -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      <div class="bg-white rounded-2xl shadow-md p-6 border border-gray-100">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-gray-500 text-sm font-medium">Total Events</p>
+            <h3 class="text-2xl font-bold text-gray-800 mt-1">{{ stats.total }}</h3>
+          </div>
+          <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600">
+            <i class="fas fa-calendar-alt text-xl"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-2xl shadow-md p-6 border border-gray-100">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-gray-500 text-sm font-medium">Upcoming Events</p>
+            <h3 class="text-2xl font-bold text-gray-800 mt-1">{{ stats.upcoming }}</h3>
+          </div>
+          <div class="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center text-green-600">
+            <i class="fas fa-clock text-xl"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-2xl shadow-md p-6 border border-gray-100">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-gray-500 text-sm font-medium">Total Attendees</p>
+            <h3 class="text-2xl font-bold text-gray-800 mt-1">{{ stats.totalAttendees }}</h3>
+          </div>
+          <div class="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center text-purple-600">
+            <i class="fas fa-users text-xl"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-2xl shadow-md p-6 border border-gray-100">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-gray-500 text-sm font-medium">Avg. Attendance</p>
+            <h3 class="text-2xl font-bold text-gray-800 mt-1">{{ stats.avgAttendance }}%</h3>
+          </div>
+          <div class="w-12 h-12 bg-orange-50 rounded-xl flex items-center justify-center text-orange-600">
+            <i class="fas fa-chart-line text-xl"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="text-center py-12 bg-white rounded-xl shadow-md">
+      <i class="fas fa-spinner fa-spin text-primary text-4xl mb-4"></i>
+      <p class="text-gray-600">Loading events...</p>
+    </div>
+
+    <!-- Events Table -->
+    <div *ngIf="!isLoading" class="bg-white rounded-2xl shadow-md overflow-hidden">
+      <!-- No Events -->
+      <div *ngIf="filteredEvents.length === 0" class="text-center py-12">
+        <i class="fas fa-calendar-times text-gray-300 text-6xl mb-4"></i>
+        <h3 class="text-xl font-bold text-gray-700 mb-2">No Events Found</h3>
+        <p class="text-gray-500 mb-4">No events match your current filters</p>
+        <button 
+          (click)="navigateToCreateEvent()"
+          class="bg-primary text-white px-6 py-3 rounded-lg hover:bg-opacity-90 transition-colors duration-300">
+          <i class="fas fa-plus mr-2"></i>Create Event
+        </button>
+      </div>
+
+      <!-- Events List -->
+      <div *ngIf="filteredEvents.length > 0" class="overflow-x-auto">
+        <table class="w-full">
+          <thead class="bg-gray-50 border-b border-gray-200">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <div class="flex items-center space-x-2">
+                  <input 
+                    type="checkbox" 
+                    (change)="toggleSelectAll($event)"
+                    [checked]="selectedEvents.length === filteredEvents.length && filteredEvents.length > 0"
+                    class="rounded border-gray-300">
+                  <span>Event</span>
+                </div>
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date & Time</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Attendees</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            <tr 
+              *ngFor="let event of filteredEvents; let i = index" 
+              class="hover:bg-gray-50 transition-colors duration-200">
+              <td class="px-6 py-4">
+                <div class="flex items-center">
+                  <input 
+                    type="checkbox" 
+                    [checked]="isEventSelected(event.id)"
+                    (change)="toggleEventSelection(event.id, $event)"
+                    class="rounded border-gray-300 mr-3">
+                  <div class="flex items-center space-x-3">
+                    <div class="w-12 h-12 bg-gradient-to-r from-primary to-accent rounded-lg flex items-center justify-center text-white">
+                      <i [class]="'fas ' + getEventIcon(event.event_type)"></i>
+                    </div>
+                    <div>
+                      <div class="text-sm font-medium text-gray-900">{{ event.title }}</div>
+                      <div class="text-sm text-gray-500">{{ event.event_type }}</div>
+                    </div>
+                  </div>
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-900">{{ formatDate(event.start_date) }}</div>
+                <div class="text-sm text-gray-500">{{ formatTime(event.start_date) }} - {{ formatTime(event.end_date) }}</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <div class="flex items-center">
+                  <i class="fas fa-map-marker-alt mr-2 text-gray-400"></i>
+                  {{ event.location }}
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center">
+                  <div class="text-sm text-gray-900 font-medium">{{ event.rsvp_count || 0 }}</div>
+                  <div *ngIf="event.capacity" class="ml-2 w-20 bg-gray-200 rounded-full h-2">
+                    <div class="bg-green-600 h-2 rounded-full" [style.width.%]="getAttendancePercentage(event)"></div>
+                  </div>
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span [class]="'px-2 inline-flex text-xs leading-5 font-semibold rounded-full ' + getStatusClass(event.status)">
+                  {{ event.status | titlecase }}
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                <div class="flex space-x-2">
+                  <button 
+                    (click)="editEvent(event.id)"
+                    class="text-blue-600 hover:text-blue-900" 
+                    title="Edit">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  <button 
+                    (click)="viewEvent(event.id)"
+                    class="text-green-600 hover:text-green-900" 
+                    title="View">
+                    <i class="fas fa-eye"></i>
+                  </button>
+                  <button 
+                    (click)="manageAttendees(event.id)"
+                    class="text-purple-600 hover:text-purple-900" 
+                    title="Manage Attendees">
+                    <i class="fas fa-users"></i>
+                  </button>
+                  <button 
+                    (click)="deleteEvent(event)"
+                    class="text-red-600 hover:text-red-900" 
+                    title="Delete">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div *ngIf="filteredEvents.length > 0" class="bg-white px-6 py-4 border-t border-gray-200">
+        <div class="flex items-center justify-between">
+          <div class="text-sm text-gray-700">
+            Showing <span class="font-medium">{{ (currentPage - 1) * pageSize + 1 }}</span> to 
+            <span class="font-medium">{{ Math.min(currentPage * pageSize, totalEvents) }}</span> of 
+            <span class="font-medium">{{ totalEvents }}</span> events
+          </div>
+          <div class="flex space-x-2">
+            <button 
+              (click)="changePage(currentPage - 1)"
+              [disabled]="currentPage === 1"
+              class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+              Previous
+            </button>
+            
+            <button 
+              *ngFor="let page of [].constructor(totalPages); let i = index"
+              (click)="changePage(i + 1)"
+              [class]="(i + 1) === currentPage 
+                ? 'px-3 py-1 border border-primary bg-primary text-white rounded-md text-sm font-medium'
+                : 'px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50'">
+              {{ i + 1 }}
+            </button>
+            
+            <button 
+              (click)="changePage(currentPage + 1)"
+              [disabled]="currentPage === totalPages"
+              class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+              Next
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bulk Actions -->
+    <div *ngIf="selectedEvents.length > 0" class="mt-6 bg-white rounded-2xl shadow-md p-6">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-4">
+          <span class="text-sm text-gray-600">{{ selectedEvents.length }} events selected</span>
+          <select class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+            <option>Bulk Actions</option>
+            <option>Publish</option>
+            <option>Unpublish</option>
+            <option>Delete</option>
+          </select>
+          <button class="bg-primary text-white px-4 py-2 rounded-lg text-sm hover:bg-opacity-90 transition-colors duration-300">
+            Apply
+          </button>
+        </div>
+        <button class="text-gray-500 hover:text-gray-700 text-sm flex items-center space-x-1">
+          <i class="fas fa-download"></i>
+          <span>Export Events</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

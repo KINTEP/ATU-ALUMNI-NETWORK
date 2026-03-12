@@ -1,0 +1,484 @@
+<div class="min-h-screen bg-gray-50">
+  <!-- Sidebar -->
+  <app-sidebar></app-sidebar>
+
+  <!-- Main Content -->
+  <div class="lg:ml-64 transition-all duration-300">
+    <div class="p-4 md:p-6 lg:p-8">
+      <!-- Header -->
+      <div class="container mx-auto max-w-4xl">
+        <div class="bg-gradient-to-r from-primary to-accent text-white rounded-2xl shadow-lg p-5 mb-6 slide-in relative overflow-hidden">
+          <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-32 translate-x-32"></div>
+          <div class="relative z-10">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
+              <div>
+                <h1 class="text-2xl font-bold mb-2">Post New Job</h1>
+                <p class="opacity-90 text-sm">Create a new job posting for alumni opportunities</p>
+              </div>
+              <div class="flex space-x-3 mt-4 md:mt-0">
+                <button 
+                  (click)="navigateToJobManagement()"
+                  class="bg-white/20 text-white px-4 py-2.5 rounded-xl hover:bg-white/30 transition-all duration-300 font-medium text-sm border border-white/30 flex items-center">
+                  <i class="fas fa-arrow-left mr-2"></i>Back to Jobs
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Progress Steps -->
+        <div class="bg-white rounded-xl shadow-sm p-5 mb-6 border border-gray-100">
+          <div class="flex items-center justify-between max-w-2xl mx-auto">
+            <div class="flex flex-col items-center">
+              <div class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm">1</div>
+              <span class="text-xs mt-2 font-medium text-primary">Job Details</span>
+            </div>
+            <div class="h-1 flex-1 bg-primary mx-2"></div>
+            <div class="flex flex-col items-center">
+              <div class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm">2</div>
+              <span class="text-xs mt-2 font-medium text-primary">Requirements</span>
+            </div>
+            <div class="h-1 flex-1 bg-gray-200 mx-2"></div>
+            <div class="flex flex-col items-center">
+              <div class="w-10 h-10 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center font-bold text-sm">3</div>
+              <span class="text-xs mt-2 font-medium text-gray-500">Review</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Job Form -->
+        <form [formGroup]="jobForm" (ngSubmit)="onSubmit()" class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 mb-6">
+          <h2 class="text-lg font-bold text-gray-800 mb-6">Job Information</h2>
+          
+          <!-- Company & Job Title Row -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Company Name *</label>
+              <input 
+                type="text" 
+                formControlName="company_name"
+                [class]="hasError('company_name') ? 'w-full px-4 py-3 border border-red-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 text-sm' : 'w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm'"
+                placeholder="Enter company name">
+              <p *ngIf="hasError('company_name')" class="text-red-500 text-xs mt-1">Company name is required</p>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Job Title *</label>
+              <input 
+                type="text" 
+                formControlName="job_title"
+                [class]="hasError('job_title') ? 'w-full px-4 py-3 border border-red-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 text-sm' : 'w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm'"
+                placeholder="Enter job title">
+              <p *ngIf="hasError('job_title')" class="text-red-500 text-xs mt-1">Job title is required</p>
+            </div>
+          </div>
+
+          <!-- Company Info Row -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Company Website</label>
+              <input 
+                type="url" 
+                formControlName="company_website"
+                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
+                placeholder="https://company.com">
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Industry</label>
+              <input 
+                type="text" 
+                formControlName="industry"
+                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
+                placeholder="e.g., Technology, Finance, Healthcare">
+            </div>
+          </div>
+
+          <!-- Job Description -->
+          <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Job Description *</label>
+            <textarea 
+              rows="6" 
+              formControlName="job_description"
+              [class]="hasError('job_description') ? 'w-full px-4 py-3 border border-red-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 text-sm' : 'w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm'"
+              placeholder="Describe the job responsibilities, requirements, and what you're looking for in a candidate..."></textarea>
+            <p *ngIf="hasError('job_description')" class="text-red-500 text-xs mt-1">Job description is required (minimum 100 characters)</p>
+            <p *ngIf="!hasError('job_description')" class="text-xs text-gray-500 mt-2">Minimum 100 characters. Include key responsibilities and expectations.</p>
+          </div>
+
+          <!-- Job Type & Location Row -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Job Type *</label>
+              <select 
+                formControlName="job_type"
+                [class]="hasError('job_type') ? 'w-full px-4 py-3 border border-red-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 appearance-none bg-white text-sm' : 'w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent appearance-none bg-white text-sm'">
+                <option value="">Select job type</option>
+                <option *ngFor="let type of jobTypes" [value]="type.value">{{ type.label }}</option>
+              </select>
+              <p *ngIf="hasError('job_type')" class="text-red-500 text-xs mt-1">Job type is required</p>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Location *</label>
+              <input 
+                type="text" 
+                formControlName="location"
+                [class]="hasError('location') ? 'w-full px-4 py-3 border border-red-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 text-sm' : 'w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm'"
+                placeholder="e.g., Accra, Ghana or Remote">
+              <p *ngIf="hasError('location')" class="text-red-500 text-xs mt-1">Location is required</p>
+            </div>
+          </div>
+
+          <!-- Application Details -->
+          <div class="mb-6">
+            <h3 class="text-md font-medium text-gray-800 mb-4">Application Details</h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Application Email</label>
+                <input 
+                  type="email" 
+                  formControlName="application_email"
+                  class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
+                  placeholder="careers@company.com">
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Application URL</label>
+                <input 
+                  type="url" 
+                  formControlName="application_url"
+                  class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
+                  placeholder="https://company.com/careers/apply">
+                <p class="text-xs text-gray-500 mt-2">Optional: External application link</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Salary Information -->
+          <div class="mb-6">
+            <h3 class="text-md font-medium text-gray-800 mb-4">Salary & Compensation</h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Min Salary</label>
+                <input 
+                  type="number" 
+                  formControlName="salary_min"
+                  class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
+                  placeholder="30000">
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Max Salary</label>
+                <input 
+                  type="number" 
+                  formControlName="salary_max"
+                  class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
+                  placeholder="50000">
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Currency</label>
+                <select 
+                  formControlName="salary_currency"
+                  class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent appearance-none bg-white text-sm">
+                  <option value="USD">USD ($)</option>
+                  <option value="GHS">GHS (₵)</option>
+                  <option value="EUR">EUR (€)</option>
+                  <option value="GBP">GBP (£)</option>
+                </select>
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Pay Period</label>
+                <select 
+                  formControlName="salary_period"
+                  class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent appearance-none bg-white text-sm">
+                  <option value="per hour">Per Hour</option>
+                  <option value="per day">Per Day</option>
+                  <option value="per month">Per Month</option>
+                  <option value="per year">Per Year</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Requirements & Qualifications -->
+          <div class="mb-6">
+            <h3 class="text-md font-medium text-gray-800 mb-4">Requirements & Qualifications</h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Experience Level</label>
+                <select 
+                  formControlName="experience_level"
+                  class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent appearance-none bg-white text-sm">
+                  <option value="">Select experience level</option>
+                  <option *ngFor="let level of experienceLevels" [value]="level.value">{{ level.label }}</option>
+                </select>
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Education Level</label>
+                <select 
+                  formControlName="education_required"
+                  class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent appearance-none bg-white text-sm">
+                  <option value="">Select education level</option>
+                  <option *ngFor="let level of educationLevels" [value]="level.value">{{ level.label }}</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Skills & Technologies -->
+            <div class="mb-4">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Required Skills & Technologies</label>
+              <div class="border border-gray-300 rounded-xl p-4 focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent">
+                <div id="skillsContainer" class="flex flex-wrap gap-2 mb-3">
+                  <span 
+                    *ngFor="let skill of skills; let i = index"
+                    class="bg-primary text-white px-3 py-1 rounded-full text-sm flex items-center gap-2">
+                    {{ skill }}
+                    <button 
+                      type="button" 
+                      (click)="removeSkill(i)"
+                      class="text-white hover:text-red-300">×</button>
+                  </span>
+                </div>
+                <div class="flex space-x-2">
+                  <input 
+                    type="text" 
+                    id="skillInput"
+                    (keyup.enter)="addSkill()"
+                    class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary text-sm"
+                    placeholder="Add a skill (e.g., JavaScript, React, Project Management)">
+                  <button 
+                    type="button" 
+                    (click)="addSkill()"
+                    class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-opacity-90 transition-colors duration-300 text-sm">
+                    Add
+                  </button>
+                </div>
+              </div>
+              <p class="text-xs text-gray-500 mt-2">Add relevant skills and technologies required for this position</p>
+            </div>
+
+            <!-- Responsibilities -->
+            <div class="mb-4">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Key Responsibilities</label>
+              <div class="border border-gray-300 rounded-xl p-4 focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent">
+                <div class="space-y-2 mb-3">
+                  <div 
+                    *ngFor="let responsibility of responsibilities; let i = index"
+                    class="flex items-start gap-2 bg-gray-50 p-3 rounded-lg">
+                    <span class="text-primary font-bold text-sm mt-0.5">•</span>
+                    <span class="flex-1 text-sm text-gray-700">{{ responsibility }}</span>
+                    <button 
+                      type="button" 
+                      (click)="removeResponsibility(i)"
+                      class="text-red-500 hover:text-red-700 text-lg leading-none">×</button>
+                  </div>
+                </div>
+                <div class="flex space-x-2">
+                  <input 
+                    type="text" 
+                    id="responsibilityInput"
+                    (keyup.enter)="addResponsibility()"
+                    class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary text-sm"
+                    placeholder="Add a responsibility (e.g., Lead development of new features)">
+                  <button 
+                    type="button" 
+                    (click)="addResponsibility()"
+                    class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-opacity-90 transition-colors duration-300 text-sm">
+                    Add
+                  </button>
+                </div>
+              </div>
+              <p class="text-xs text-gray-500 mt-2">List the main responsibilities for this role</p>
+            </div>
+
+            <!-- Qualifications -->
+            <div class="mb-4">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Required Qualifications</label>
+              <div class="border border-gray-300 rounded-xl p-4 focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent">
+                <div class="space-y-2 mb-3">
+                  <div 
+                    *ngFor="let qualification of qualifications; let i = index"
+                    class="flex items-start gap-2 bg-gray-50 p-3 rounded-lg">
+                    <span class="text-primary font-bold text-sm mt-0.5">•</span>
+                    <span class="flex-1 text-sm text-gray-700">{{ qualification }}</span>
+                    <button 
+                      type="button" 
+                      (click)="removeQualification(i)"
+                      class="text-red-500 hover:text-red-700 text-lg leading-none">×</button>
+                  </div>
+                </div>
+                <div class="flex space-x-2">
+                  <input 
+                    type="text" 
+                    id="qualificationInput"
+                    (keyup.enter)="addQualification()"
+                    class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary text-sm"
+                    placeholder="Add a qualification (e.g., 5+ years of experience in software development)">
+                  <button 
+                    type="button" 
+                    (click)="addQualification()"
+                    class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-opacity-90 transition-colors duration-300 text-sm">
+                    Add
+                  </button>
+                </div>
+              </div>
+              <p class="text-xs text-gray-500 mt-2">Specify required qualifications and experience</p>
+            </div>
+
+            <!-- Benefits -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Benefits & Perks</label>
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                <label 
+                  *ngFor="let benefit of benefitsList"
+                  class="flex items-center space-x-2 cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    [checked]="isBenefitSelected(benefit)"
+                    (change)="toggleBenefit(benefit)"
+                    class="rounded border-gray-300 text-primary focus:ring-primary">
+                  <span class="text-sm text-gray-700">{{ benefit }}</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Additional Information -->
+          <div class="mb-6">
+            <h3 class="text-md font-medium text-gray-800 mb-4">Additional Information</h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Application Deadline</label>
+                <input
+                  type="date"
+                  formControlName="application_deadline"
+                  [min]="today"
+                  class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm">
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Positions Available</label>
+                <input
+                  type="number"
+                  formControlName="positions_available"
+                  min="1"
+                  class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
+                  placeholder="1">
+              </div>
+            </div>
+          </div>
+
+          <!-- Job Settings -->
+          <div class="mb-6">
+            <h3 class="text-md font-medium text-gray-800 mb-4">Job Settings</h3>
+            
+            <div class="space-y-4">
+              <div class="flex items-center justify-between">
+                <div>
+                  <label class="text-sm font-medium text-gray-700">Featured Job</label>
+                  <p class="text-xs text-gray-500">Highlight this job on the careers page</p>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    formControlName="is_featured"
+                    class="sr-only peer">
+                  <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                </label>
+              </div>
+              
+              <div class="flex items-center justify-between">
+                <div>
+                  <label class="text-sm font-medium text-gray-700">Active Job Posting</label>
+                  <p class="text-xs text-gray-500">Allow users to apply for this position</p>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    formControlName="is_active"
+                    class="sr-only peer">
+                  <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                </label>
+              </div>
+              
+              <div class="flex items-center justify-between">
+                <div>
+                  <label class="text-sm font-medium text-gray-700">Notify Alumni</label>
+                  <p class="text-xs text-gray-500">Send notification to relevant alumni</p>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    formControlName="notify_alumni"
+                    class="sr-only peer">
+                  <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Form Actions -->
+          <div class="flex flex-col sm:flex-row justify-between items-center pt-6 border-t border-gray-200 gap-4">
+            <div class="text-sm text-gray-500">
+              <i class="fas fa-info-circle mr-1"></i>
+              All fields marked with * are required
+            </div>
+            <div class="flex space-x-3">
+              <button 
+                type="button" 
+                (click)="saveAsDraft()"
+                [disabled]="isSubmitting"
+                class="px-6 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors duration-300 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed">
+                Save as Draft
+              </button>
+              <button 
+                type="submit"
+                [disabled]="isSubmitting"
+                class="bg-primary text-white px-6 py-3 rounded-xl hover:bg-opacity-90 transition-colors duration-300 text-sm font-medium flex items-center disabled:opacity-50 disabled:cursor-not-allowed">
+                <i [class]="isSubmitting ? 'fas fa-spinner fa-spin mr-2' : 'fas fa-paper-plane mr-2'"></i>
+                {{ isSubmitting ? 'Publishing...' : 'Publish Job' }}
+              </button>
+            </div>
+          </div>
+        </form>
+
+        <!-- Quick Tips -->
+        <div class="bg-blue-50 rounded-xl p-5 border border-blue-100">
+          <h3 class="text-md font-medium text-blue-800 mb-3 flex items-center">
+            <i class="fas fa-lightbulb mr-2"></i>Job Posting Tips
+          </h3>
+          <ul class="text-sm text-blue-700 space-y-2">
+            <li class="flex items-start">
+              <i class="fas fa-check-circle mr-2 mt-0.5 text-blue-500"></i>
+              Be specific about required skills and experience levels
+            </li>
+            <li class="flex items-start">
+              <i class="fas fa-check-circle mr-2 mt-0.5 text-blue-500"></i>
+              Include salary information to attract more qualified candidates
+            </li>
+            <li class="flex items-start">
+              <i class="fas fa-check-circle mr-2 mt-0.5 text-blue-500"></i>
+              Highlight unique benefits and company culture
+            </li>
+            <li class="flex items-start">
+              <i class="fas fa-check-circle mr-2 mt-0.5 text-blue-500"></i>
+              Use clear, concise language in the job description
+            </li>
+            <li class="flex items-start">
+              <i class="fas fa-check-circle mr-2 mt-0.5 text-blue-500"></i>
+              Set realistic application deadlines and start dates
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

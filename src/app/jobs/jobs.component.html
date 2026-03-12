@@ -1,0 +1,267 @@
+<div class="container mx-auto px-4 py-8">
+  <!-- Header -->
+  <div class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl shadow-lg p-6 mb-8 slide-in relative overflow-hidden">
+    <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-32 translate-x-32"></div>
+    <div class="relative z-10">
+      <h1 class="text-3xl font-bold mb-2">Job Opportunities</h1>
+      <p class="opacity-90">Find job opportunities and career resources from alumni companies</p>
+    </div>
+  </div>
+
+  <!-- Search and Filter Section -->
+  <div class="bg-white rounded-xl shadow-sm p-6 mb-6 border border-gray-100 slide-in">
+    <!-- Search Bar -->
+    <div class="relative mb-6">
+      <input 
+        type="text" 
+        [(ngModel)]="searchQuery"
+        (keyup.enter)="applyFilters()"
+        placeholder="Search jobs by title, company, or keywords..." 
+        class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent text-sm"
+      >
+      <i class="fas fa-search absolute left-4 top-3.5 text-gray-400"></i>
+    </div>
+    
+    <!-- Filters -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <!-- Job Type Filter -->
+      <div class="relative">
+        <select 
+          [(ngModel)]="selectedJobType"
+          class="w-full pl-4 pr-10 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent appearance-none bg-white text-sm"
+        >
+          <option value="">All Job Types</option>
+          <option *ngFor="let type of jobTypes" [value]="type">{{ type }}</option>
+        </select>
+        <i class="fas fa-chevron-down absolute right-4 top-3.5 text-gray-400 pointer-events-none"></i>
+      </div>
+      
+      <!-- Location Filter -->
+      <div class="relative">
+        <select 
+          [(ngModel)]="selectedLocation"
+          class="w-full pl-4 pr-10 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent appearance-none bg-white text-sm"
+        >
+          <option value="">All Locations</option>
+          <option *ngFor="let location of locations" [value]="location">{{ location }}</option>
+        </select>
+        <i class="fas fa-chevron-down absolute right-4 top-3.5 text-gray-400 pointer-events-none"></i>
+      </div>
+      
+      <!-- Salary Range Filter -->
+      <div class="relative">
+        <select 
+          [(ngModel)]="selectedSalaryRange"
+          class="w-full pl-4 pr-10 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent appearance-none bg-white text-sm"
+        >
+          <option value="">Any Salary Range</option>
+          <option *ngFor="let range of salaryRanges" [value]="range.value">{{ range.label }}</option>
+        </select>
+        <i class="fas fa-chevron-down absolute right-4 top-3.5 text-gray-400 pointer-events-none"></i>
+      </div>
+      
+      <!-- Experience Level Filter -->
+      <div class="relative">
+        <select 
+          [(ngModel)]="selectedExperience"
+          class="w-full pl-4 pr-10 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent appearance-none bg-white text-sm"
+        >
+          <option value="">Any Experience</option>
+          <option *ngFor="let level of experienceLevels" [value]="level">{{ level }}</option>
+        </select>
+        <i class="fas fa-chevron-down absolute right-4 top-3.5 text-gray-400 pointer-events-none"></i>
+      </div>
+    </div>
+    
+    <!-- Filter Actions -->
+    <div class="flex justify-between items-center mt-6">
+      <div class="text-sm text-gray-500">
+        Showing <span class="font-medium text-gray-700">{{ activeTab === 'all' ? allJobs.length : savedJobs.length }}</span> of <span class="font-medium text-gray-700">{{ totalJobs }}</span> jobs
+      </div>
+      <div class="flex space-x-3">
+        <button 
+          (click)="resetFilters()"
+          class="px-4 py-2 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors duration-300 text-sm"
+        >
+          Reset Filters
+        </button>
+        <button 
+          (click)="applyFilters()"
+          class="bg-blue-600 text-white px-6 py-2 rounded-xl hover:bg-blue-700 transition-colors duration-300 text-sm font-medium"
+        >
+          Apply Filters
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="errorMessage" class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-6">
+    <i class="fas fa-exclamation-circle mr-2"></i>
+    {{ errorMessage }}
+  </div>
+
+  <!-- Tabs -->
+  <div class="bg-white rounded-xl shadow-sm p-4 mb-6 border border-gray-100">
+    <div class="flex border-b border-gray-200">
+      <button 
+        (click)="switchTab('all')"
+        [class]="activeTab === 'all' ? 'px-6 py-3 font-medium rounded-t-lg transition-colors duration-300 bg-blue-600 text-white text-sm mr-2' : 'px-6 py-3 font-medium text-gray-600 rounded-t-lg hover:bg-gray-100 transition-colors duration-300 text-sm'"
+      >
+        All Jobs
+      </button>
+      <button 
+        (click)="switchTab('saved')"
+        [class]="activeTab === 'saved' ? 'px-6 py-3 font-medium rounded-t-lg transition-colors duration-300 bg-blue-600 text-white text-sm' : 'px-6 py-3 font-medium text-gray-600 rounded-t-lg hover:bg-gray-100 transition-colors duration-300 text-sm'"
+      >
+        Saved Jobs
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="text-center py-12">
+    <i class="fas fa-spinner fa-spin text-blue-600 text-4xl"></i>
+    <p class="text-gray-500 mt-4">Loading jobs...</p>
+  </div>
+
+  <!-- Jobs Grid -->
+  <!-- Jobs Grid -->
+<div *ngIf="!isLoading && ((activeTab === 'all' && allJobs.length > 0) || (activeTab === 'saved' && savedJobs.length > 0))" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+  <div 
+    *ngFor="let job of activeTab === 'all' ? allJobs : savedJobs; let i = index" 
+    class="bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 p-5 cursor-pointer card-hover slide-in border border-gray-100"
+    [style.animation-delay]="(i * 0.1) + 's'"
+  >
+    <!-- Card Header -->
+    <div class="flex justify-between items-start mb-4">
+      <div 
+        class="flex items-center space-x-3 flex-1 cursor-pointer"
+        (click)="viewJob(job.id)"
+      >
+        <div class="w-12 h-12 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center text-white font-bold shadow-sm">
+          {{ getCompanyInitials(job.company_name) }}
+        </div>
+        <div>
+          <h3 class="text-lg font-bold text-gray-800">{{ job.job_title }}</h3>
+          <p class="text-gray-500 text-sm">{{ job.company_name }}</p>
+        </div>
+      </div>
+      <button 
+        (click)="toggleSaveJob(job, $event)"
+        [class]="isJobSaved(job.id) ? 'text-yellow-400 transition-colors duration-300' : 'text-gray-300 hover:text-yellow-400 transition-colors duration-300'"
+      >
+        <i [class]="isJobSaved(job.id) ? 'fas fa-bookmark text-lg' : 'far fa-bookmark text-lg'"></i>
+      </button>
+    </div>
+    
+    <!-- Job Type and Location -->
+    <div 
+      class="flex items-center space-x-2 mb-3 cursor-pointer"
+      (click)="viewJob(job.id)"
+    >
+      <span [class]="'px-2 py-1 rounded-lg text-xs font-medium border ' + getJobTypeBadgeClass(job.job_type)">
+        {{ job.job_type }}
+      </span>
+      <span class="text-gray-400 text-xs">•</span>
+      <span class="text-gray-500 text-xs">{{ job.location }}</span>
+    </div>
+    
+    <!-- Job Description -->
+    <p 
+      class="text-gray-600 text-sm mb-4 line-clamp-2 cursor-pointer"
+      (click)="viewJob(job.id)"
+    >
+      {{ job.job_description }}
+    </p>
+    
+    <!-- Skills -->
+    <div 
+      *ngIf="job.skills_required && job.skills_required.length > 0" 
+      class="flex flex-wrap gap-1.5 mb-4 cursor-pointer"
+      (click)="viewJob(job.id)"
+    >
+      <span 
+        *ngFor="let skill of job.skills_required.slice(0, 3); let i = index" 
+        [class]="'px-2 py-1 rounded-lg text-xs border ' + getSkillBadgeClass(i)"
+      >
+        {{ skill }}
+      </span>
+      <span *ngIf="job.skills_required.length > 3" class="text-xs text-gray-500">
+        +{{ job.skills_required.length - 3 }} more
+      </span>
+    </div>
+    
+    <!-- Card Footer -->
+    <div class="flex justify-between items-center pt-3 border-t border-gray-100">
+      <div 
+        class="cursor-pointer"
+        (click)="viewJob(job.id)"
+      >
+        <span class="text-xs text-gray-500 block">Salary</span>
+        <span class="text-sm font-medium text-gray-800">{{ formatSalary(job) }}</span>
+      </div>
+      <div class="flex space-x-2">
+        <button 
+          (click)="viewJob(job.id, $event)"
+          class="text-blue-600 hover:text-blue-800 text-sm font-medium"
+        >
+          Details
+        </button>
+        <button 
+          (click)="applyToJob(job, $event)"
+          class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-300 text-sm font-medium"
+        >
+          Apply
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+  <!-- Empty State -->
+  <div *ngIf="!isLoading && ((activeTab === 'all' && allJobs.length === 0) || (activeTab === 'saved' && savedJobs.length === 0))" class="text-center py-12">
+    <i class="fas fa-briefcase text-gray-300 text-6xl mb-4"></i>
+    <h3 class="text-xl font-bold text-gray-700 mb-2">No jobs found</h3>
+    <p class="text-gray-500 mb-4">
+      {{ activeTab === 'all' ? 'Try adjusting your filters to see more results.' : 'You haven\'t saved any jobs yet.' }}
+    </p>
+    <button 
+      *ngIf="activeTab === 'saved'"
+      (click)="switchTab('all')"
+      class="bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 transition-colors duration-300 font-medium"
+    >
+      Browse Jobs
+    </button>
+    <button 
+      *ngIf="activeTab === 'all'"
+      (click)="resetFilters()"
+      class="bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 transition-colors duration-300 font-medium"
+    >
+      Reset Filters
+    </button>
+  </div>
+
+  <!-- Pagination -->
+  <div *ngIf="!isLoading && totalPages > 1" class="flex justify-center items-center mt-8 space-x-4">
+    <button 
+      (click)="previousPage()"
+      [disabled]="currentPage === 1"
+      class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+    >
+      <i class="fas fa-chevron-left"></i> Previous
+    </button>
+    
+    <span class="text-sm text-gray-600">
+      Page {{ currentPage }} of {{ totalPages }}
+    </span>
+    
+    <button 
+      (click)="nextPage()"
+      [disabled]="currentPage === totalPages"
+      class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+    >
+      Next <i class="fas fa-chevron-right"></i>
+    </button>
+  </div>
+</div>

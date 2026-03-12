@@ -1,0 +1,561 @@
+<div class="min-h-screen bg-gray-50">
+  <app-sidebar></app-sidebar>
+
+  <div class="lg:ml-64 transition-all duration-300 p-4 md:p-6 lg:p-8">
+    <div class="container mx-auto">
+
+      <!-- Header -->
+      <div class="bg-gradient-to-r from-primary to-accent text-white rounded-2xl shadow-lg p-5 mb-6 slide-in relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-32 translate-x-32"></div>
+        <div class="relative z-10">
+          <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
+            <div>
+              <h1 class="text-2xl font-bold mb-2">
+                <i class="fas fa-project-diagram mr-2"></i>Project Management
+              </h1>
+              <p class="opacity-90 text-sm">Create, manage, and monitor all alumni projects and donations</p>
+            </div>
+            <button (click)="createProject()"
+              class="mt-4 md:mt-0 bg-white/20 text-white px-5 py-2.5 rounded-xl hover:bg-white/30 transition-all duration-300 font-medium shadow-sm text-sm flex items-center border border-white/30">
+              <i class="fas fa-plus mr-2"></i>Create Project
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats Grid Row 1 -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+
+        <!-- Total Projects -->
+        <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100 card-hover">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-500 text-sm font-medium">Total Projects</p>
+              <h3 class="text-2xl font-bold text-gray-800 mt-1">
+                {{ stats ? stats.total : '—' }}
+              </h3>
+              <div class="flex items-center mt-2">
+                <span class="text-blue-500 text-sm font-medium">{{ totalProjects }} loaded</span>
+              </div>
+            </div>
+            <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600">
+              <i class="fas fa-folder-open text-xl"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Ongoing -->
+        <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100 card-hover">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-500 text-sm font-medium">Ongoing</p>
+              <h3 class="text-2xl font-bold text-gray-800 mt-1">{{ stats?.ongoing ?? '—' }}</h3>
+              <div class="flex items-center mt-2">
+                <span class="text-green-500 text-sm font-medium flex items-center">
+                  <i class="fas fa-circle mr-1 text-xs"></i>Active
+                </span>
+              </div>
+            </div>
+            <div class="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center text-green-600">
+              <i class="fas fa-spinner text-xl"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Proposed -->
+        <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100 card-hover">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-500 text-sm font-medium">Proposed</p>
+              <h3 class="text-2xl font-bold text-gray-800 mt-1">{{ stats?.proposed ?? '—' }}</h3>
+              <div class="flex items-center mt-2">
+                <span class="text-yellow-500 text-sm font-medium flex items-center">
+                  <i class="fas fa-exclamation-circle mr-1"></i>Pending review
+                </span>
+              </div>
+            </div>
+            <div class="w-12 h-12 bg-yellow-50 rounded-xl flex items-center justify-center text-yellow-600">
+              <i class="fas fa-lightbulb text-xl"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Total Donations -->
+        <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100 card-hover">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-500 text-sm font-medium">Total Donations</p>
+              <h3 class="text-2xl font-bold text-gray-800 mt-1">
+                {{ stats ? formatCurrency(stats.total_raised) : '—' }}
+              </h3>
+              <div class="flex items-center mt-2">
+                <span class="text-green-500 text-sm font-medium flex items-center">
+                  <i class="fas fa-users mr-1"></i>{{ stats?.total_donors ?? 0 }} donors
+                </span>
+              </div>
+            </div>
+            <div class="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600">
+              <i class="fas fa-donate text-xl"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats Grid Row 2 -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+
+        <!-- Completed -->
+        <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100 card-hover">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-500 text-sm font-medium">Completed</p>
+              <h3 class="text-2xl font-bold text-gray-800 mt-1">{{ stats?.completed ?? '—' }}</h3>
+              <div class="flex items-center mt-2">
+                <span class="text-green-500 text-sm font-medium flex items-center">
+                  <i class="fas fa-check-circle mr-1"></i>Successfully funded
+                </span>
+              </div>
+            </div>
+            <div class="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center text-green-600">
+              <i class="fas fa-flag-checkered text-xl"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Total Donors -->
+        <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100 card-hover">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-500 text-sm font-medium">Total Donors</p>
+              <h3 class="text-2xl font-bold text-gray-800 mt-1">{{ stats?.total_donors ?? '—' }}</h3>
+              <div class="flex items-center mt-2">
+                <span class="text-purple-500 text-sm font-medium flex items-center">
+                  <i class="fas fa-donate mr-1"></i>{{ stats ? formatCurrency(stats.total_donations) : '' }} raised
+                </span>
+              </div>
+            </div>
+            <div class="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center text-purple-600">
+              <i class="fas fa-users text-xl"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Total Volunteers -->
+        <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100 card-hover">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-500 text-sm font-medium">Total Volunteers</p>
+              <h3 class="text-2xl font-bold text-gray-800 mt-1">{{ stats?.total_volunteers ?? '—' }}</h3>
+              <div class="flex items-center mt-2">
+                <span class="text-blue-500 text-sm font-medium flex items-center">
+                  <i class="fas fa-hand-holding-heart mr-1"></i>Across projects
+                </span>
+              </div>
+            </div>
+            <div class="w-12 h-12 bg-orange-50 rounded-xl flex items-center justify-center text-orange-600">
+              <i class="fas fa-hands-helping text-xl"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Search + Filter Controls -->
+      <div class="bg-white rounded-xl shadow-sm p-5 mb-6 border border-gray-100">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div class="relative flex-1 max-w-md">
+            <input type="text" placeholder="Search projects..."
+              [value]="searchQuery"
+              (input)="onSearchInput($any($event.target).value)"
+              class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm">
+            <i class="fas fa-search absolute left-3 top-3.5 text-gray-400"></i>
+          </div>
+          <div class="flex gap-2 flex-wrap">
+            <button *ngFor="let f of ['all','ongoing','proposed','completed','draft']"
+              (click)="setFilter($any(f))"
+              [class]="activeFilter === f
+                ? 'px-4 py-2.5 bg-primary text-white rounded-xl text-sm font-medium transition-all duration-300'
+                : 'px-4 py-2.5 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-all duration-300 text-sm'">
+              {{ f | titlecase }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Projects Table -->
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 mb-8 overflow-hidden">
+        <div class="p-5 border-b border-gray-100 flex justify-between items-center">
+          <h2 class="text-xl font-bold text-gray-800">All Projects</h2>
+          <span class="text-sm text-gray-500">{{ totalProjects }} total</span>
+        </div>
+
+        <!-- Loading -->
+        <div *ngIf="isLoading" class="p-8 space-y-4">
+          <div *ngFor="let i of [1,2,3,4]" class="animate-pulse flex gap-4 items-center">
+            <div class="w-10 h-10 bg-gray-200 rounded-lg flex-shrink-0"></div>
+            <div class="flex-1 space-y-2">
+              <div class="h-4 bg-gray-200 rounded w-3/4"></div>
+              <div class="h-3 bg-gray-100 rounded w-1/2"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Empty -->
+        <div *ngIf="!isLoading && projects.length === 0" class="p-12 text-center">
+          <i class="fas fa-folder-open text-4xl text-gray-200 mb-3"></i>
+          <p class="text-gray-500">No projects found</p>
+        </div>
+
+        <!-- Table -->
+        <div *ngIf="!isLoading && projects.length > 0" class="overflow-x-auto">
+          <table class="w-full">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="text-left px-6 py-4 text-sm font-medium text-gray-500">Project</th>
+                <th class="text-left px-6 py-4 text-sm font-medium text-gray-500">Category</th>
+                <th class="text-left px-6 py-4 text-sm font-medium text-gray-500">Status</th>
+                <th class="text-left px-6 py-4 text-sm font-medium text-gray-500">Funding</th>
+                <th class="text-left px-6 py-4 text-sm font-medium text-gray-500">Donors</th>
+                <th class="text-left px-6 py-4 text-sm font-medium text-gray-500">Created</th>
+                <th class="text-left px-6 py-4 text-sm font-medium text-gray-500">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+              <tr *ngFor="let project of projects; trackBy: trackByProject"
+                class="hover:bg-gray-50 transition-colors">
+
+                <!-- Project Info -->
+                <td class="px-6 py-4">
+                  <div class="flex items-center space-x-3">
+                    <div [class]="getCategoryBgClass(project.category)"
+                      class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <i [class]="getCategoryIcon(project.category)"></i>
+                    </div>
+                    <div>
+                      <p class="font-medium text-gray-800 truncate max-w-[200px]">{{ project.title }}</p>
+                      <p class="text-xs text-gray-500">By {{ getAuthorName(project) }}</p>
+                    </div>
+                  </div>
+                </td>
+
+                <!-- Category -->
+                <td class="px-6 py-4">
+                  <span [class]="getCategoryBadgeClass(project.category)">{{ project.category }}</span>
+                </td>
+
+                <!-- Status -->
+                <td class="px-6 py-4">
+                  <span [class]="getStatusBadgeClass(project.status)">
+                    <i [class]="getStatusIcon(project.status)"></i>{{ getStatusLabel(project.status) }}
+                  </span>
+                </td>
+
+                <!-- Funding -->
+                <td class="px-6 py-4">
+                  <div *ngIf="project.status !== 'proposed'">
+                    <p class="text-sm font-medium text-gray-800">
+                      {{ formatCurrency(project.current_amount) }} / {{ formatCurrency(project.funding_goal) }}
+                    </p>
+                    <div class="w-24 bg-gray-200 rounded-full h-1.5 mt-1">
+                      <div [class]="getProgressBarClass(project)"
+                        class="h-1.5 rounded-full transition-all"
+                        [style.width.%]="getProgressWidth(project)"></div>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-0.5">{{ project.funding_percentage }}%</p>
+                  </div>
+                  <div *ngIf="project.status === 'proposed'">
+                    <p class="text-sm font-medium text-gray-800">Est. {{ formatCurrency(project.funding_goal) }}</p>
+                    <p class="text-xs text-yellow-600 mt-1">{{ project.votes_count }}/{{ project.votes_required }} votes</p>
+                  </div>
+                </td>
+
+                <!-- Donors -->
+                <td class="px-6 py-4 text-sm text-gray-600">
+                  {{ project.status === 'proposed' ? '—' : project.donors_count }}
+                </td>
+
+                <!-- Date -->
+                <td class="px-6 py-4 text-sm text-gray-500">{{ formatDate(project.created_at) }}</td>
+
+                <!-- Actions -->
+                <td class="px-6 py-4">
+                  <div class="flex items-center space-x-2">
+
+                    <!-- Loading spinner -->
+                    <span *ngIf="isActioning(project.id)" class="text-gray-400 text-sm">
+                      <i class="fas fa-spinner animate-spin"></i>
+                    </span>
+
+                    <ng-container *ngIf="!isActioning(project.id)">
+
+                      <!-- View (always) -->
+                      <button (click)="viewProject(project.id)"
+                        class="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center text-blue-600 hover:bg-blue-100 transition-colors" title="View">
+                        <i class="fas fa-eye text-sm"></i>
+                      </button>
+
+                      <!-- Proposed: Approve + Reject -->
+                      <ng-container *ngIf="project.status === 'proposed'">
+                        <button (click)="approveProject(project)"
+                          class="w-8 h-8 bg-green-50 rounded-lg flex items-center justify-center text-green-600 hover:bg-green-100 transition-colors" title="Approve">
+                          <i class="fas fa-check text-sm"></i>
+                        </button>
+                        <button (click)="openRejectModal(project.id)"
+                          class="w-8 h-8 bg-red-50 rounded-lg flex items-center justify-center text-red-600 hover:bg-red-100 transition-colors" title="Reject">
+                          <i class="fas fa-times text-sm"></i>
+                        </button>
+                      </ng-container>
+
+                      <!-- Ongoing: Edit + Complete + Delete -->
+                      <ng-container *ngIf="project.status === 'ongoing'">
+                        <button (click)="editProject(project.id)"
+                          class="w-8 h-8 bg-green-50 rounded-lg flex items-center justify-center text-green-600 hover:bg-green-100 transition-colors" title="Edit">
+                          <i class="fas fa-edit text-sm"></i>
+                        </button>
+                        <button (click)="completeProject(project)"
+                          class="w-8 h-8 bg-indigo-50 rounded-lg flex items-center justify-center text-indigo-600 hover:bg-indigo-100 transition-colors" title="Mark Complete">
+                          <i class="fas fa-flag-checkered text-sm"></i>
+                        </button>
+                        <button (click)="openDeleteModal(project.id)"
+                          class="w-8 h-8 bg-red-50 rounded-lg flex items-center justify-center text-red-600 hover:bg-red-100 transition-colors" title="Delete">
+                          <i class="fas fa-trash text-sm"></i>
+                        </button>
+                      </ng-container>
+
+                      <!-- Draft: Edit + Delete -->
+                      <ng-container *ngIf="project.status === 'draft'">
+                        <button (click)="editProject(project.id)"
+                          class="w-8 h-8 bg-green-50 rounded-lg flex items-center justify-center text-green-600 hover:bg-green-100 transition-colors" title="Edit">
+                          <i class="fas fa-edit text-sm"></i>
+                        </button>
+                        <button (click)="openDeleteModal(project.id)"
+                          class="w-8 h-8 bg-red-50 rounded-lg flex items-center justify-center text-red-600 hover:bg-red-100 transition-colors" title="Delete">
+                          <i class="fas fa-trash text-sm"></i>
+                        </button>
+                      </ng-container>
+
+                      <!-- Completed: Download Report -->
+                      <ng-container *ngIf="project.status === 'completed'">
+                        <button
+                          class="w-8 h-8 bg-gray-50 rounded-lg flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-colors" title="Report">
+                          <i class="fas fa-download text-sm"></i>
+                        </button>
+                      </ng-container>
+
+                    </ng-container>
+                  </div>
+                </td>
+
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        <div *ngIf="!isLoading && totalPages > 1" class="px-6 py-4 border-t border-gray-100 flex justify-between items-center">
+          <span class="text-sm text-gray-500">Page {{ currentPage }} of {{ totalPages }}</span>
+          <div class="flex gap-2">
+            <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1"
+              class="px-3 py-1.5 rounded-lg border border-gray-300 text-gray-600 text-sm hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed">
+              <i class="fas fa-chevron-left"></i>
+            </button>
+            <button *ngFor="let page of pagesArray" (click)="goToPage(page)"
+              [class]="currentPage === page ? 'bg-primary text-white' : 'border border-gray-300 text-gray-600 hover:bg-gray-50'"
+              class="px-3 py-1.5 rounded-lg text-sm font-medium transition-colors">
+              {{ page }}
+            </button>
+            <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages"
+              class="px-3 py-1.5 rounded-lg border border-gray-300 text-gray-600 text-sm hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed">
+              <i class="fas fa-chevron-right"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+
+        <!-- Donation Trends -->
+        <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="text-xl font-bold text-gray-800">Donation Trends</h2>
+            <div class="flex space-x-2">
+              <button (click)="setTrendPeriod('monthly')"
+                [class]="trendPeriod === 'monthly' ? 'text-sm bg-primary text-white px-3 py-1.5 rounded-lg' : 'text-sm bg-gray-100 text-gray-700 px-3 py-1.5 rounded-lg hover:bg-gray-200'">
+                Monthly
+              </button>
+              <button (click)="setTrendPeriod('quarterly')"
+                [class]="trendPeriod === 'quarterly' ? 'text-sm bg-primary text-white px-3 py-1.5 rounded-lg' : 'text-sm bg-gray-100 text-gray-700 px-3 py-1.5 rounded-lg hover:bg-gray-200'">
+                Quarterly
+              </button>
+            </div>
+          </div>
+
+          <!-- Trend bars -->
+          <div class="h-48 flex items-end gap-2 px-2" *ngIf="donationTrends.length > 0">
+            <ng-container *ngFor="let trend of donationTrends">
+              <div class="flex-1 flex flex-col items-center gap-1">
+                <span class="text-xs text-gray-500">{{ formatCurrency(trend.total) }}</span>
+                <div class="w-full bg-gradient-to-t from-blue-600 to-indigo-400 rounded-t-lg transition-all duration-500"
+                  [style.height.px]="(+trend.total / (+donationTrends[0].total || 1)) * 120 | number:'1.0-0'">
+                </div>
+                <span class="text-xs text-gray-400">{{ trend.month }}/{{ trend.year }}</span>
+              </div>
+            </ng-container>
+          </div>
+          <div *ngIf="donationTrends.length === 0"
+            class="h-48 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl flex items-center justify-center">
+            <div class="text-center">
+              <i class="fas fa-chart-bar text-4xl text-primary mb-3 opacity-40"></i>
+              <p class="text-gray-400 text-sm">No donation data yet</p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-3 gap-4 mt-6 pt-6 border-t border-gray-100">
+            <div class="text-center">
+              <p class="text-xl font-bold text-gray-800">{{ stats ? formatCurrency(stats.total_raised) : '—' }}</p>
+              <p class="text-sm text-gray-500 mt-1">Total Raised</p>
+            </div>
+            <div class="text-center">
+              <p class="text-xl font-bold text-green-600">{{ stats?.total_donors ?? '—' }}</p>
+              <p class="text-sm text-gray-500 mt-1">Total Donors</p>
+            </div>
+            <div class="text-center">
+              <p class="text-xl font-bold text-blue-600">{{ stats?.total_volunteers ?? '—' }}</p>
+              <p class="text-sm text-gray-500 mt-1">Volunteers</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="text-xl font-bold text-gray-800">Recent Donations</h2>
+          </div>
+
+          <div class="space-y-4 max-h-96 overflow-y-auto" *ngIf="recentActivity.length > 0">
+            <div *ngFor="let activity of recentActivity; trackBy: trackByActivity"
+              class="flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
+              <div [class]="getActivityIconBg(activity.type)"
+                class="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">
+                <i [class]="getActivityIcon(activity.type)"></i>
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="flex justify-between items-start">
+                  <div>
+                    <p class="font-medium text-gray-800 text-sm">
+                      {{ activity.anonymous ? 'Anonymous' : (activity.first_name + ' ' + activity.last_name) }}
+                    </p>
+                    <p class="text-sm text-gray-500 truncate">{{ activity.project_title }}</p>
+                  </div>
+                  <span *ngIf="activity.type === 'donation'" class="text-sm font-bold text-green-600 ml-2 whitespace-nowrap">
+                    +{{ formatCurrency(activity.amount!) }}
+                  </span>
+                  <span *ngIf="activity.type === 'volunteer'" class="text-sm font-medium text-blue-600 ml-2">
+                    Volunteered
+                  </span>
+                </div>
+                <p class="text-xs text-gray-400 mt-1">{{ formatTimeAgo(activity.created_at) }}</p>
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="recentActivity.length === 0" class="text-center py-8 text-gray-400">
+            <i class="fas fa-inbox text-3xl mb-2"></i>
+            <p class="text-sm">No recent activity</p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
+        <h2 class="text-xl font-bold text-gray-800 mb-4">Quick Actions</h2>
+        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+          <button (click)="createProject()" class="flex flex-col items-center p-4 rounded-xl hover:bg-gray-50 transition-colors duration-300 border border-gray-100">
+            <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600 mb-2">
+              <i class="fas fa-plus text-xl"></i>
+            </div>
+            <span class="text-sm font-medium text-gray-700">New Project</span>
+          </button>
+          <button (click)="setFilter('proposed')" class="flex flex-col items-center p-4 rounded-xl hover:bg-gray-50 transition-colors duration-300 border border-gray-100">
+            <div class="w-12 h-12 bg-yellow-100 rounded-xl flex items-center justify-center text-yellow-600 mb-2">
+              <i class="fas fa-clipboard-check text-xl"></i>
+            </div>
+            <span class="text-sm font-medium text-gray-700">Review Proposals</span>
+          </button>
+          <button (click)="setFilter('ongoing')" class="flex flex-col items-center p-4 rounded-xl hover:bg-gray-50 transition-colors duration-300 border border-gray-100">
+            <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center text-green-600 mb-2">
+              <i class="fas fa-donate text-xl"></i>
+            </div>
+            <span class="text-sm font-medium text-gray-700">Ongoing</span>
+          </button>
+          <button (click)="setFilter('completed')" class="flex flex-col items-center p-4 rounded-xl hover:bg-gray-50 transition-colors duration-300 border border-gray-100">
+            <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center text-purple-600 mb-2">
+              <i class="fas fa-flag-checkered text-xl"></i>
+            </div>
+            <span class="text-sm font-medium text-gray-700">Completed</span>
+          </button>
+          <button class="flex flex-col items-center p-4 rounded-xl hover:bg-gray-50 transition-colors duration-300 border border-gray-100">
+            <div class="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center text-orange-600 mb-2">
+              <i class="fas fa-chart-pie text-xl"></i>
+            </div>
+            <span class="text-sm font-medium text-gray-700">Reports</span>
+          </button>
+          <button class="flex flex-col items-center p-4 rounded-xl hover:bg-gray-50 transition-colors duration-300 border border-gray-100">
+            <div class="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center text-indigo-600 mb-2">
+              <i class="fas fa-cog text-xl"></i>
+            </div>
+            <span class="text-sm font-medium text-gray-700">Settings</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ── Reject Modal ─────────────────────────────────────────────────────────── -->
+<div *ngIf="showRejectModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
+    <h3 class="text-lg font-bold text-gray-800 mb-2 flex items-center gap-2">
+      <i class="fas fa-times-circle text-red-500"></i> Reject Project
+    </h3>
+    <p class="text-sm text-gray-600 mb-4">Provide a reason for rejecting this project (optional).</p>
+    <textarea
+      [(ngModel)]="rejectReason"
+      placeholder="Reason for rejection..."
+      rows="3"
+      class="w-full border border-gray-300 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-red-400 resize-none mb-4">
+    </textarea>
+    <div class="flex gap-3">
+      <button (click)="showRejectModal = false"
+        class="flex-1 border border-gray-300 text-gray-700 py-2.5 rounded-xl text-sm font-medium hover:bg-gray-50 transition-colors">
+        Cancel
+      </button>
+      <button (click)="confirmReject()"
+        class="flex-1 bg-red-500 text-white py-2.5 rounded-xl text-sm font-medium hover:bg-red-600 transition-colors">
+        <i class="fas fa-times mr-1"></i> Confirm Reject
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Delete Modal ─────────────────────────────────────────────────────────── -->
+<div *ngIf="showDeleteModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
+    <h3 class="text-lg font-bold text-gray-800 mb-2 flex items-center gap-2">
+      <i class="fas fa-trash text-red-500"></i> Delete Project
+    </h3>
+    <p class="text-sm text-gray-600 mb-6">This action is <strong>permanent</strong> and cannot be undone. All donations, volunteers, and updates will also be deleted.</p>
+    <div class="flex gap-3">
+      <button (click)="showDeleteModal = false"
+        class="flex-1 border border-gray-300 text-gray-700 py-2.5 rounded-xl text-sm font-medium hover:bg-gray-50 transition-colors">
+        Cancel
+      </button>
+      <button (click)="confirmDelete()"
+        class="flex-1 bg-red-500 text-white py-2.5 rounded-xl text-sm font-medium hover:bg-red-600 transition-colors">
+        <i class="fas fa-trash mr-1"></i> Yes, Delete
+      </button>
+    </div>
+  </div>
+</div>

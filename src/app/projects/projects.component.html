@@ -1,0 +1,401 @@
+<div class="container mx-auto px-4 py-8">
+
+  <!-- Page Header -->
+  <div class="mb-8 slide-in">
+    <div class="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl shadow-md p-6 text-white">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h1 class="text-2xl font-bold flex items-center gap-3">
+            <i class="fas fa-project-diagram"></i>
+            Alumni Projects
+          </h1>
+          <p class="text-blue-100 mt-1">Support and follow ongoing community projects and initiatives</p>
+        </div>
+        <!-- Stats from API -->
+        <div class="flex gap-4 text-center" *ngIf="stats">
+          <div>
+            <p class="text-2xl font-bold">{{ stats.total }}</p>
+            <p class="text-blue-200 text-xs">Total</p>
+          </div>
+          <div>
+            <p class="text-2xl font-bold">{{ stats.ongoing }}</p>
+            <p class="text-blue-200 text-xs">Ongoing</p>
+          </div>
+          <div>
+            <p class="text-2xl font-bold">GHS {{ (+stats.total_raised).toLocaleString() }}</p>
+            <p class="text-blue-200 text-xs">Raised</p>
+          </div>
+          <div>
+            <p class="text-2xl font-bold">{{ stats.total_volunteers }}</p>
+            <p class="text-blue-200 text-xs">Volunteers</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters and Search -->
+  <div class="bg-white rounded-xl shadow-md p-4 mb-8 card-hover slide-in">
+    <div class="flex flex-col md:flex-row gap-4">
+      <div class="flex-1 relative">
+        <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+        <input
+          type="text"
+          placeholder="Search projects..."
+          [value]="searchQuery"
+          (input)="onSearchInput($any($event.target).value)"
+          class="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+      </div>
+      <div class="flex gap-2 flex-wrap">
+        <button
+          (click)="setFilter('all')"
+          [class]="activeFilter === 'all' ? 'bg-blue-600 text-white' : 'border border-gray-300 text-gray-600 hover:bg-gray-50'"
+          class="px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-300">All</button>
+        <button
+          (click)="setFilter('proposed')"
+          [class]="activeFilter === 'proposed' ? 'bg-yellow-500 text-white' : 'border border-gray-300 text-gray-600 hover:bg-gray-50'"
+          class="px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-300">Proposed</button>
+        <button
+          (click)="setFilter('ongoing')"
+          [class]="activeFilter === 'ongoing' ? 'bg-green-600 text-white' : 'border border-gray-300 text-gray-600 hover:bg-gray-50'"
+          class="px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-300">Ongoing</button>
+        <button
+          (click)="setFilter('completed')"
+          [class]="activeFilter === 'completed' ? 'bg-gray-600 text-white' : 'border border-gray-300 text-gray-600 hover:bg-gray-50'"
+          class="px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-300">Completed</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="flex flex-col lg:flex-row gap-8">
+
+    <!-- Main Content -->
+    <div class="w-full lg:w-3/4">
+
+      <!-- Loading State -->
+      <div *ngIf="isLoading" class="space-y-6">
+        <div *ngFor="let i of [1,2,3]" class="bg-white rounded-xl shadow-md overflow-hidden animate-pulse">
+          <div class="w-full h-48 bg-gray-200"></div>
+          <div class="p-5 space-y-3">
+            <div class="h-4 bg-gray-200 rounded w-3/4"></div>
+            <div class="h-4 bg-gray-200 rounded w-1/2"></div>
+            <div class="h-3 bg-gray-100 rounded w-full"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="!isLoading && projects.length === 0" class="bg-white rounded-xl shadow-md p-12 text-center">
+        <i class="fas fa-project-diagram text-4xl text-gray-300 mb-4"></i>
+        <h3 class="text-lg font-semibold text-gray-600 mb-2">No projects found</h3>
+        <p class="text-gray-400 text-sm">Try adjusting your search or filters</p>
+      </div>
+
+      <!-- Project Cards -->
+      <div *ngIf="!isLoading" class="space-y-6">
+        <div
+          *ngFor="let project of projects; trackBy: trackByProject"
+          class="bg-white rounded-xl shadow-md overflow-hidden card-hover slide-in cursor-pointer"
+          (click)="viewProject(project.id)">
+
+          <!-- Cover Image -->
+          <div class="w-full h-48 overflow-hidden relative bg-gray-100">
+            <img
+              *ngIf="project.cover_image"
+              [src]="project.cover_image"
+              [alt]="project.title"
+              class="w-full h-full object-cover">
+            <div *ngIf="!project.cover_image" class="w-full h-full flex items-center justify-center bg-gradient-to-r from-blue-50 to-indigo-50">
+              <i class="fas fa-project-diagram text-5xl text-blue-200"></i>
+            </div>
+
+            <!-- Status Badge -->
+            <div class="absolute top-3 left-3">
+              <span [class]="getStatusClass(project.status)" class="text-xs font-bold px-3 py-1 rounded-full">
+                <i [class]="getStatusIcon(project.status)"></i> {{ getStatusLabel(project.status) }}
+              </span>
+            </div>
+
+            <!-- Featured Badge -->
+            <div *ngIf="project.is_featured" class="absolute top-3 right-3">
+              <span class="bg-white text-blue-600 text-xs font-bold px-3 py-1 rounded-full shadow">
+                <i class="fas fa-star mr-1"></i> Featured
+              </span>
+            </div>
+          </div>
+
+          <!-- Card Body -->
+          <div class="p-5">
+
+            <!-- Creator + Category -->
+            <div class="flex justify-between items-start mb-3">
+              <div class="flex space-x-3">
+                <div class="w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
+                  <img
+                    *ngIf="project.created_by?.profile_picture"
+                    [src]="project.created_by!.profile_picture"
+                    class="w-full h-full object-cover">
+                  <div
+                    *ngIf="!project.created_by?.profile_picture"
+                    class="w-full h-full bg-gradient-to-r from-blue-600 to-indigo-600 flex items-center justify-center text-white text-xs font-bold">
+                    {{ project.created_by ? (project.created_by.first_name[0] + project.created_by.last_name[0]) : 'A' }}
+                  </div>
+                </div>
+                <div>
+                  <h4 class="font-bold text-sm">
+                    {{ project.created_by ? (project.created_by.first_name + ' ' + project.created_by.last_name) : 'ATU Alumni' }}
+                  </h4>
+                  <p class="text-xs text-gray-500">Posted {{ formatDate(project.created_at) }}</p>
+                </div>
+              </div>
+              <span [class]="getCategoryColorClass(project.category)" class="text-xs border px-2 py-1 rounded-full">
+                {{ project.category }}
+              </span>
+            </div>
+
+            <!-- Title + Description -->
+            <h3 class="text-xl font-bold mb-2 hover:text-blue-600 transition-colors">{{ project.title }}</h3>
+            <p class="text-gray-700 mb-4 line-clamp-3">{{ project.description }}</p>
+
+            <!-- Progress Bar -->
+            <div class="mb-4">
+              <div class="flex justify-between text-sm mb-1">
+                <span class="font-medium text-gray-700">
+                  {{ project.status === 'completed' ? 'Funding Completed' : 'Funding Progress' }}
+                </span>
+                <span [class]="project.status === 'completed' ? 'font-bold text-green-600' : 'font-bold text-blue-600'">
+                  {{ formatCurrency(project.current_amount) }} / {{ formatCurrency(project.funding_goal) }}
+                </span>
+              </div>
+              <div class="w-full bg-gray-200 rounded-full h-3">
+                <div
+                  [class]="getProgressBarClass(project)"
+                  class="h-3 rounded-full transition-all duration-500"
+                  [style.width.%]="project.funding_percentage > 100 ? 100 : project.funding_percentage">
+                </div>
+              </div>
+              <div class="flex justify-between text-xs text-gray-500 mt-1">
+                <span>{{ project.funding_percentage }}% funded</span>
+                <span>{{ project.donors_count }} donors</span>
+              </div>
+            </div>
+
+            <!-- Meta Grid -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+              <div class="bg-gray-50 rounded-lg p-2 text-center">
+                <p class="text-xs text-gray-500">Start Date</p>
+                <p class="text-sm font-medium">{{ formatDate(project.start_date) }}</p>
+              </div>
+              <div class="bg-gray-50 rounded-lg p-2 text-center">
+                <p class="text-xs text-gray-500">Target</p>
+                <p class="text-sm font-medium">{{ project.target_date ? formatDate(project.target_date) : 'TBD' }}</p>
+              </div>
+              <div class="bg-gray-50 rounded-lg p-2 text-center">
+                <p class="text-xs text-gray-500">Location</p>
+                <p class="text-sm font-medium truncate">{{ project.location }}</p>
+              </div>
+              <div class="bg-gray-50 rounded-lg p-2 text-center">
+                <p class="text-xs text-gray-500">Volunteers</p>
+                <p class="text-sm font-medium">{{ project.volunteers_count }} joined</p>
+              </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex flex-wrap gap-2 pt-4 border-t border-gray-200">
+
+              <!-- Ongoing actions -->
+              <ng-container *ngIf="project.status === 'ongoing'">
+                <button
+                  (click)="donateToProject($event, project.id)"
+                  class="bg-blue-600 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors duration-300 flex items-center gap-2">
+                  <i class="fas fa-donate"></i> Donate Now
+                </button>
+                <button
+                  (click)="volunteerForProject($event, project)"
+                  [disabled]="isVolunteeringFor(project.id)"
+                  class="border border-blue-600 text-blue-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-50 transition-colors duration-300 flex items-center gap-2 disabled:opacity-50">
+                  <i [class]="isVolunteeringFor(project.id) ? 'fas fa-spinner animate-spin' : 'fas fa-hand-holding-heart'"></i>
+                  {{ isVolunteeringFor(project.id) ? 'Joining...' : 'Volunteer' }}
+                </button>
+              </ng-container>
+
+              <!-- Proposed actions -->
+              <ng-container *ngIf="project.status === 'proposed'">
+                <button
+                  (click)="volunteerForProject($event, project)"
+                  class="bg-yellow-500 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-yellow-600 transition-colors duration-300 flex items-center gap-2">
+                  <i class="fas fa-thumbs-up"></i> Support ({{ project.votes_count }}/{{ project.votes_required }})
+                </button>
+              </ng-container>
+
+              <!-- Completed actions -->
+              <ng-container *ngIf="project.status === 'completed'">
+                <button
+                  (click)="viewProject(project.id)"
+                  class="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors duration-300 flex items-center gap-2">
+                  <i class="fas fa-file-alt"></i> View Report
+                </button>
+              </ng-container>
+
+              <!-- Always show share -->
+              <button
+                (click)="shareProject($event, project)"
+                class="border border-gray-300 text-gray-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors duration-300 flex items-center gap-2">
+                <i class="fas fa-share-alt"></i> Share
+              </button>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <div *ngIf="!isLoading && totalPages > 1" class="flex justify-center gap-2 mt-8">
+        <button
+          (click)="goToPage(currentPage - 1)"
+          [disabled]="currentPage === 1"
+          class="px-4 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed text-sm">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+        <button
+          *ngFor="let page of [].constructor(totalPages); let i = index"
+          (click)="goToPage(i + 1)"
+          [class]="currentPage === i + 1 ? 'bg-blue-600 text-white' : 'border border-gray-300 text-gray-600 hover:bg-gray-50'"
+          class="px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+          {{ i + 1 }}
+        </button>
+        <button
+          (click)="goToPage(currentPage + 1)"
+          [disabled]="currentPage === totalPages"
+          class="px-4 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed text-sm">
+          <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Right Sidebar -->
+    <div class="w-full lg:w-1/4">
+      <div class="space-y-6">
+
+        <!-- Top Donors -->
+        <div class="bg-white rounded-xl shadow-md p-4 card-hover slide-in">
+          <h3 class="font-bold text-lg text-blue-600 mb-4 flex items-center gap-2">
+            <i class="fas fa-trophy text-yellow-500"></i>
+            Top Donors
+          </h3>
+
+          <!-- Loading -->
+          <div *ngIf="topDonors.length === 0" class="space-y-3">
+            <div *ngFor="let i of [1,2,3]" class="flex items-center gap-3 animate-pulse">
+              <div class="w-8 h-8 bg-gray-200 rounded-full"></div>
+              <div class="flex-1 h-3 bg-gray-100 rounded"></div>
+            </div>
+          </div>
+
+          <div class="space-y-3">
+            <div
+              *ngFor="let donor of topDonors; let i = index; trackBy: trackByDonor"
+              [class]="i === 0 ? 'flex items-center justify-between p-2 rounded-lg bg-yellow-50' : 'flex items-center justify-between p-2 rounded-lg hover:bg-gray-50'">
+              <div class="flex items-center space-x-3">
+                <span [class]="i === 0 ? 'text-lg font-bold text-yellow-600' : 'text-lg font-bold text-gray-400'">{{ i + 1 }}</span>
+                <div class="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
+                  <img *ngIf="donor.profile_picture" [src]="donor.profile_picture" class="w-full h-full object-cover">
+                  <div *ngIf="!donor.profile_picture"
+                    class="w-full h-full bg-gradient-to-r from-blue-600 to-indigo-600 flex items-center justify-center text-white text-xs font-bold">
+                    {{ getDonorInitials(donor) }}
+                  </div>
+                </div>
+                <span class="text-sm font-medium">{{ donor.first_name }} {{ donor.last_name }}</span>
+              </div>
+              <span class="text-xs font-bold text-blue-600">{{ formatCurrency(donor.total_donated) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Donate -->
+        <div class="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl shadow-md p-5 text-white card-hover slide-in">
+          <h3 class="font-bold text-lg mb-2 flex items-center gap-2">
+            <i class="fas fa-donate"></i>
+            Quick Donate
+          </h3>
+          <p class="text-blue-100 text-sm mb-4">Support any project with a quick donation</p>
+
+          <div class="grid grid-cols-3 gap-2 mb-4">
+            <button
+              *ngFor="let preset of quickDonatePresets"
+              (click)="setQuickAmount(preset)"
+              [class]="quickDonateAmount === preset ? 'bg-yellow-400 text-white' : 'bg-white bg-opacity-20 hover:bg-opacity-30 text-white'"
+              class="py-2 rounded-lg text-sm font-medium transition-colors duration-300">
+              GHS {{ preset }}
+            </button>
+          </div>
+
+          <div class="relative mb-4">
+            <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 font-medium">GHS</span>
+            <input
+              type="number"
+              placeholder="Custom amount"
+              [(ngModel)]="customDonateAmount"
+              (input)="onCustomAmountChange($any($event.target).value)"
+              class="w-full pl-14 pr-4 py-3 rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-yellow-400">
+          </div>
+
+          <button
+            (click)="submitQuickDonate()"
+            [disabled]="isDonating || (!quickDonateAmount && !customDonateAmount)"
+            class="w-full bg-yellow-500 text-white py-3 rounded-lg font-bold hover:bg-yellow-600 transition-colors duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+            <i [class]="isDonating ? 'fas fa-spinner animate-spin' : 'fas fa-heart'"></i>
+            {{ isDonating ? 'Processing...' : 'Donate Now' }}
+          </button>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="bg-white rounded-xl shadow-md p-4 card-hover slide-in">
+          <h3 class="font-bold text-lg text-blue-600 mb-4">Recent Activity</h3>
+          <div class="space-y-4">
+            <div *ngFor="let activity of recentActivity" class="flex items-start space-x-3">
+              <div [class]="getActivityIconBg(activity.type)" class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                <i [class]="getActivityIcon(activity.type)" class="text-xs"></i>
+              </div>
+              <div>
+                <p class="text-sm">
+                  <span class="font-medium">{{ activity.anonymous ? 'Anonymous' : (activity.first_name + ' ' + activity.last_name) }}</span>
+                  <span *ngIf="activity.type === 'donation'"> donated {{ formatCurrency(activity.amount!) }} to </span>
+                  <span *ngIf="activity.type === 'volunteer'"> volunteered for </span>
+                  <span class="font-medium">{{ activity.project_title }}</span>
+                </p>
+                <p class="text-xs text-gray-400">{{ formatTimeAgo(activity.created_at) }}</p>
+              </div>
+            </div>
+            <p *ngIf="recentActivity.length === 0" class="text-sm text-gray-400 text-center py-4">No recent activity</p>
+          </div>
+        </div>
+
+        <!-- Categories -->
+        <div class="bg-white rounded-xl shadow-md p-4 card-hover slide-in">
+          <h3 class="font-bold text-lg text-blue-600 mb-4">Categories</h3>
+          <div class="space-y-2">
+            <button
+              *ngFor="let cat of categories"
+              (click)="setCategory(cat.key)"
+              [class]="activeCategory === cat.key ? 'bg-blue-50 border border-blue-200' : 'hover:bg-gray-50'"
+              class="w-full flex items-center justify-between p-2 rounded-lg transition-colors duration-300">
+              <div class="flex items-center gap-2">
+                <div [class]="'bg-' + cat.color + '-100 text-' + cat.color + '-600'" class="w-8 h-8 rounded-lg flex items-center justify-center">
+                  <i [class]="cat.icon" class="text-sm"></i>
+                </div>
+                <span class="text-sm">{{ cat.label }}</span>
+              </div>
+              <span class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">
+                {{ activeCategory === cat.key ? '✓' : '' }}
+              </span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>

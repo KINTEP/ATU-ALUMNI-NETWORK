@@ -1,0 +1,375 @@
+<div class="container mx-auto px-4 py-8">
+  <!-- Back Button -->
+  <div class="mb-6">
+    <button 
+      (click)="goBack()"
+      class="flex items-center text-primary hover:text-primary-dark transition-colors duration-300">
+      <i class="fas fa-arrow-left mr-2"></i>
+      <span>Back to Forum</span>
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="flex justify-center items-center py-12">
+    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="errorMessage && !isLoading" class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-6">
+    {{ errorMessage }}
+  </div>
+
+  <!-- Content -->
+  <div *ngIf="!isLoading && post">
+    <!-- Topic Header -->
+    <div class="bg-white rounded-2xl shadow-sm p-6 mb-6 border border-gray-100 slide-in">
+      <div class="flex items-center space-x-2 mb-4">
+        <span 
+          *ngIf="post.is_pinned"
+          class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-lg text-sm font-medium">
+          <i class="fas fa-thumbtack mr-1"></i>Pinned
+        </span>
+        <span 
+          class="px-3 py-1 rounded-lg text-sm font-medium"
+          [style.background-color]="getCategoryColor() + '20'"
+          [style.color]="getCategoryColor()">
+          {{ post.category_name }}
+        </span>
+        <span 
+          *ngIf="post.is_locked"
+          class="bg-gray-100 text-gray-700 px-3 py-1 rounded-lg text-sm font-medium">
+          <i class="fas fa-lock mr-1"></i>Locked
+        </span>
+        <span 
+          *ngIf="!post.is_locked"
+          class="bg-green-50 text-green-700 px-3 py-1 rounded-lg text-sm font-medium">
+          Active
+        </span>
+      </div>
+      
+      <h1 class="text-2xl md:text-3xl font-bold text-gray-800 mb-4">{{ post.title }}</h1>
+      
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div class="flex items-center space-x-4">
+          <div class="flex items-center space-x-3">
+            <!-- Updated Header Avatar -->
+            <div *ngIf="hasProfilePicture(post.author_picture); else authorInitials"
+                 class="w-12 h-12 rounded-xl overflow-hidden shadow-sm border-2 border-gray-200">
+              <img [src]="getProfilePictureUrl(post.author_picture)" 
+                   [alt]="post.author_name" 
+                   class="w-full h-full object-cover">
+            </div>
+            <ng-template #authorInitials>
+              <div class="w-12 h-12 bg-gradient-to-r from-primary to-accent rounded-xl flex items-center justify-center text-white font-bold shadow-sm">
+                {{ getAuthorInitials(post.author_name || 'User') }}
+              </div>
+            </ng-template>
+            <div>
+              <p class="font-medium text-gray-800">{{ post.author_name || 'Anonymous' }}</p>
+              <p class="text-sm text-gray-500">{{ post.author_graduation_year }} • {{ post.author_program }}</p>
+            </div>
+          </div>
+          <span class="hidden md:block text-gray-500">•</span>
+          <span class="text-gray-500 text-sm">Started {{ getTimeAgo(post.created_at) }}</span>
+        </div>
+        <div class="flex items-center space-x-4 text-sm text-gray-500">
+          <div class="flex items-center">
+            <i class="fas fa-eye mr-1"></i>
+            <span>{{ post.views_count }} views</span>
+          </div>
+          <div class="flex items-center">
+            <i class="fas fa-comment mr-1"></i>
+            <span>{{ post.replies_count }} replies</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Original Post -->
+    <div class="bg-white rounded-2xl shadow-sm p-6 mb-6 border border-gray-100 slide-in">
+      <div class="flex items-start space-x-4">
+        <!-- Vote Section -->
+        <div class="flex flex-col items-center">
+          <!-- Updated Post Author Avatar -->
+          <div *ngIf="hasProfilePicture(post.author_picture); else postAuthorInitials"
+               class="w-12 h-12 rounded-xl overflow-hidden shadow-sm mb-2 border-2 border-gray-200">
+            <img [src]="getProfilePictureUrl(post.author_picture)" 
+                 [alt]="post.author_name" 
+                 class="w-full h-full object-cover">
+          </div>
+          <ng-template #postAuthorInitials>
+            <div class="w-12 h-12 bg-gradient-to-r from-primary to-accent rounded-xl flex items-center justify-center text-white font-bold shadow-sm mb-2">
+              {{ getAuthorInitials(post.author_name || 'User') }}
+            </div>
+          </ng-template>
+        </div>
+
+        <!-- Post Content -->
+        <div class="flex-1">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h3 class="font-bold text-gray-800">{{ post.author_name || 'Anonymous' }}</h3>
+              <p class="text-sm text-gray-500">Posted {{ getTimeAgo(post.created_at) }}</p>
+            </div>
+          </div>
+          
+          <div class="prose max-w-none mb-6">
+            <p class="text-gray-700 whitespace-pre-wrap">{{ post.content }}</p>
+          </div>
+          
+          <!-- Tags -->
+          <div *ngIf="post.tags && post.tags.length > 0" class="flex flex-wrap gap-2 mb-4">
+            <span 
+              *ngFor="let tag of post.tags"
+              class="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-sm">
+              #{{ tag }}
+            </span>
+          </div>
+          
+          <!-- Actions -->
+          <div class="flex items-center space-x-4 pt-4 border-t border-gray-100">
+            <button 
+              (click)="togglePostLike()"
+              [class.text-red-500]="post.user_has_liked"
+              class="flex items-center text-gray-500 hover:text-red-500 transition-colors duration-300 text-sm">
+              <i [class.fas]="post.user_has_liked" [class.far]="!post.user_has_liked" class="fa-heart mr-1"></i>
+              <span>{{ post.likes_count }}</span>
+            </button>
+            <a 
+              href="#reply-form"
+              class="flex items-center text-gray-500 hover:text-primary transition-colors duration-300 text-sm">
+              <i class="far fa-comment mr-1"></i>
+              <span>Reply</span>
+            </a>
+            <button class="flex items-center text-gray-500 hover:text-primary transition-colors duration-300 text-sm">
+              <i class="far fa-share-square mr-1"></i>
+              <span>Share</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Replies Section -->
+    <div class="mb-8">
+      <h2 class="text-xl font-bold text-gray-800 mb-4">
+        Replies ({{ post.replies_count }})
+      </h2>
+
+      <!-- Loading Replies -->
+      <div *ngIf="isLoadingReplies" class="flex justify-center items-center py-8">
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+
+      <!-- No Replies -->
+      <div *ngIf="!isLoadingReplies && replies.length === 0" class="text-center py-8 bg-white rounded-xl shadow-sm">
+        <i class="fas fa-comments text-gray-300 text-4xl mb-3"></i>
+        <p class="text-gray-500">No replies yet. Be the first to reply!</p>
+      </div>
+
+      <!-- Replies List -->
+      <div *ngIf="!isLoadingReplies && replies.length > 0" class="space-y-6">
+        <ng-container *ngFor="let reply of replies; let i = index">
+          <!-- Top Level Reply -->
+          <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100 slide-in">
+            <div class="flex items-start space-x-4">
+              <!-- Avatar -->
+              <div class="flex flex-col items-center">
+                <!-- Updated Reply Avatar -->
+                <div *ngIf="hasProfilePicture(reply.author_picture); else replyInitials"
+                     class="w-10 h-10 rounded-xl overflow-hidden shadow-sm mb-2 border border-gray-200">
+                  <img [src]="getProfilePictureUrl(reply.author_picture)" 
+                       [alt]="reply.author_name" 
+                       class="w-full h-full object-cover">
+                </div>
+                <ng-template #replyInitials>
+                  <div [class]="'w-10 h-10 bg-gradient-to-r ' + getAvatarColor(i) + ' rounded-xl flex items-center justify-center text-white font-bold text-sm shadow-sm mb-2'">
+                    {{ getAuthorInitials(reply.author_name || 'User') }}
+                  </div>
+                </ng-template>
+              </div>
+
+              <!-- Reply Content -->
+              <div class="flex-1">
+                <div class="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 class="font-bold text-gray-800">{{ reply.author_name || 'Anonymous' }}</h3>
+                    <p class="text-sm text-gray-500">
+                      Posted {{ getTimeAgo(reply.created_at) }}
+                      <span *ngIf="reply.author_job_title && reply.author_company">
+                        • {{ reply.author_job_title }} at {{ reply.author_company }}
+                      </span>
+                    </p>
+                  </div>
+                </div>
+                
+                <div class="prose max-w-none mb-4">
+                  <p class="text-gray-700 whitespace-pre-wrap">{{ reply.content }}</p>
+                </div>
+                
+                <!-- Reply Actions -->
+                <div class="flex items-center space-x-4 pt-4 border-t border-gray-100">
+                  <button 
+                    (click)="toggleReplyLike(reply)"
+                    [class.text-red-500]="reply.user_has_liked"
+                    class="flex items-center text-gray-500 hover:text-red-500 transition-colors duration-300 text-sm">
+                    <i [class.fas]="reply.user_has_liked" [class.far]="!reply.user_has_liked" class="fa-heart mr-1"></i>
+                    <span>{{ reply.likes_count }}</span>
+                  </button>
+                  <button 
+                    *ngIf="!post.is_locked"
+                    (click)="replyTo(reply)"
+                    class="flex items-center text-gray-500 hover:text-primary transition-colors duration-300 text-sm">
+                    <i class="far fa-comment mr-1"></i>
+                    <span>Reply</span>
+                  </button>
+                </div>
+
+                <!-- Nested Replies -->
+                <div *ngIf="reply.nested_replies && reply.nested_replies.length > 0" class="mt-6 space-y-4">
+                  <div 
+                    *ngFor="let nestedReply of reply.nested_replies; let j = index"
+                    class="ml-4 pl-4 border-l-2 border-gray-200">
+                    <div class="flex items-start space-x-4">
+                      <!-- Nested Avatar -->
+                      <div class="flex flex-col items-center">
+                        <!-- Updated Nested Reply Avatar -->
+                        <div *ngIf="hasProfilePicture(nestedReply.author_picture); else nestedInitials"
+                             class="w-8 h-8 rounded-lg overflow-hidden shadow-sm mb-2 border border-gray-200">
+                          <img [src]="getProfilePictureUrl(nestedReply.author_picture)" 
+                               [alt]="nestedReply.author_name" 
+                               class="w-full h-full object-cover">
+                        </div>
+                        <ng-template #nestedInitials>
+                          <div [class]="'w-8 h-8 bg-gradient-to-r ' + getAvatarColor(i + j + 1) + ' rounded-lg flex items-center justify-center text-white font-bold text-xs shadow-sm mb-2'">
+                            {{ getAuthorInitials(nestedReply.author_name || 'User') }}
+                          </div>
+                        </ng-template>
+                      </div>
+
+                      <!-- Nested Content -->
+                      <div class="flex-1">
+                        <div class="flex items-center justify-between mb-2">
+                          <div>
+                            <h3 class="font-bold text-gray-800">{{ nestedReply.author_name || 'Anonymous' }}</h3>
+                            <p class="text-xs text-gray-500">Posted {{ getTimeAgo(nestedReply.created_at) }}</p>
+                          </div>
+                        </div>
+                        
+                        <div class="prose max-w-none mb-4">
+                          <p class="text-gray-700 whitespace-pre-wrap">{{ nestedReply.content }}</p>
+                        </div>
+                        
+                        <div class="flex items-center space-x-4 pt-2 border-t border-gray-100">
+                          <button 
+                            (click)="toggleReplyLike(nestedReply)"
+                            [class.text-red-500]="nestedReply.user_has_liked"
+                            class="flex items-center text-gray-500 hover:text-red-500 transition-colors duration-300 text-xs">
+                            <i [class.fas]="nestedReply.user_has_liked" [class.far]="!nestedReply.user_has_liked" class="fa-heart mr-1"></i>
+                            <span>{{ nestedReply.likes_count }}</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+    </div>
+
+    <!-- Reply Form -->
+    <div 
+      *ngIf="!post.is_locked"
+      id="reply-form" 
+      class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100 slide-in">
+      <h3 class="text-xl font-bold text-gray-800 mb-4">Post a Reply</h3>
+
+      <!-- Reply To Indicator -->
+      <div 
+        *ngIf="replyToId"
+        class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4 flex items-center justify-between">
+        <span class="text-sm text-blue-700">
+          <i class="fas fa-reply mr-2"></i>
+          Replying to <strong>{{ replyToName }}</strong>
+        </span>
+        <button 
+          (click)="cancelReplyTo()"
+          class="text-blue-700 hover:text-blue-900">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <div class="flex items-start space-x-4">
+        <!-- Current User Avatar -->
+        <div *ngIf="hasProfilePicture(currentUser?.profile_picture); else currentUserInitials"
+             class="w-12 h-12 rounded-xl overflow-hidden shadow-sm border-2 border-gray-200">
+          <img [src]="getProfilePictureUrl(currentUser?.profile_picture)" 
+               [alt]="currentUser?.first_name" 
+               class="w-full h-full object-cover">
+        </div>
+        <ng-template #currentUserInitials>
+          <div class="w-12 h-12 bg-gradient-to-r from-primary to-accent rounded-xl flex items-center justify-center text-white font-bold shadow-sm">
+            {{ getAuthorInitials((currentUser?.first_name || '') + ' ' + (currentUser?.last_name || '')) }}
+          </div>
+        </ng-template>
+
+        <div class="flex-1">
+          <textarea 
+            [(ngModel)]="replyContent"
+            placeholder="Share your thoughts..."
+            rows="5"
+            [disabled]="isSubmitting"
+            class="w-full p-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none disabled:bg-gray-100"
+          ></textarea>
+          <div class="flex justify-between items-center mt-4">
+            <div class="flex items-center space-x-3 text-gray-500">
+              <button 
+                type="button"
+                class="hover:text-primary transition-colors duration-300 text-sm"
+                title="Bold">
+                <i class="fas fa-bold"></i>
+              </button>
+              <button 
+                type="button"
+                class="hover:text-primary transition-colors duration-300 text-sm"
+                title="Italic">
+                <i class="fas fa-italic"></i>
+              </button>
+              <button 
+                type="button"
+                class="hover:text-primary transition-colors duration-300 text-sm"
+                title="Link">
+                <i class="fas fa-link"></i>
+              </button>
+              <button 
+                type="button"
+                class="hover:text-primary transition-colors duration-300 text-sm"
+                title="Image">
+                <i class="fas fa-image"></i>
+              </button>
+            </div>
+            <button 
+              (click)="submitReply()"
+              [disabled]="isSubmitting || !replyContent.trim()"
+              class="bg-gradient-to-r from-primary to-accent text-white px-6 py-2 rounded-xl hover:shadow-lg transition-all duration-300 font-medium disabled:opacity-50 disabled:cursor-not-allowed">
+              <i *ngIf="isSubmitting" class="fas fa-spinner fa-spin mr-2"></i>
+              {{ isSubmitting ? 'Posting...' : 'Post Reply' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Locked Message -->
+    <div 
+      *ngIf="post.is_locked"
+      class="bg-yellow-50 border border-yellow-200 rounded-xl p-6 text-center">
+      <i class="fas fa-lock text-yellow-600 text-3xl mb-3"></i>
+      <p class="text-yellow-800 font-medium">This topic is locked</p>
+      <p class="text-yellow-700 text-sm mt-2">You cannot reply to a locked topic</p>
+    </div>
+  </div>
+</div>

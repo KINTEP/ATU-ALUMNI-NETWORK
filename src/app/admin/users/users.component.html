@@ -1,0 +1,350 @@
+<!-- src/app/admin/users/users.component.html -->
+
+<div class="min-h-screen bg-gray-50">
+  <!-- Sidebar -->
+  <app-sidebar></app-sidebar>
+
+  <!-- Main Content -->
+  <div class="lg:ml-64 transition-all duration-300">
+    <div class="p-4 md:p-6 lg:p-8">
+      
+      <!-- Header -->
+      <div class="container mx-auto">
+        <div class="bg-gradient-to-r from-primary to-accent text-white rounded-2xl shadow-lg p-5 mb-6 slide-in relative overflow-hidden">
+          <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-32 translate-x-32"></div>
+          <div class="relative z-10">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
+              <div>
+                <h1 class="text-2xl font-bold mb-2">User Management</h1>
+                <p class="opacity-90 text-sm">Manage all users, alumni, and their permissions</p>
+              </div>
+              <button 
+                (click)="navigateToAddUser()" 
+                class="mt-4 md:mt-0 bg-white text-primary px-5 py-2.5 rounded-xl hover:bg-opacity-90 transition-all duration-300 font-medium shadow-sm text-sm flex items-center">
+                <i class="fas fa-user-plus mr-2"></i>Add New User
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Success/Error Messages -->
+        <div *ngIf="successMessage" 
+             class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl mb-4 flex items-center animate-fade-in">
+          <i class="fas fa-check-circle mr-2"></i>
+          {{ successMessage }}
+        </div>
+
+        <div *ngIf="errorMessage" 
+             class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-4 flex items-center animate-fade-in">
+          <i class="fas fa-exclamation-circle mr-2"></i>
+          {{ errorMessage }}
+        </div>
+
+        <!-- Controls Section -->
+        <div class="bg-white rounded-xl shadow-sm p-5 mb-6 slide-in border border-gray-100">
+          <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+            <!-- Search Bar -->
+            <div class="relative flex-1 max-w-lg">
+              <input 
+                type="text"
+                [(ngModel)]="searchQuery"
+                (input)="onSearch($event)"
+                placeholder="Search users by name, email, or role..." 
+                class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
+              >
+              <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+            </div>
+            
+            <!-- Filter Dropdowns -->
+            <div class="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+              <!-- Role Filter -->
+              <div class="relative">
+                <select 
+                  [(ngModel)]="selectedRole"
+                  (change)="onRoleFilterChange($event)"
+                  class="appearance-none w-full sm:w-40 pl-4 pr-10 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-white text-sm">
+                  <option value="all">All Roles</option>
+                  <option value="admin">Admin</option>
+                  <option value="alumni">Alumni</option>
+                  <option value="staff">Staff</option>
+                </select>
+                <i class="fas fa-chevron-down absolute right-3 top-3 text-gray-400 pointer-events-none"></i>
+              </div>
+              
+              <!-- Status Filter -->
+              <div class="relative">
+                <select 
+                  [(ngModel)]="selectedStatus"
+                  (change)="onStatusFilterChange($event)"
+                  class="appearance-none w-full sm:w-40 pl-4 pr-10 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-white text-sm">
+                  <option value="all">All Status</option>
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                </select>
+                <i class="fas fa-chevron-down absolute right-3 top-3 text-gray-400 pointer-events-none"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Users Statistics -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <!-- Total Users -->
+        <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-500 text-sm font-medium">Total Users</p>
+              <h3 class="text-2xl font-bold text-gray-800 mt-1">
+                {{ stats?.total_users || 0 | number }}
+              </h3>
+            </div>
+            <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600">
+              <i class="fas fa-users text-xl"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Active Alumni -->
+        <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-500 text-sm font-medium">Active Alumni</p>
+              <h3 class="text-2xl font-bold text-gray-800 mt-1">
+                {{ getAlumniCount() | number }}
+              </h3>
+            </div>
+            <div class="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center text-green-600">
+              <i class="fas fa-user-graduate text-xl"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- New This Month -->
+        <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-500 text-sm font-medium">New This Month</p>
+              <h3 class="text-2xl font-bold text-gray-800 mt-1">
+                {{ stats?.recent_registrations || 0 | number }}
+              </h3>
+            </div>
+            <div class="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center text-purple-600">
+              <i class="fas fa-user-plus text-xl"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Selected Users -->
+        <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-500 text-sm font-medium">Selected</p>
+              <h3 class="text-2xl font-bold text-gray-800 mt-1">
+                {{ selectedUsers.size }}
+              </h3>
+            </div>
+            <div class="w-12 h-12 bg-orange-50 rounded-xl flex items-center justify-center text-orange-600">
+              <i class="fas fa-check-square text-xl"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      <div *ngIf="isLoading" class="bg-white rounded-2xl shadow-sm p-12 text-center">
+        <i class="fas fa-spinner fa-spin text-4xl text-primary mb-4"></i>
+        <p class="text-gray-600">Loading users...</p>
+      </div>
+
+      <!-- Users Table -->
+      <div *ngIf="!isLoading" class="bg-white rounded-2xl shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full min-w-[800px]">
+            <thead class="bg-gray-50 border-b border-gray-200">
+              <tr>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <div class="flex items-center space-x-2">
+                    <input 
+                      type="checkbox"
+                      [checked]="allSelected"
+                      (change)="toggleAllSelection()"
+                      class="rounded border-gray-300">
+                    <span>User</span>
+                  </div>
+                </th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Active</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Joined</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              <tr *ngFor="let user of users" class="hover:bg-gray-50 transition-colors duration-200">
+                <!-- User Info -->
+                <td class="px-4 py-4 whitespace-nowrap">
+                  <div class="flex items-center">
+                    <input 
+                      type="checkbox"
+                      [checked]="isUserSelected(user.id)"
+                      (change)="toggleUserSelection(user.id)"
+                      class="rounded border-gray-300 mr-3">
+                    <div class="flex items-center space-x-3">
+                      <div class="w-10 h-10 bg-gradient-to-r from-primary to-accent rounded-full flex items-center justify-center text-white font-bold text-sm">
+                        {{ getUserInitials(user) }}
+                      </div>
+                      <div>
+                        <div class="text-sm font-medium text-gray-900">
+                          {{ user.first_name }} {{ user.last_name }}
+                        </div>
+                        <div class="text-sm text-gray-500">{{ user.email }}</div>
+                      </div>
+                    </div>
+                  </div>
+                </td>
+
+                <!-- Role -->
+                <td class="px-4 py-4 whitespace-nowrap">
+                  <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full"
+                        [ngClass]="getRoleBadgeClass(user.role)">
+                    {{ user.role | titlecase }}
+                  </span>
+                </td>
+
+                <!-- Status -->
+                <td class="px-4 py-4 whitespace-nowrap">
+                  <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full"
+                        [ngClass]="getStatusBadgeClass(user.is_active)">
+                    {{ user.is_active ? 'Active' : 'Inactive' }}
+                  </span>
+                </td>
+
+                <!-- Last Active -->
+                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {{ formatLastActive(user.last_login) }}
+                </td>
+
+                <!-- Joined Date -->
+                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {{ formatJoinDate(user.created_at) }}
+                </td>
+
+                <!-- Actions -->
+                <td class="px-4 py-4 whitespace-nowrap text-sm font-medium">
+                  <div class="flex space-x-2">
+                    <button 
+                      (click)="editUser(user.id)"
+                      class="text-blue-600 hover:text-blue-900 p-1 rounded transition-colors duration-200" 
+                      title="Edit User">
+                      <i class="fas fa-edit text-sm"></i>
+                    </button>
+                    <button 
+                      (click)="viewUserProfile(user.id)"
+                      class="text-green-600 hover:text-green-900 p-1 rounded transition-colors duration-200" 
+                      title="View Profile">
+                      <i class="fas fa-eye text-sm"></i>
+                    </button>
+                    <button 
+                      *ngIf="user.is_active"
+                      (click)="deleteUser(user)"
+                      class="text-red-600 hover:text-red-900 p-1 rounded transition-colors duration-200" 
+                      title="Delete User">
+                      <i class="fas fa-trash text-sm"></i>
+                    </button>
+                    <button 
+                      *ngIf="!user.is_active"
+                      (click)="reactivateUser(user)"
+                      class="text-green-600 hover:text-green-900 p-1 rounded transition-colors duration-200" 
+                      title="Reactivate User">
+                      <i class="fas fa-user-check text-sm"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+
+              <!-- Empty State -->
+              <tr *ngIf="users.length === 0">
+                <td colspan="6" class="px-4 py-12 text-center">
+                  <i class="fas fa-users text-5xl text-gray-300 mb-4"></i>
+                  <p class="text-gray-600">No users found</p>
+                  <p class="text-gray-500 text-sm mt-2">Try adjusting your filters</p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="bg-white px-4 py-4 border-t border-gray-200">
+          <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="text-sm text-gray-700">
+              Showing 
+              <span class="font-medium">{{ (currentPage - 1) * pageSize + 1 }}</span> 
+              to 
+              <span class="font-medium">{{ Math.min(currentPage * pageSize, totalUsers) }}</span> 
+              of 
+              <span class="font-medium">{{ totalUsers }}</span> 
+              users
+            </div>
+            <div class="flex space-x-1">
+              <button 
+                (click)="previousPage()"
+                [disabled]="currentPage === 1"
+                class="px-3 py-1.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+                Previous
+              </button>
+              <button 
+                *ngFor="let page of getPaginationPages()"
+                (click)="goToPage(page)"
+                [class.border-primary]="page === currentPage"
+                [class.bg-primary]="page === currentPage"
+                [class.text-white]="page === currentPage"
+                [class.border-gray-300]="page !== currentPage"
+                [class.text-gray-700]="page !== currentPage"
+                class="px-3 py-1.5 border rounded-lg text-sm font-medium bg-white hover:bg-gray-50 transition-colors duration-200">
+                {{ page }}
+              </button>
+              <button 
+                (click)="nextPage()"
+                [disabled]="currentPage === totalPages"
+                class="px-3 py-1.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+                Next
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bulk Actions -->
+      <div class="mt-6 bg-white rounded-2xl shadow-sm p-6">
+        <div class="flex flex-col lg:flex-row items-center justify-between gap-4">
+          <div class="flex flex-col sm:flex-row items-center gap-4">
+            <span class="text-sm text-gray-600">{{ selectedUsers.size }} users selected</span>
+            <select 
+              #bulkActionSelect
+              class="w-full sm:w-48 border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+              <option value="">Bulk Actions</option>
+              <option value="activate">Activate</option>
+              <option value="deactivate">Deactivate</option>
+              <option value="delete">Delete</option>
+            </select>
+            <button 
+              (click)="applyBulkAction(bulkActionSelect.value)"
+              [disabled]="selectedUsers.size === 0"
+              class="w-full sm:w-auto bg-primary text-white px-4 py-2.5 rounded-lg text-sm hover:bg-opacity-90 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed">
+              Apply
+            </button>
+          </div>
+          <button 
+            (click)="exportUsers()"
+            class="w-full lg:w-auto text-gray-500 hover:text-gray-700 text-sm flex items-center justify-center space-x-2 px-4 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-300">
+            <i class="fas fa-download"></i>
+            <span>Export Users</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

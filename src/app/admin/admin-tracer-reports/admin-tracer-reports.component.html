@@ -1,0 +1,663 @@
+<!-- src/app/admin/admin-tracer-reports/admin-tracer-reports.component.html -->
+<div class="min-h-screen bg-gray-50">
+  <!-- Sidebar -->
+  <app-sidebar></app-sidebar>
+
+  <!-- Main Content -->
+  <div class="lg:ml-64 transition-all duration-300">
+    <div class="p-4 md:p-6 lg:p-8">
+      
+      <!-- Header -->
+      <div class="container mx-auto">
+        <div class="bg-gradient-to-r from-primary to-accent text-white rounded-2xl shadow-lg p-6 mb-6 slide-in relative overflow-hidden">
+          <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-32 translate-x-32"></div>
+          <div class="relative z-10">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
+              <div>
+                <button (click)="goBack()" class="text-white/80 hover:text-white mb-3 flex items-center text-sm">
+                  <i class="fas fa-arrow-left mr-2"></i>Back to Tracer Management
+                </button>
+                <h1 class="text-3xl font-bold mb-2">Detailed Reports</h1>
+                <p class="opacity-90">Advanced filtering and analytics</p>
+              </div>
+              <div class="mt-4 md:mt-0 flex flex-col space-y-3">
+                <button (click)="toggleFilters()" 
+                        class="bg-white/20 backdrop-blur-sm text-white px-5 py-2.5 rounded-xl hover:bg-white/30 transition-all duration-300 font-medium shadow-sm text-sm flex items-center">
+                  <i class="fas mr-2" [class.fa-eye]="!showFilters" [class.fa-eye-slash]="showFilters"></i>
+                  {{ showFilters ? 'Hide' : 'Show' }} Filters
+                  <span *ngIf="activeFilterCount > 0" class="ml-2 bg-white text-primary px-2 py-0.5 rounded-full text-xs font-bold">
+                    {{ activeFilterCount }}
+                  </span>
+                </button>
+                <button (click)="exportFilteredData()" 
+                        [disabled]="isExporting || responses.length === 0"
+                        class="bg-white text-primary px-5 py-2.5 rounded-xl hover:bg-opacity-90 transition-all duration-300 font-medium shadow-sm text-sm flex items-center disabled:opacity-50 disabled:cursor-not-allowed">
+                  <i class="fas mr-2" [class.fa-download]="!isExporting" [class.fa-spinner]="isExporting" [class.fa-spin]="isExporting"></i>
+                  {{ isExporting ? 'Exporting...' : 'Export Report' }}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Report Summary Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6" *ngIf="reportSummary">
+        <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-500 text-sm font-medium">Filtered Results</p>
+              <h3 class="text-2xl font-bold text-gray-800 mt-1">{{ reportSummary.total_filtered }}</h3>
+            </div>
+            <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center">
+              <i class="fas fa-filter text-blue-600 text-xl"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-500 text-sm font-medium">Employment Rate</p>
+              <h3 class="text-2xl font-bold text-gray-800 mt-1">{{ reportSummary.employment_rate | number:'1.1-1' }}%</h3>
+            </div>
+            <div class="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center">
+              <i class="fas fa-briefcase text-green-600 text-xl"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-500 text-sm font-medium">Avg Skills Rating</p>
+              <h3 class="text-2xl font-bold text-gray-800 mt-1">{{ reportSummary.avg_skills_rating | number:'1.1-1' }}/5</h3>
+            </div>
+            <div class="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center">
+              <i class="fas fa-star text-purple-600 text-xl"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-500 text-sm font-medium">Top Sector</p>
+              <h3 class="text-lg font-bold text-gray-800 mt-1">{{ reportSummary.top_sector }}</h3>
+            </div>
+            <div class="w-12 h-12 bg-orange-50 rounded-xl flex items-center justify-center">
+              <i class="fas fa-building text-orange-600 text-xl"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filters Panel -->
+      <div *ngIf="showFilters" class="bg-white rounded-2xl shadow-sm p-6 mb-6 slide-in">
+        <div class="flex items-center justify-between mb-6">
+          <h3 class="text-xl font-bold text-gray-800 flex items-center">
+            <i class="fas fa-sliders-h text-primary mr-3"></i>
+            Advanced Filters
+          </h3>
+          <button (click)="clearFilters()" 
+                  class="text-sm text-red-600 hover:text-red-700 flex items-center font-medium">
+            <i class="fas fa-times-circle mr-2"></i>Clear All Filters
+          </button>
+        </div>
+
+        <!-- Demographics Filters -->
+        <div class="mb-6">
+          <h4 class="text-md font-bold text-gray-700 mb-4 flex items-center">
+            <i class="fas fa-users text-primary mr-2"></i>
+            Demographics
+          </h4>
+          <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <!-- Programme -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Programme of Study</label>
+              <select [(ngModel)]="filters.programme" (change)="applyFilters()"
+                      class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                <option value="">All Programmes</option>
+                <option *ngFor="let prog of programmeOptions" [value]="prog">{{ prog }}</option>
+              </select>
+            </div>
+
+            <!-- Graduation Year -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Graduation Year</label>
+              <select [(ngModel)]="filters.graduation_year" (change)="applyFilters()"
+                      class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                <option value="">All Years</option>
+                <option *ngFor="let year of yearOptions" [value]="year">{{ year }}</option>
+              </select>
+            </div>
+
+            <!-- Gender -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Gender</label>
+              <select [(ngModel)]="filters.gender" (change)="applyFilters()"
+                      class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                <option value="">All Genders</option>
+                <option *ngFor="let gender of genderOptions" [value]="gender">{{ gender }}</option>
+              </select>
+            </div>
+
+            <!-- Age Range -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Age Range</label>
+              <select [(ngModel)]="filters.age_range" (change)="applyFilters()"
+                      class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                <option value="">All Ages</option>
+                <option *ngFor="let age of ageRangeOptions" [value]="age">{{ age }}</option>
+              </select>
+            </div>
+
+            <!-- Location Type -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Location</label>
+              <select [(ngModel)]="filters.location_type" (change)="applyFilters()"
+                      class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                <option value="">All Locations</option>
+                <option *ngFor="let loc of locationTypeOptions" [value]="loc">{{ loc }}</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Employment Status Filters -->
+        <div class="mb-6">
+          <h4 class="text-md font-bold text-gray-700 mb-4 flex items-center">
+            <i class="fas fa-briefcase text-primary mr-2"></i>
+            Employment Status
+          </h4>
+          <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <!-- Current Status -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Current Status</label>
+              <select [(ngModel)]="filters.current_status" (change)="applyFilters()"
+                      class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                <option value="">All Statuses</option>
+                <option *ngFor="let status of statusOptions" [value]="status">{{ status }}</option>
+              </select>
+            </div>
+
+            <!-- Employment Type -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Employment Type</label>
+              <select [(ngModel)]="filters.employment_type" (change)="applyFilters()"
+                      class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                <option value="">All Types</option>
+                <option *ngFor="let type of employmentTypeOptions" [value]="type">{{ type }}</option>
+              </select>
+            </div>
+
+            <!-- Sector -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Sector</label>
+              <select [(ngModel)]="filters.sector" (change)="applyFilters()"
+                      class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                <option value="">All Sectors</option>
+                <option *ngFor="let sector of sectorOptions" [value]="sector">{{ sector }}</option>
+              </select>
+            </div>
+
+            <!-- Industry -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Industry</label>
+              <select [(ngModel)]="filters.industry" (change)="applyFilters()"
+                      class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                <option value="">All Industries</option>
+                <option *ngFor="let industry of industryOptions" [value]="industry">{{ industry }}</option>
+              </select>
+            </div>
+
+            <!-- Job Related to Field -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Job Related to Field</label>
+              <select [(ngModel)]="filters.job_related_to_field" (change)="applyFilters()"
+                      class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                <option value="">All</option>
+                <option *ngFor="let rel of jobRelatedOptions" [value]="rel">{{ rel }}</option>
+              </select>
+            </div>
+
+            <!-- Income Range -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Monthly Income</label>
+              <select [(ngModel)]="filters.monthly_income_range" (change)="applyFilters()"
+                      class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                <option value="">All Ranges</option>
+                <option *ngFor="let income of incomeRangeOptions" [value]="income">{{ income }}</option>
+              </select>
+            </div>
+
+            <!-- Job Level -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Job Level</label>
+              <select [(ngModel)]="filters.job_level" (change)="applyFilters()"
+                      class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                <option value="">All Levels</option>
+                <option *ngFor="let level of jobLevelOptions" [value]="level">{{ level }}</option>
+              </select>
+            </div>
+
+            <!-- Time to First Job -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Time to First Job</label>
+              <select [(ngModel)]="filters.time_to_first_job" (change)="applyFilters()"
+                      class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                <option value="">All</option>
+                <option *ngFor="let time of timeToJobOptions" [value]="time">{{ time }}</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Skills & Satisfaction Filters -->
+        <div class="mb-6">
+          <h4 class="text-md font-bold text-gray-700 mb-4 flex items-center">
+            <i class="fas fa-star text-primary mr-2"></i>
+            Skills & Satisfaction
+          </h4>
+          <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            <!-- Skills Relevance Min -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Skills Rating (Min)</label>
+              <select [(ngModel)]="filters.skills_relevance_min" (change)="applyFilters()"
+                      class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                <option value="">Any</option>
+                <option value="1">1+</option>
+                <option value="2">2+</option>
+                <option value="3">3+</option>
+                <option value="4">4+</option>
+                <option value="5">5</option>
+              </select>
+            </div>
+
+            <!-- Job Satisfaction Min -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Satisfaction (Min)</label>
+              <select [(ngModel)]="filters.job_satisfaction_min" (change)="applyFilters()"
+                      class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                <option value="">Any</option>
+                <option value="1">1+</option>
+                <option value="2">2+</option>
+                <option value="3">3+</option>
+                <option value="4">4+</option>
+                <option value="5">5</option>
+              </select>
+            </div>
+
+            <!-- Programme Quality -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Programme Quality</label>
+              <select [(ngModel)]="filters.programme_quality" (change)="applyFilters()"
+                      class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                <option value="">All</option>
+                <option *ngFor="let quality of qualityOptions" [value]="quality">{{ quality }}</option>
+              </select>
+            </div>
+
+            <!-- Would Recommend -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Would Recommend</label>
+              <select [(ngModel)]="filters.would_recommend" (change)="applyFilters()"
+                      class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                <option value="">All</option>
+                <option *ngFor="let rec of recommendOptions" [value]="rec">{{ rec }}</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Alumni Engagement Filters -->
+        <div>
+          <h4 class="text-md font-bold text-gray-700 mb-4 flex items-center">
+            <i class="fas fa-handshake text-primary mr-2"></i>
+            Alumni Engagement
+          </h4>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- Alumni Member -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Alumni Member</label>
+              <select [(ngModel)]="filters.is_alumni_member" (change)="applyFilters()"
+                      class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                <option value="">All</option>
+                <option *ngFor="let opt of yesNoOptions" [value]="opt">{{ opt }}</option>
+              </select>
+            </div>
+
+            <!-- Willing to Mentor -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Willing to Mentor</label>
+              <select [(ngModel)]="filters.willing_to_mentor" (change)="applyFilters()"
+                      class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                <option value="">All</option>
+                <option *ngFor="let opt of yesNoMaybeOptions" [value]="opt">{{ opt }}</option>
+              </select>
+            </div>
+
+            <!-- Willing to Collaborate -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Willing to Collaborate</label>
+              <select [(ngModel)]="filters.willing_to_collaborate" (change)="applyFilters()"
+                      class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                <option value="">All</option>
+                <option *ngFor="let opt of yesNoMaybeOptions" [value]="opt">{{ opt }}</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Visual Charts from Filtered Data -->
+      <div *ngIf="!isLoading && responses.length > 0">
+        
+        <!-- Core Charts (Always Shown) -->
+        <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+          <i class="fas fa-chart-pie text-primary mr-3"></i>
+          Overview Charts
+        </h3>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <!-- Status Distribution -->
+          <div class="bg-white rounded-2xl shadow-sm p-6">
+            <div style="height: 300px;">
+              <canvas id="statusDistributionChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Sector Breakdown -->
+          <div class="bg-white rounded-2xl shadow-sm p-6">
+            <div style="height: 300px;">
+              <canvas id="sectorBreakdownChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Employment Charts (Shown when employment data exists) -->
+        <div *ngIf="hasEmployedResponses()">
+          <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+            <i class="fas fa-briefcase text-primary mr-3"></i>
+            Employment Insights
+          </h3>
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <!-- Industry Distribution -->
+            <div class="bg-white rounded-2xl shadow-sm p-6">
+              <div style="height: 350px;">
+                <canvas id="industryDistributionChart"></canvas>
+              </div>
+            </div>
+
+            <!-- Job Level -->
+            <div class="bg-white rounded-2xl shadow-sm p-6">
+              <div style="height: 350px;">
+                <canvas id="jobLevelChart"></canvas>
+              </div>
+            </div>
+
+            <!-- Job Related to Field -->
+            <div class="bg-white rounded-2xl shadow-sm p-6">
+              <div style="height: 350px;">
+                <canvas id="jobRelatedChart"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <!-- Time to First Job -->
+            <div class="bg-white rounded-2xl shadow-sm p-6">
+              <div style="height: 300px;">
+                <canvas id="timeToJobChart"></canvas>
+              </div>
+            </div>
+
+            <!-- Income Range -->
+            <div class="bg-white rounded-2xl shadow-sm p-6">
+              <div style="height: 300px;">
+                <canvas id="incomeRangeChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Ratings Charts (Shown when ratings data exists) -->
+        <div *ngIf="hasRatingsData()">
+          <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+            <i class="fas fa-star text-primary mr-3"></i>
+            Ratings & Satisfaction
+          </h3>
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <!-- Skills vs Satisfaction Scatter -->
+            <div class="bg-white rounded-2xl shadow-sm p-6">
+              <div style="height: 300px;">
+                <canvas id="skillsSatisfactionChart"></canvas>
+              </div>
+            </div>
+
+            <!-- Programme Quality -->
+            <div class="bg-white rounded-2xl shadow-sm p-6">
+              <div style="height: 300px;">
+                <canvas id="programmeQualityChart"></canvas>
+              </div>
+            </div>
+
+            <!-- Recommendation -->
+            <div class="bg-white rounded-2xl shadow-sm p-6">
+              <div style="height: 300px;">
+                <canvas id="recommendationChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Conditional: Year Trend (When Programme is filtered) -->
+        <div *ngIf="hasProgrammeFilter()">
+          <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+            <i class="fas fa-chart-line text-primary mr-3"></i>
+            Programme Trend Analysis
+          </h3>
+          <div class="grid grid-cols-1 gap-6 mb-8">
+            <div class="bg-white rounded-2xl shadow-sm p-6">
+              <div style="height: 300px;">
+                <canvas id="yearTrendChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Conditional: Programme Comparison (When Year is filtered) -->
+        <div *ngIf="hasYearFilter()">
+          <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+            <i class="fas fa-graduation-cap text-primary mr-3"></i>
+            Programme Comparison
+          </h3>
+          <div class="grid grid-cols-1 gap-6 mb-8">
+            <div class="bg-white rounded-2xl shadow-sm p-6">
+              <div style="height: 350px;">
+                <canvas id="programmeComparisonChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Engagement Charts (Shown when engagement data exists) -->
+        <div *ngIf="hasEngagementData()">
+          <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+            <i class="fas fa-handshake text-primary mr-3"></i>
+            Alumni Engagement
+          </h3>
+          <div class="grid grid-cols-1 gap-6 mb-8">
+            <div class="bg-white rounded-2xl shadow-sm p-6">
+              <div style="height: 300px;">
+                <canvas id="engagementChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      <div *ngIf="isLoading" class="bg-white rounded-2xl shadow-sm p-12 text-center">
+        <i class="fas fa-spinner fa-spin text-4xl text-primary mb-4"></i>
+        <p class="text-gray-600">Loading report data...</p>
+      </div>
+
+      <!-- Data Table -->
+      <div *ngIf="!isLoading" class="bg-white rounded-2xl shadow-sm overflow-hidden">
+        <!-- Table Header -->
+        <div class="p-4 border-b border-gray-200">
+          <h3 class="text-lg font-bold text-gray-800">Filtered Results</h3>
+          <p class="text-sm text-gray-600 mt-1">
+            Showing {{ ((pagination.page - 1) * pagination.limit) + 1 }} to 
+            {{ Math.min(pagination.page * pagination.limit, pagination.total) }} of 
+            {{ pagination.total }} records
+          </p>
+        </div>
+
+        <!-- Table -->
+        <div class="overflow-x-auto">
+          <table class="w-full min-w-[1200px]">
+            <thead class="bg-gray-50 border-b border-gray-200">
+              <tr>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Alumni
+                </th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                    (click)="changeSort('programme_of_study')">
+                  Programme
+                  <i class="fas fa-sort ml-1"></i>
+                </th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                    (click)="changeSort('year_of_graduation')">
+                  Year
+                  <i class="fas fa-sort ml-1"></i>
+                </th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Status
+                </th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Employment
+                </th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Sector
+                </th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Skills
+                </th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Satisfaction
+                </th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              <!-- Empty State -->
+              <tr *ngIf="responses.length === 0">
+                <td colspan="8" class="px-4 py-12 text-center">
+                  <i class="fas fa-search text-4xl text-gray-300 mb-4"></i>
+                  <p class="text-gray-500 text-lg">No results found</p>
+                  <p class="text-gray-400 text-sm mt-2">Try adjusting your filters</p>
+                </td>
+              </tr>
+
+              <!-- Data Rows -->
+              <tr *ngFor="let response of responses" class="hover:bg-gray-50 transition-colors duration-200">
+                <!-- Alumni -->
+                <td class="px-4 py-4 whitespace-nowrap">
+                  <div>
+                    <p class="text-sm font-medium text-gray-900">{{ response.full_name }}</p>
+                    <p class="text-xs text-gray-500">{{ response.index_number }}</p>
+                  </div>
+                </td>
+
+                <!-- Programme -->
+                <td class="px-4 py-4">
+                  <span class="text-xs text-gray-700">{{ response.programme_of_study }}</span>
+                </td>
+
+                <!-- Year -->
+                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {{ response.year_of_graduation }}
+                </td>
+
+                <!-- Status -->
+                <td class="px-4 py-4 whitespace-nowrap">
+                  <span [class]="'px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ' + getStatusClass(response.current_status)">
+                    {{ response.current_status }}
+                  </span>
+                </td>
+
+                <!-- Employment -->
+                <td class="px-4 py-4">
+                  <p class="text-xs text-gray-700 font-medium">{{ response.job_title || '-' }}</p>
+                  <p class="text-xs text-gray-500">{{ response.employer_name || '-' }}</p>
+                </td>
+
+                <!-- Sector -->
+                <td class="px-4 py-4 whitespace-nowrap text-xs text-gray-700">
+                  {{ response.sector || '-' }}
+                </td>
+
+                <!-- Skills Rating -->
+                <td class="px-4 py-4 whitespace-nowrap">
+                  <div class="flex items-center">
+                    <span class="text-sm font-medium text-gray-900">
+                      {{ response.skills_relevance_rating || '-' }}
+                    </span>
+                    <span class="text-xs text-gray-500 ml-1" *ngIf="response.skills_relevance_rating">/5</span>
+                  </div>
+                </td>
+
+                <!-- Satisfaction Rating -->
+                <td class="px-4 py-4 whitespace-nowrap">
+                  <div class="flex items-center">
+                    <span class="text-sm font-medium text-gray-900">
+                      {{ response.job_satisfaction_rating || '-' }}
+                    </span>
+                    <span class="text-xs text-gray-500 ml-1" *ngIf="response.job_satisfaction_rating">/5</span>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="bg-white px-4 py-4 border-t border-gray-200">
+          <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="text-sm text-gray-700">
+              Showing <span class="font-medium">{{ ((pagination.page - 1) * pagination.limit) + 1 }}</span> 
+              to <span class="font-medium">{{ Math.min(pagination.page * pagination.limit, pagination.total) }}</span> 
+              of <span class="font-medium">{{ pagination.total }}</span> records
+            </div>
+            <div class="flex space-x-1">
+              <button (click)="changePage(pagination.page - 1)"
+                      [disabled]="pagination.page === 1"
+                      class="px-3 py-1.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+                Previous
+              </button>
+              
+              <!-- Page Numbers -->
+              <button *ngFor="let page of [].constructor(Math.min(pagination.total_pages, 5)); let i = index"
+                      (click)="changePage(i + 1)"
+                      [class.border-primary]="pagination.page === i + 1"
+                      [class.bg-primary]="pagination.page === i + 1"
+                      [class.text-white]="pagination.page === i + 1"
+                      [class.border-gray-300]="pagination.page !== i + 1"
+                      [class.text-gray-700]="pagination.page !== i + 1"
+                      class="px-3 py-1.5 border rounded-lg text-sm font-medium bg-white hover:bg-gray-50 transition-colors duration-200">
+                {{ i + 1 }}
+              </button>
+              
+              <button (click)="changePage(pagination.page + 1)"
+                      [disabled]="pagination.page === pagination.total_pages"
+                      class="px-3 py-1.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+                Next
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

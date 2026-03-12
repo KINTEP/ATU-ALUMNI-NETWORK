@@ -1,0 +1,93 @@
+<div class="min-h-screen bg-gray-50">
+  <app-sidebar></app-sidebar>
+
+  <div class="ml-64 p-8">
+    <!-- Loading State -->
+    <div *ngIf="loading" class="flex items-center justify-center h-screen">
+      <div class="text-center">
+        <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-primary mx-auto"></div>
+        <p class="mt-4 text-gray-600">Loading analytics...</p>
+      </div>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="error && !loading" class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+      <p>{{ error }}</p>
+      <button (click)="loadAnalytics()" class="mt-2 text-red-600 underline">Try Again</button>
+    </div>
+
+    <!-- Content -->
+    <div *ngIf="!loading && !error && analytics">
+      <!-- Header -->
+      <div class="bg-gradient-to-r from-primary to-accent text-white rounded-2xl shadow-lg p-5 mb-6">
+        <div class="relative z-10">
+          <h1 class="text-2xl font-bold mb-2">ATU Alumni Tracer Study Report</h1>
+          <p class="opacity-90 text-sm">Comprehensive analysis of alumni outcomes and feedback</p>
+          <div class="mt-4 flex items-center space-x-4 text-sm">
+            <span>Total Responses: {{ formatNumber(analytics.overview.total_responses) }}</span>
+            <span>Response Rate: {{ responseRate }}%</span>
+            <span>Report Generated: {{ currentDate }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Executive Summary -->
+      <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+        <h2 class="text-2xl font-bold text-primary mb-6">Executive Summary</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="text-center p-4 bg-gray-50 rounded-lg">
+            <div class="text-3xl font-bold text-primary mb-2">{{ employmentRate }}%</div>
+            <div class="text-gray-600">Employment Rate</div>
+            <div class="text-sm text-gray-500">Within 6 months of graduation</div>
+          </div>
+          <div class="text-center p-4 bg-gray-50 rounded-lg">
+            <div class="text-3xl font-bold text-accent mb-2">{{ avgSkillsRelevance | number:'1.1-1' }}/5</div>            
+            <div class="text-gray-600">Skills Relevance Rating</div>
+            <div class="text-sm text-gray-500">Average satisfaction score</div>
+          </div>
+          <div class="text-center p-4 bg-gray-50 rounded-lg">
+            <div class="text-3xl font-bold text-secondary mb-2">{{ programmeQualityRate }}%</div>
+            <div class="text-gray-600">Programme Quality</div>
+            <div class="text-sm text-gray-500">Would recommend ATU</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Demographics Section -->
+      <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+        <h2 class="text-2xl font-bold text-primary mb-6">Demographics</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <!-- Graduation Year Distribution -->
+          <div>
+            <h3 class="text-lg font-bold mb-4">Graduation Year Distribution</h3>
+            <div class="space-y-3">
+              <div *ngFor="let item of graduationYearData" class="flex justify-between items-center">
+                <span class="text-gray-700">{{ item.year }}</span>
+                <div class="flex-1 mx-4 bg-gray-200 rounded-full h-4">
+                  <div class="bg-primary h-4 rounded-full" [style.width.%]="item.percentage"></div>
+                </div>
+                <span class="text-gray-700 font-medium">{{ formatNumber(item.count) }} ({{ item.percentage }}%)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Programme Distribution -->
+          <div>
+            <h3 class="text-lg font-bold mb-4">Programme Distribution</h3>
+            <div class="space-y-3">
+              <div *ngFor="let item of programmeData" class="flex justify-between items-center">
+                <span class="text-gray-700">{{ item.programme }}</span>
+                <div class="flex-1 mx-4 bg-gray-200 rounded-full h-4">
+                  <div class="bg-accent h-4 rounded-full" [style.width.%]="item.percentage"></div>
+                </div>
+                <span class="text-gray-700 font-medium">{{ formatNumber(item.count) }} ({{ item.percentage }}%)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Rest of your sections... -->
+    </div>
+  </div>
+</div>

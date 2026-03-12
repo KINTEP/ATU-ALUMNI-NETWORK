@@ -1,0 +1,2940 @@
+<!-- tracer-page.component.html -->
+<div class="container mx-auto px-4 py-8">
+  <!-- Header -->
+  <div class="bg-gradient-to-r from-primary to-accent text-white rounded-2xl shadow-lg p-6 mb-8 slide-in relative overflow-hidden">
+    <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-32 translate-x-32"></div>
+    <div class="relative z-10">
+      <h1 class="text-3xl font-bold mb-2">ATU Alumni Tracer Study</h1>
+      <p class="opacity-90">Your feedback helps Accra Technical University improve training and employment outcomes</p>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="text-center py-12">
+    <i class="fas fa-spinner fa-spin text-primary text-4xl mb-4"></i>
+    <p class="text-gray-600">Loading...</p>
+  </div>
+
+  <!-- Already Submitted Message -->
+  <div *ngIf="hasSubmitted && !isLoading" class="bg-blue-50 border border-blue-200 rounded-xl p-6 mb-8">
+    <div class="flex items-start space-x-4">
+      <div class="bg-blue-500 text-white p-3 rounded-full">
+        <i class="fas fa-check-circle text-lg"></i>
+      </div>
+      <div>
+        <h3 class="text-xl font-bold text-blue-900 mb-2">Response Already Submitted</h3>
+        <p class="text-blue-700">You have already submitted your tracer study response. Thank you for your participation!</p>
+        <p class="text-sm text-blue-600 mt-2">If you need to update your information, please contact the Alumni Office.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content (Only show if not submitted) -->
+  <ng-container *ngIf="!hasSubmitted && !isLoading">
+    <!-- Form Description -->
+    <div class="bg-white rounded-xl shadow-md p-6 mb-8 card-hover">
+      <div class="flex items-start space-x-4">
+        <div class="bg-primary bg-opacity-10 text-primary p-3 rounded-full">
+          <i class="fas fa-info-circle text-lg"></i>
+        </div>
+        <div>
+          <h2 class="text-xl font-bold text-primary mb-2">About This Survey</h2>
+          <p class="text-gray-600 mb-2">Thank you for taking part in this tracer study. Your feedback helps Accra Technical University improve training and employment outcomes.</p>
+          <p class="text-gray-600">This survey takes approximately 8-10 minutes to complete. Your responses are confidential.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Progress Indicator -->
+    <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+      <div class="flex justify-between items-center mb-4">
+        <span class="text-sm font-medium text-primary">Form Progress</span>
+        <span id="progressText" class="text-sm text-gray-500">Step {{ currentSection }} of 7</span>
+      </div>
+      <div class="w-full bg-gray-200 rounded-full h-2">
+        <div id="progressBar" class="bg-primary h-2 rounded-full transition-all duration-500" 
+             [style.width.%]="(currentSection / 7) * 100"></div>
+      </div>
+
+      <!-- Step Indicators -->
+      <div class="flex justify-between mt-6 overflow-x-auto pb-2">
+        <div class="flex flex-col items-center min-w-[70px]">
+          <div [class]="currentSection >= 1 ? 'w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-sm font-medium' : 'w-8 h-8 rounded-full bg-gray-300 text-gray-600 flex items-center justify-center text-sm font-medium'">1</div>
+          <span [class]="currentSection >= 1 ? 'text-xs mt-1 text-primary font-medium text-center' : 'text-xs mt-1 text-gray-500 text-center'">Personal</span>
+        </div>
+        <div class="flex flex-col items-center min-w-[70px]">
+          <div [class]="currentSection >= 2 ? 'w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-sm font-medium' : 'w-8 h-8 rounded-full bg-gray-300 text-gray-600 flex items-center justify-center text-sm font-medium'">2</div>
+          <span [class]="currentSection >= 2 ? 'text-xs mt-1 text-primary font-medium text-center' : 'text-xs mt-1 text-gray-500 text-center'">Status</span>
+        </div>
+        <div class="flex flex-col items-center min-w-[70px]">
+          <div [class]="currentSection >= 3 ? 'w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-sm font-medium' : 'w-8 h-8 rounded-full bg-gray-300 text-gray-600 flex items-center justify-center text-sm font-medium'">3</div>
+          <span [class]="currentSection >= 3 ? 'text-xs mt-1 text-primary font-medium text-center' : 'text-xs mt-1 text-gray-500 text-center'">Experience</span>
+        </div>
+        <div class="flex flex-col items-center min-w-[70px]">
+          <div [class]="currentSection >= 4 ? 'w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-sm font-medium' : 'w-8 h-8 rounded-full bg-gray-300 text-gray-600 flex items-center justify-center text-sm font-medium'">4</div>
+          <span [class]="currentSection >= 4 ? 'text-xs mt-1 text-primary font-medium text-center' : 'text-xs mt-1 text-gray-500 text-center'">Skills</span>
+        </div>
+        <div class="flex flex-col items-center min-w-[70px]">
+          <div [class]="currentSection >= 5 ? 'w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-sm font-medium' : 'w-8 h-8 rounded-full bg-gray-300 text-gray-600 flex items-center justify-center text-sm font-medium'">5</div>
+          <span [class]="currentSection >= 5 ? 'text-xs mt-1 text-primary font-medium text-center' : 'text-xs mt-1 text-gray-500 text-center'">Feedback</span>
+        </div>
+        <div class="flex flex-col items-center min-w-[70px]">
+          <div [class]="currentSection >= 6 ? 'w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-sm font-medium' : 'w-8 h-8 rounded-full bg-gray-300 text-gray-600 flex items-center justify-center text-sm font-medium'">6</div>
+          <span [class]="currentSection >= 6 ? 'text-xs mt-1 text-primary font-medium text-center' : 'text-xs mt-1 text-gray-500 text-center'">Alumni</span>
+        </div>
+        <div class="flex flex-col items-center min-w-[70px]">
+          <div [class]="currentSection >= 7 ? 'w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-sm font-medium' : 'w-8 h-8 rounded-full bg-gray-300 text-gray-600 flex items-center justify-center text-sm font-medium'">7</div>
+          <span [class]="currentSection >= 7 ? 'text-xs mt-1 text-primary font-medium text-center' : 'text-xs mt-1 text-gray-500 text-center'">Survey</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tracer Study Form -->
+    <form id="tracerForm" class="space-y-8" (ngSubmit)="onSubmit()">
+      
+      <!-- SECTION 1: Personal Information -->
+      <div id="section1" class="form-section bg-white rounded-xl shadow-md p-6 card-hover slide-in" 
+           [style.display]="currentSection === 1 ? 'block' : 'none'">
+        <div class="flex items-center space-x-3 mb-6">
+          <div class="bg-primary text-white p-2 rounded-lg">
+            <i class="fas fa-user text-lg"></i>
+          </div>
+          <h2 class="text-2xl font-bold text-primary">Personal Information</h2>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Full Name -->
+          <div>
+            <label for="fullName" class="block text-sm font-medium text-gray-700 mb-1">
+              Full Name <span class="text-red-500">*</span>
+            </label>
+            <input 
+              type="text" 
+              id="fullName" 
+              name="fullName" 
+              [(ngModel)]="formData.full_name"
+              required
+              class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300">
+          </div>
+
+          <!-- Index Number -->
+          <div>
+            <label for="indexNumber" class="block text-sm font-medium text-gray-700 mb-1">
+              Index Number <span class="text-red-500">*</span>
+            </label>
+            <input 
+              type="text" 
+              id="indexNumber" 
+              name="indexNumber" 
+              [(ngModel)]="formData.index_number"
+              required
+              class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300">
+          </div>
+
+          <!-- Programme of Study -->
+          <div>
+            <label for="programme" class="block text-sm font-medium text-gray-700 mb-1">
+              Programme of Study <span class="text-red-500">*</span>
+            </label>
+            <select 
+              id="programme" 
+              name="programme" 
+              [(ngModel)]="formData.programme_of_study"
+              required
+              class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 appearance-none bg-white">
+              <option value="" disabled>Select your programme</option>
+              <option *ngFor="let prog of programmes" [value]="prog">{{ prog }}</option>
+            </select>
+          </div>
+
+          <!-- Year of Graduation -->
+          <div>
+            <label for="graduationYear" class="block text-sm font-medium text-gray-700 mb-1">
+              Year of Graduation <span class="text-red-500">*</span>
+            </label>
+            <select 
+              id="graduationYear" 
+              name="graduationYear" 
+              [(ngModel)]="formData.year_of_graduation"
+              required
+              class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 appearance-none bg-white">
+              <option value="" disabled>Select graduation year</option>
+              <option *ngFor="let year of graduationYears" [value]="year">{{ year }}</option>
+            </select>
+          </div>
+
+          <!-- Gender -->
+          <div>
+            <label for="gender" class="block text-sm font-medium text-gray-700 mb-1">
+              Gender <span class="text-red-500">*</span>
+            </label>
+            <select 
+              id="gender" 
+              name="gender" 
+              [(ngModel)]="formData.gender"
+              required
+              class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 appearance-none bg-white">
+              <option value="" disabled>Select gender</option>
+              <option *ngFor="let g of genders" [value]="g">{{ g }}</option>
+            </select>
+          </div>
+
+          <!-- Age Range -->
+          <div>
+            <label for="ageRange" class="block text-sm font-medium text-gray-700 mb-1">
+              Age Range <span class="text-red-500">*</span>
+            </label>
+            <select 
+              id="ageRange" 
+              name="ageRange" 
+              [(ngModel)]="formData.age_range"
+              required
+              class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 appearance-none bg-white">
+              <option value="" disabled>Select age range</option>
+              <option *ngFor="let age of ageRanges" [value]="age">{{ age }}</option>
+            </select>
+          </div>
+
+          <!-- Current Location Type -->
+          <div class="md:col-span-2">
+            <label class="block text-sm font-medium text-gray-700 mb-3">
+              Where are you currently based? <span class="text-red-500">*</span>
+            </label>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+                <input 
+                  type="radio" 
+                  name="locationType" 
+                  value="Within Ghana" 
+                  [(ngModel)]="formData.current_location_type"
+                  required
+                  class="text-primary focus:ring-primary">
+                <span class="ml-3 text-gray-700">Within Ghana</span>
+              </label>
+              <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+                <input 
+                  type="radio" 
+                  name="locationType" 
+                  value="Outside Ghana" 
+                  [(ngModel)]="formData.current_location_type"
+                  required
+                  class="text-primary focus:ring-primary">
+                <span class="ml-3 text-gray-700">Outside Ghana</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Current Country (if outside Ghana) -->
+          <div *ngIf="formData.current_location_type === 'Outside Ghana'" class="md:col-span-2">
+            <label for="currentCountry" class="block text-sm font-medium text-gray-700 mb-1">
+              Which country?
+            </label>
+            <input 
+              type="text" 
+              id="currentCountry" 
+              name="currentCountry" 
+              [(ngModel)]="formData.current_country"
+              placeholder="Enter country name"
+              class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300">
+          </div>
+
+          <!-- Email Address -->
+          <div>
+            <label for="email" class="block text-sm font-medium text-gray-700 mb-1">
+              Email Address <span class="text-red-500">*</span>
+            </label>
+            <input 
+              type="email" 
+              id="email" 
+              name="email" 
+              [(ngModel)]="formData.email"
+              required
+              class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300">
+          </div>
+
+          <!-- Phone Number -->
+          <div>
+            <label for="phone" class="block text-sm font-medium text-gray-700 mb-1">
+              Phone Number <span class="text-red-500">*</span>
+            </label>
+            <input 
+              type="tel" 
+              id="phone" 
+              name="phone" 
+              [(ngModel)]="formData.phone_number"
+              required
+              class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300">
+          </div>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="flex justify-end mt-8 pt-6 border-t border-gray-200">
+          <button 
+            type="button" 
+            (click)="showSection(2)" 
+            class="bg-primary text-white px-6 py-3 rounded-lg hover:bg-opacity-90 transition-colors duration-300 font-medium flex items-center">
+            Next Section
+            <i class="fas fa-arrow-right ml-2"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- SECTION 2: Current Status - COMPLETE WITH ALL PATHS -->
+<div id="section2" class="form-section bg-white rounded-xl shadow-md p-6 card-hover slide-in" 
+     [style.display]="currentSection === 2 ? 'block' : 'none'">
+  <div class="flex items-center space-x-3 mb-6">
+    <div class="bg-accent text-white p-2 rounded-lg">
+      <i class="fas fa-chart-line text-lg"></i>
+    </div>
+    <h2 class="text-2xl font-bold text-primary">Current Status</h2>
+  </div>
+
+  <!-- Current Status Selection -->
+  <div class="mb-6">
+    <label class="block text-sm font-medium text-gray-700 mb-3">
+      What is your current status? <span class="text-red-500">*</span>
+    </label>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300 hover:border-primary">
+        <input 
+          type="radio" 
+          name="currentStatus" 
+          value="Employed" 
+          [(ngModel)]="formData.current_status"
+          required
+          class="text-primary focus:ring-primary">
+        <span class="ml-3 text-gray-700">Employed</span>
+      </label>
+      <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300 hover:border-primary">
+        <input 
+          type="radio" 
+          name="currentStatus" 
+          value="Self-employed" 
+          [(ngModel)]="formData.current_status"
+          required
+          class="text-primary focus:ring-primary">
+        <span class="ml-3 text-gray-700">Self-employed</span>
+      </label>
+      <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300 hover:border-primary">
+        <input 
+          type="radio" 
+          name="currentStatus" 
+          value="Unemployed" 
+          [(ngModel)]="formData.current_status"
+          required
+          class="text-primary focus:ring-primary">
+        <span class="ml-3 text-gray-700">Unemployed</span>
+      </label>
+      <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300 hover:border-primary">
+        <input 
+          type="radio" 
+          name="currentStatus" 
+          value="Pursuing further studies" 
+          [(ngModel)]="formData.current_status"
+          required
+          class="text-primary focus:ring-primary">
+        <span class="ml-3 text-gray-700">Pursuing further studies</span>
+      </label>
+    </div>
+  </div>
+
+  <!-- ========================================= -->
+  <!-- ALL CONDITIONAL CONTENT - BEFORE BUTTONS -->
+  <!-- ========================================= -->
+  <div class="space-y-6 mt-8">
+    
+    <!-- ============================================ -->
+    <!-- PATH 1: EMPLOYED QUESTIONS -->
+    <!-- ============================================ -->
+    <ng-container *ngIf="shouldShowEmployedQuestions()">
+      <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6">
+        <p class="text-sm text-blue-700">
+          <i class="fas fa-info-circle mr-2"></i>
+          Please provide details about your employment
+        </p>
+      </div>
+
+      <!-- Employment Type -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-3">
+          Is your employment full-time or part-time? <span class="text-red-500">*</span>
+        </label>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="employmentType" 
+              value="Full-time (30+ hours per week)" 
+              [(ngModel)]="formData.employment_type"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700 text-sm">Full-time (30+ hrs/week)</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="employmentType" 
+              value="Part-time (less than 30 hours per week)" 
+              [(ngModel)]="formData.employment_type"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700 text-sm">Part-time (<30 hrs/week)</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="employmentType" 
+              value="Contract/Project-based" 
+              [(ngModel)]="formData.employment_type"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700 text-sm">Contract/Project-based</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Time to First Job -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-3">
+          How long did it take to get your first job after graduation?
+        </label>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="timeToJob" 
+              value="Less than 3 months" 
+              [(ngModel)]="formData.time_to_first_job"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">Less than 3 months</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="timeToJob" 
+              value="3-6 months" 
+              [(ngModel)]="formData.time_to_first_job"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">3-6 months</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="timeToJob" 
+              value="6-12 months" 
+              [(ngModel)]="formData.time_to_first_job"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">6-12 months</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="timeToJob" 
+              value="More than a year" 
+              [(ngModel)]="formData.time_to_first_job"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">More than a year</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Job Title -->
+      <div>
+        <label for="jobTitle" class="block text-sm font-medium text-gray-700 mb-1">
+          Job Title <span class="text-red-500">*</span>
+        </label>
+        <input 
+          type="text" 
+          id="jobTitle" 
+          name="jobTitle" 
+          [(ngModel)]="formData.job_title"
+          placeholder="e.g., Software Engineer, Accountant"
+          class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300">
+      </div>
+
+      <!-- Employer Name -->
+      <div>
+        <label for="employerName" class="block text-sm font-medium text-gray-700 mb-1">
+          Name of Employer <span class="text-red-500">*</span>
+        </label>
+        <input 
+          type="text" 
+          id="employerName" 
+          name="employerName" 
+          [(ngModel)]="formData.employer_name"
+          placeholder="Company/Organization name"
+          class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300">
+      </div>
+
+      <!-- Sector -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-3">
+          Sector <span class="text-red-500">*</span>
+        </label>
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="sector" 
+              value="Public" 
+              [(ngModel)]="formData.sector"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">Public</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="sector" 
+              value="Private" 
+              [(ngModel)]="formData.sector"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">Private</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="sector" 
+              value="NGO" 
+              [(ngModel)]="formData.sector"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">NGO</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="sector" 
+              value="International Organization" 
+              [(ngModel)]="formData.sector"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700 text-sm">International Org</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="sector" 
+              value="Other" 
+              [(ngModel)]="formData.sector"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">Other</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Industry/Field of Work -->
+      <div>
+        <label for="industry" class="block text-sm font-medium text-gray-700 mb-1">
+          Industry/Field of Work <span class="text-red-500">*</span>
+        </label>
+        <select 
+          id="industry" 
+          name="industry" 
+          [(ngModel)]="formData.industry"
+          class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300">
+          <option value="" disabled selected>Select your industry</option>
+          <option value="Finance/Banking">Finance/Banking</option>
+          <option value="Manufacturing">Manufacturing</option>
+          <option value="Information Technology">Information Technology</option>
+          <option value="Healthcare/Medical">Healthcare/Medical</option>
+          <option value="Education">Education</option>
+          <option value="Construction/Real Estate">Construction/Real Estate</option>
+          <option value="Telecommunications">Telecommunications</option>
+          <option value="Energy/Utilities">Energy/Utilities</option>
+          <option value="Agriculture/Agribusiness">Agriculture/Agribusiness</option>
+          <option value="Retail/Wholesale Trade">Retail/Wholesale Trade</option>
+          <option value="Hospitality/Tourism">Hospitality/Tourism</option>
+          <option value="Media/Entertainment">Media/Entertainment</option>
+          <option value="Transportation/Logistics">Transportation/Logistics</option>
+          <option value="Legal Services">Legal Services</option>
+          <option value="Consulting/Professional Services">Consulting/Professional Services</option>
+          <option value="Insurance">Insurance</option>
+          <option value="Government/Public Administration">Government/Public Administration</option>
+          <option value="Mining/Extractive Industries">Mining/Extractive Industries</option>
+          <option value="Creative/Arts/Design">Creative/Arts/Design</option>
+          <option value="Non-Profit/NGO">Non-Profit/NGO</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+
+      <!-- Job Related to Field -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-3">
+          Is your current job related to your field of study?
+        </label>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="jobRelation" 
+              value="Yes, directly related" 
+              [(ngModel)]="formData.job_related_to_field"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">Yes, directly related</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="jobRelation" 
+              value="Partly related" 
+              [(ngModel)]="formData.job_related_to_field"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">Partly related</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="jobRelation" 
+              value="Not related" 
+              [(ngModel)]="formData.job_related_to_field"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">Not related</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Monthly Income Range -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-3">
+          Monthly Income Range (optional)
+        </label>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="incomeRange" 
+              value="Below GHS 2,000" 
+              [(ngModel)]="formData.monthly_income_range"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">Below GHS 2,000</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="incomeRange" 
+              value="GHS 2,000–4,999" 
+              [(ngModel)]="formData.monthly_income_range"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">GHS 2,000–4,999</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="incomeRange" 
+              value="GHS 5,000–9,999" 
+              [(ngModel)]="formData.monthly_income_range"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">GHS 5,000–9,999</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="incomeRange" 
+              value="GHS 10,000 or above" 
+              [(ngModel)]="formData.monthly_income_range"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">GHS 10,000 or above</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="incomeRange" 
+              value="Prefer not to say" 
+              [(ngModel)]="formData.monthly_income_range"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">Prefer not to say</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- How Found Job -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-3">
+          How did you find your first job?
+        </label>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="howFoundJob" 
+              value="Through personal contacts/networking" 
+              [(ngModel)]="formData.how_found_job"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">Personal contacts/networking</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="howFoundJob" 
+              value="ATU career office / lecturers" 
+              [(ngModel)]="formData.how_found_job"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">ATU career office/lecturers</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="howFoundJob" 
+              value="Online job portal" 
+              [(ngModel)]="formData.how_found_job"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">Online job portal</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="howFoundJob" 
+              value="Social media" 
+              [(ngModel)]="formData.how_found_job"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">Social media</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="howFoundJob" 
+              value="Internship placement" 
+              [(ngModel)]="formData.how_found_job"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">Internship placement</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="howFoundJob" 
+              value="Direct application" 
+              [(ngModel)]="formData.how_found_job"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">Direct application</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="howFoundJob" 
+              value="Other" 
+              [(ngModel)]="formData.how_found_job"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">Other</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Job Level -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-3">
+          What best describes your current job level?
+        </label>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="jobLevel" 
+              value="Entry-level" 
+              [(ngModel)]="formData.job_level"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">Entry-level</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="jobLevel" 
+              value="Mid-level" 
+              [(ngModel)]="formData.job_level"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">Mid-level</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="jobLevel" 
+              value="Senior-level" 
+              [(ngModel)]="formData.job_level"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">Senior-level</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="jobLevel" 
+              value="Management/Executive" 
+              [(ngModel)]="formData.job_level"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">Management/Executive</span>
+          </label>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- ============================================ -->
+    <!-- PATH 2: SELF-EMPLOYED QUESTIONS -->
+    <!-- ============================================ -->
+    <ng-container *ngIf="shouldShowSelfEmployedQuestions()">
+      <div class="bg-green-50 border-l-4 border-green-500 p-4 mb-6">
+        <p class="text-sm text-green-700">
+          <i class="fas fa-briefcase mr-2"></i>
+          Please provide details about your business
+        </p>
+      </div>
+
+      <!-- Business Time Dedication -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-3">
+          How much time do you dedicate to your business? <span class="text-red-500">*</span>
+        </label>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="businessTime" 
+              value="Full-time (primary source of income)" 
+              [(ngModel)]="formData.business_time_dedication"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700 text-sm">Full-time (primary income)</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="businessTime" 
+              value="Part-time (secondary source of income)" 
+              [(ngModel)]="formData.business_time_dedication"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700 text-sm">Part-time (secondary income)</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="businessTime" 
+              value="Occasional/Side business" 
+              [(ngModel)]="formData.business_time_dedication"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700 text-sm">Occasional/Side business</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Time to Start Business -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-3">
+          How long did it take to start your business after graduation?
+        </label>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="timeToBusinessStart" 
+              value="Less than 3 months" 
+              [(ngModel)]="formData.time_to_start_business"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">Less than 3 months</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="timeToBusinessStart" 
+              value="3-6 months" 
+              [(ngModel)]="formData.time_to_start_business"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">3-6 months</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="timeToBusinessStart" 
+              value="6-12 months" 
+              [(ngModel)]="formData.time_to_start_business"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">6-12 months</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="timeToBusinessStart" 
+              value="More than a year" 
+              [(ngModel)]="formData.time_to_start_business"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">More than a year</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="timeToBusinessStart" 
+              value="Started while still studying" 
+              [(ngModel)]="formData.time_to_start_business"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">Started while still studying</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Business Type/Name -->
+      <div>
+        <label for="businessType" class="block text-sm font-medium text-gray-700 mb-1">
+          Business Type/Name <span class="text-red-500">*</span>
+        </label>
+        <input 
+          type="text" 
+          id="businessType" 
+          name="businessType" 
+          [(ngModel)]="formData.business_type"
+          placeholder="e.g., Fashion Design Studio, Tech Consulting"
+          class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300">
+      </div>
+
+      <!-- Business Sector -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-3">
+          Business Sector <span class="text-red-500">*</span>
+        </label>
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="businessSector" 
+              value="Manufacturing" 
+              [(ngModel)]="formData.business_sector"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">Manufacturing</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="businessSector" 
+              value="Services" 
+              [(ngModel)]="formData.business_sector"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">Services</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="businessSector" 
+              value="Trading/Retail" 
+              [(ngModel)]="formData.business_sector"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">Trading/Retail</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="businessSector" 
+              value="Technology/IT" 
+              [(ngModel)]="formData.business_sector"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">Technology/IT</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="businessSector" 
+              value="Agriculture" 
+              [(ngModel)]="formData.business_sector"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">Agriculture</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="businessSector" 
+              value="Construction" 
+              [(ngModel)]="formData.business_sector"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">Construction</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="businessSector" 
+              value="Creative Arts" 
+              [(ngModel)]="formData.business_sector"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">Creative Arts</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="businessSector" 
+              value="Other" 
+              [(ngModel)]="formData.business_sector"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">Other</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Business Related to Field -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-3">
+          Is your business related to your field of study?
+        </label>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="businessRelation" 
+              value="Yes, directly related" 
+              [(ngModel)]="formData.business_related_to_field"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">Yes, directly related</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="businessRelation" 
+              value="Partly related" 
+              [(ngModel)]="formData.business_related_to_field"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">Partly related</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="businessRelation" 
+              value="Not related" 
+              [(ngModel)]="formData.business_related_to_field"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">Not related</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Business Monthly Income -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-3">
+          Monthly Income from Business (optional)
+        </label>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="businessIncome" 
+              value="Below GHS 2,000" 
+              [(ngModel)]="formData.business_monthly_income"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">Below GHS 2,000</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="businessIncome" 
+              value="GHS 2,000–4,999" 
+              [(ngModel)]="formData.business_monthly_income"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">GHS 2,000–4,999</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="businessIncome" 
+              value="GHS 5,000–9,999" 
+              [(ngModel)]="formData.business_monthly_income"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">GHS 5,000–9,999</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="businessIncome" 
+              value="GHS 10,000 or above" 
+              [(ngModel)]="formData.business_monthly_income"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">GHS 10,000 or above</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="businessIncome" 
+              value="Prefer not to say" 
+              [(ngModel)]="formData.business_monthly_income"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">Prefer not to say</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- How Started Business -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-3">
+          How did you start your business?
+        </label>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="howStartedBusiness" 
+              value="Personal savings" 
+              [(ngModel)]="formData.how_started_business"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">Personal savings</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="howStartedBusiness" 
+              value="Family support" 
+              [(ngModel)]="formData.how_started_business"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">Family support</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="howStartedBusiness" 
+              value="Bank loan/Grant" 
+              [(ngModel)]="formData.how_started_business"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">Bank loan/Grant</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="howStartedBusiness" 
+              value="Business incubator/ATU support" 
+              [(ngModel)]="formData.how_started_business"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">Business incubator/ATU support</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="howStartedBusiness" 
+              value="Partnership" 
+              [(ngModel)]="formData.how_started_business"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">Partnership</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="howStartedBusiness" 
+              value="Other" 
+              [(ngModel)]="formData.how_started_business"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">Other</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Number of Employees -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-3">
+          Number of employees (including yourself)
+        </label>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="numEmployees" 
+              value="Just me (solo)" 
+              [(ngModel)]="formData.number_of_employees"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">Just me (solo)</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="numEmployees" 
+              value="2-5 employees" 
+              [(ngModel)]="formData.number_of_employees"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">2-5 employees</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="numEmployees" 
+              value="6-10 employees" 
+              [(ngModel)]="formData.number_of_employees"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">6-10 employees</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="numEmployees" 
+              value="More than 10 employees" 
+              [(ngModel)]="formData.number_of_employees"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">More than 10 employees</span>
+          </label>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- ============================================ -->
+    <!-- PATH 3: UNEMPLOYED QUESTIONS -->
+    <!-- ============================================ -->
+    <ng-container *ngIf="shouldShowUnemployedQuestions()">
+      <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 mb-6">
+        <p class="text-sm text-yellow-700">
+          <i class="fas fa-info-circle mr-2"></i>
+          Help us understand your situation so we can provide better support
+        </p>
+      </div>
+
+      <!-- Unemployment Duration -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-3">
+          How long have you been seeking employment?
+        </label>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="unemploymentDuration" 
+              value="Less than 3 months" 
+              [(ngModel)]="formData.unemployment_duration"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">Less than 3 months</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="unemploymentDuration" 
+              value="3-6 months" 
+              [(ngModel)]="formData.unemployment_duration"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">3-6 months</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="unemploymentDuration" 
+              value="6-12 months" 
+              [(ngModel)]="formData.unemployment_duration"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">6-12 months</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="unemploymentDuration" 
+              value="More than a year" 
+              [(ngModel)]="formData.unemployment_duration"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">More than a year</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="unemploymentDuration" 
+              value="Not actively seeking" 
+              [(ngModel)]="formData.unemployment_duration"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">Not actively seeking</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Main Challenge -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-3">
+          What was your main challenge after graduation?
+        </label>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="mainChallenge" 
+              value="Finding suitable job opportunities" 
+              [(ngModel)]="formData.main_challenge"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">Finding suitable job opportunities</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="mainChallenge" 
+              value="Lack of practical experience" 
+              [(ngModel)]="formData.main_challenge"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">Lack of practical experience</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="mainChallenge" 
+              value="Low salary offers" 
+              [(ngModel)]="formData.main_challenge"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">Low salary offers</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="mainChallenge" 
+              value="Jobs not related to my field" 
+              [(ngModel)]="formData.main_challenge"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">Jobs not related to my field</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="mainChallenge" 
+              value="Location/relocation issues" 
+              [(ngModel)]="formData.main_challenge"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">Location/relocation issues</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="mainChallenge" 
+              value="Preparing for further studies" 
+              [(ngModel)]="formData.main_challenge"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">Preparing for further studies</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="mainChallenge" 
+              value="Other" 
+              [(ngModel)]="formData.main_challenge"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">Other</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Currently Status -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-3">
+          Are you currently:
+        </label>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="currentlyStatus" 
+              value="Actively job searching" 
+              [(ngModel)]="formData.currently_status"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">Actively job searching</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="currentlyStatus" 
+              value="Preparing for further studies" 
+              [(ngModel)]="formData.currently_status"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">Preparing for further studies</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="currentlyStatus" 
+              value="Waiting for specific opportunity" 
+              [(ngModel)]="formData.currently_status"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">Waiting for specific opportunity</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="currentlyStatus" 
+              value="Taking a career break" 
+              [(ngModel)]="formData.currently_status"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">Taking a career break</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Support Needed (Checkboxes) -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-3">
+          What support would help you most? (Select all that apply)
+        </label>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <label class="flex items-start p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="checkbox" 
+              name="supportJobPlacement" 
+              value="Job placement assistance"
+              class="text-primary focus:ring-primary rounded mt-1">
+            <span class="ml-3 text-gray-700">Job placement assistance</span>
+          </label>
+          <label class="flex items-start p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="checkbox" 
+              name="supportSkills" 
+              value="Skills training/upskilling"
+              class="text-primary focus:ring-primary rounded mt-1">
+            <span class="ml-3 text-gray-700">Skills training/upskilling</span>
+          </label>
+          <label class="flex items-start p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="checkbox" 
+              name="supportEntrepreneurship" 
+              value="Entrepreneurship support"
+              class="text-primary focus:ring-primary rounded mt-1">
+            <span class="ml-3 text-gray-700">Entrepreneurship support</span>
+          </label>
+          <label class="flex items-start p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="checkbox" 
+              name="supportCounseling" 
+              value="Career counseling"
+              class="text-primary focus:ring-primary rounded mt-1">
+            <span class="ml-3 text-gray-700">Career counseling</span>
+          </label>
+          <label class="flex items-start p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="checkbox" 
+              name="supportNetworking" 
+              value="Networking opportunities"
+              class="text-primary focus:ring-primary rounded mt-1">
+            <span class="ml-3 text-gray-700">Networking opportunities</span>
+          </label>
+          <label class="flex items-start p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="checkbox" 
+              name="supportFinancial" 
+              value="Financial support"
+              class="text-primary focus:ring-primary rounded mt-1">
+            <span class="ml-3 text-gray-700">Financial support</span>
+          </label>
+          <label class="flex items-start p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="checkbox" 
+              name="supportInternship" 
+              value="Internship opportunities"
+              class="text-primary focus:ring-primary rounded mt-1">
+            <span class="ml-3 text-gray-700">Internship opportunities</span>
+          </label>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- ============================================ -->
+    <!-- PATH 4: FURTHER STUDIES QUESTIONS -->
+    <!-- ============================================ -->
+    <ng-container *ngIf="shouldShowFurtherStudiesQuestions()">
+      <div class="bg-purple-50 border-l-4 border-purple-500 p-4 mb-6">
+        <p class="text-sm text-purple-700">
+          <i class="fas fa-graduation-cap mr-2"></i>
+          Please provide details about your further studies
+        </p>
+      </div>
+
+      <!-- Further Study Type -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-3">
+          Type of programme <span class="text-red-500">*</span>
+        </label>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="furtherStudyType" 
+              value="Master's degree" 
+              [(ngModel)]="formData.further_study_type"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">Master's degree</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="furtherStudyType" 
+              value="PhD" 
+              [(ngModel)]="formData.further_study_type"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">PhD</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="furtherStudyType" 
+              value="Professional certification" 
+              [(ngModel)]="formData.further_study_type"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">Professional certification</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="furtherStudyType" 
+              value="Postgraduate Diploma" 
+              [(ngModel)]="formData.further_study_type"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">Postgraduate Diploma</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="furtherStudyType" 
+              value="Other" 
+              [(ngModel)]="formData.further_study_type"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">Other</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Further Study Field -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-3">
+          Field of study <span class="text-red-500">*</span>
+        </label>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="furtherStudyField" 
+              value="Same as ATU programme" 
+              [(ngModel)]="formData.further_study_field"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">Same as ATU programme</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="furtherStudyField" 
+              value="Related field" 
+              [(ngModel)]="formData.further_study_field"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">Related field</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="furtherStudyField" 
+              value="Different field" 
+              [(ngModel)]="formData.further_study_field"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">Different field</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Institution Type -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-3">
+          Institution type
+        </label>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="institutionType" 
+              value="University in Ghana" 
+              [(ngModel)]="formData.further_study_institution_type"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">University in Ghana</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="institutionType" 
+              value="University abroad" 
+              [(ngModel)]="formData.further_study_institution_type"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">University abroad</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="institutionType" 
+              value="Professional body" 
+              [(ngModel)]="formData.further_study_institution_type"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">Professional body</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="institutionType" 
+              value="Online programme" 
+              [(ngModel)]="formData.further_study_institution_type"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">Online programme</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Reason for Further Studies -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-3">
+          Main reason for further studies
+        </label>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="furtherStudyReason" 
+              value="Career advancement" 
+              [(ngModel)]="formData.further_study_reason"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">Career advancement</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="furtherStudyReason" 
+              value="Job requirement" 
+              [(ngModel)]="formData.further_study_reason"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">Job requirement</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="furtherStudyReason" 
+              value="Personal interest" 
+              [(ngModel)]="formData.further_study_reason"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">Personal interest</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="furtherStudyReason" 
+              value="Couldn't find suitable employment" 
+              [(ngModel)]="formData.further_study_reason"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">Couldn't find suitable employment</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="furtherStudyReason" 
+              value="To change career path" 
+              [(ngModel)]="formData.further_study_reason"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">To change career path</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="furtherStudyReason" 
+              value="Other" 
+              [(ngModel)]="formData.further_study_reason"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">Other</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Working While Studying -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-3">
+          Are you also working while studying?
+        </label>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="workingWhileStudying" 
+              value="Yes, full-time" 
+              [(ngModel)]="formData.working_while_studying"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">Yes, full-time</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="workingWhileStudying" 
+              value="Yes, part-time" 
+              [(ngModel)]="formData.working_while_studying"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">Yes, part-time</span>
+          </label>
+          <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+            <input 
+              type="radio" 
+              name="workingWhileStudying" 
+              value="No" 
+              [(ngModel)]="formData.working_while_studying"
+              class="text-primary focus:ring-primary">
+            <span class="ml-3 text-gray-700">No</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- If Working While Studying -->
+      <ng-container *ngIf="formData.working_while_studying && formData.working_while_studying !== 'No'">
+        <div class="bg-gray-50 rounded-lg p-4 space-y-4">
+          <p class="text-sm font-medium text-gray-700">Please provide brief details about your work:</p>
+          
+          <!-- Job Title -->
+          <div>
+            <label for="studyJobTitle" class="block text-sm font-medium text-gray-700 mb-1">
+              Job Title
+            </label>
+            <input 
+              type="text" 
+              id="studyJobTitle" 
+              name="studyJobTitle" 
+              [(ngModel)]="formData.study_job_title"
+              placeholder="Your job title"
+              class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300">
+          </div>
+
+          <!-- Job Related to Field -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Is it related to your field?
+            </label>
+            <div class="grid grid-cols-3 gap-3">
+              <label class="flex items-center p-2 border border-gray-300 rounded-lg cursor-pointer hover:bg-white transition-colors duration-300">
+                <input 
+                  type="radio" 
+                  name="studyJobRelated" 
+                  value="Yes, directly related" 
+                  [(ngModel)]="formData.study_job_related"
+                  class="text-primary focus:ring-primary">
+                <span class="ml-2 text-gray-700 text-sm">Yes</span>
+              </label>
+              <label class="flex items-center p-2 border border-gray-300 rounded-lg cursor-pointer hover:bg-white transition-colors duration-300">
+                <input 
+                  type="radio" 
+                  name="studyJobRelated" 
+                  value="Somewhat related" 
+                  [(ngModel)]="formData.study_job_related"
+                  class="text-primary focus:ring-primary">
+                <span class="ml-2 text-gray-700 text-sm">Somewhat</span>
+              </label>
+              <label class="flex items-center p-2 border border-gray-300 rounded-lg cursor-pointer hover:bg-white transition-colors duration-300">
+                <input 
+                  type="radio" 
+                  name="studyJobRelated" 
+                  value="Not related" 
+                  [(ngModel)]="formData.study_job_related"
+                  class="text-primary focus:ring-primary">
+                <span class="ml-2 text-gray-700 text-sm">No</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Sector -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Sector
+            </label>
+            <div class="grid grid-cols-2 gap-3">
+              <label class="flex items-center p-2 border border-gray-300 rounded-lg cursor-pointer hover:bg-white transition-colors duration-300">
+                <input 
+                  type="radio" 
+                  name="studyJobSector" 
+                  value="Public" 
+                  [(ngModel)]="formData.study_job_sector"
+                  class="text-primary focus:ring-primary">
+                <span class="ml-2 text-gray-700 text-sm">Public</span>
+              </label>
+              <label class="flex items-center p-2 border border-gray-300 rounded-lg cursor-pointer hover:bg-white transition-colors duration-300">
+                <input 
+                  type="radio" 
+                  name="studyJobSector" 
+                  value="Private" 
+                  [(ngModel)]="formData.study_job_sector"
+                  class="text-primary focus:ring-primary">
+                <span class="ml-2 text-gray-700 text-sm">Private</span>
+              </label>
+              <label class="flex items-center p-2 border border-gray-300 rounded-lg cursor-pointer hover:bg-white transition-colors duration-300">
+                <input 
+                  type="radio" 
+                  name="studyJobSector" 
+                  value="NGO" 
+                  [(ngModel)]="formData.study_job_sector"
+                  class="text-primary focus:ring-primary">
+                <span class="ml-2 text-gray-700 text-sm">NGO</span>
+              </label>
+              <label class="flex items-center p-2 border border-gray-300 rounded-lg cursor-pointer hover:bg-white transition-colors duration-300">
+                <input 
+                  type="radio" 
+                  name="studyJobSector" 
+                  value="Other" 
+                  [(ngModel)]="formData.study_job_sector"
+                  class="text-primary focus:ring-primary">
+                <span class="ml-2 text-gray-700 text-sm">Other</span>
+              </label>
+            </div>
+          </div>
+
+                   
+        </div>
+      </ng-container>
+    </ng-container>
+    
+  </div>
+  <!-- END OF ALL CONDITIONAL CONTENT -->
+
+  <!-- ========================================= -->
+  <!-- NAVIGATION BUTTONS - SINGLE SET AT END -->
+  <!-- ========================================= -->
+  <div class="flex justify-between mt-8 pt-6 border-t border-gray-200">
+    <button 
+      type="button" 
+      (click)="showSection(1)" 
+      class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-300 font-medium flex items-center">
+      <i class="fas fa-arrow-left mr-2"></i>
+      Previous
+    </button>
+    <button 
+      type="button" 
+      (click)="showSection(3)" 
+      class="bg-primary text-white px-6 py-3 rounded-lg hover:bg-opacity-90 transition-colors duration-300 font-medium flex items-center">
+      Next Section
+      <i class="fas fa-arrow-right ml-2"></i>
+    </button>
+  </div>
+</div>
+<!-- END OF SECTION 2 -->
+          
+      <!-- SECTION 3: Experience During Studies -->
+      <div id="section3" class="form-section bg-white rounded-xl shadow-md p-6 card-hover slide-in" 
+           [style.display]="currentSection === 3 ? 'block' : 'none'">
+        <div class="flex items-center space-x-3 mb-6">
+          <div class="bg-secondary text-white p-2 rounded-lg">
+            <i class="fas fa-clock text-lg"></i>
+          </div>
+          <h2 class="text-2xl font-bold text-primary">Experience During Studies</h2>
+        </div>
+
+        <div class="space-y-6">
+          <!-- Worked During Studies -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3">
+              Did you work for pay during your studies at ATU? <span class="text-red-500">*</span>
+            </label>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+                <input 
+                  type="radio" 
+                  name="workedDuringStudies" 
+                  value="Yes, full-time (30+ hours/week)" 
+                  [(ngModel)]="formData.worked_during_studies"
+                  required
+                  class="text-primary focus:ring-primary">
+                <span class="ml-3 text-gray-700">Yes, full-time (30+ hours/week)</span>
+              </label>
+              <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+                <input 
+                  type="radio" 
+                  name="workedDuringStudies" 
+                  value="Yes, part-time (less than 30 hours/week)" 
+                  [(ngModel)]="formData.worked_during_studies"
+                  required
+                  class="text-primary focus:ring-primary">
+                <span class="ml-3 text-gray-700">Yes, part-time (<30 hours/week)</span>
+              </label>
+              <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+                <input 
+                  type="radio" 
+                  name="workedDuringStudies" 
+                  value="Yes, during vacations only" 
+                  [(ngModel)]="formData.worked_during_studies"
+                  required
+                  class="text-primary focus:ring-primary">
+                <span class="ml-3 text-gray-700">Yes, during vacations only</span>
+              </label>
+              <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+                <input 
+                  type="radio" 
+                  name="workedDuringStudies" 
+                  value="No" 
+                  [(ngModel)]="formData.worked_during_studies"
+                  required
+                  class="text-primary focus:ring-primary">
+                <span class="ml-3 text-gray-700">No</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- If Worked, Related to Field -->
+          <div *ngIf="formData.worked_during_studies && formData.worked_during_studies !== 'No'">
+            <label class="block text-sm font-medium text-gray-700 mb-3">
+              Was your work related to your field of study?
+            </label>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+                <input 
+                  type="radio" 
+                  name="workRelated" 
+                  value="Yes, directly related (internship/practicum)" 
+                  [(ngModel)]="formData.work_related_to_field"
+                  class="text-primary focus:ring-primary">
+                <span class="ml-3 text-gray-700">Yes, directly related</span>
+              </label>
+              <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+                <input 
+                  type="radio" 
+                  name="workRelated" 
+                  value="Somewhat related" 
+                  [(ngModel)]="formData.work_related_to_field"
+                  class="text-primary focus:ring-primary">
+                <span class="ml-3 text-gray-700">Somewhat related</span>
+              </label>
+              <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+                <input 
+                  type="radio" 
+                  name="workRelated" 
+                  value="Not related" 
+                  [(ngModel)]="formData.work_related_to_field"
+                  class="text-primary focus:ring-primary">
+                <span class="ml-3 text-gray-700">Not related</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="flex justify-between mt-8 pt-6 border-t border-gray-200">
+          <button 
+            type="button" 
+            (click)="showSection(2)" 
+            class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-300 font-medium flex items-center">
+            <i class="fas fa-arrow-left mr-2"></i>
+            Previous
+          </button>
+          <button 
+            type="button" 
+            (click)="showSection(getNextSection(3))" 
+            class="bg-primary text-white px-6 py-3 rounded-lg hover:bg-opacity-90 transition-colors duration-300 font-medium flex items-center">
+            Next Section
+            <i class="fas fa-arrow-right ml-2"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- SECTION 4: Skills Assessment -->
+      <div id="section4" class="form-section bg-white rounded-xl shadow-md p-6 card-hover slide-in" 
+           [style.display]="currentSection === 4 ? 'block' : 'none'">
+        <div class="flex items-center space-x-3 mb-6">
+          <div class="bg-primary text-white p-2 rounded-lg">
+            <i class="fas fa-star text-lg"></i>
+          </div>
+          <h2 class="text-2xl font-bold text-primary">Skills Assessment</h2>
+        </div>
+
+        <div class="space-y-6">
+          <!-- Skills Relevance -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3">
+              How relevant are the skills you gained at ATU to your current work/situation?
+            </label>
+            <div class="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0 bg-gray-50 p-4 rounded-lg">
+              <span class="text-sm text-gray-600 font-medium">Not relevant</span>
+              <div class="flex space-x-3">
+                <label *ngFor="let rating of [1,2,3,4,5]" class="flex flex-col items-center cursor-pointer">
+                  <input 
+                    type="radio" 
+                    name="skillsRelevance" 
+                    [value]="rating" 
+                    [(ngModel)]="formData.skills_relevance_rating"
+                    class="text-primary focus:ring-primary w-5 h-5">
+                  <span class="mt-2 text-sm font-medium text-gray-700">{{ rating }}</span>
+                </label>
+              </div>
+              <span class="text-sm text-gray-600 font-medium">Very relevant</span>
+            </div>
+          </div>
+
+          <!-- Competency When Graduated -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3">
+              Rate your competency in these areas WHEN YOU GRADUATED (1=Poor, 5=Excellent)
+            </label>
+            <div class="space-y-3 bg-gray-50 p-4 rounded-lg">
+              <div class="grid grid-cols-12 gap-2 items-center">
+                <span class="col-span-6 text-sm font-medium text-gray-700">Technical/practical skills in your field</span>
+                <div class="col-span-6 flex justify-end space-x-2">
+                  <label *ngFor="let rating of [1,2,3,4,5]" class="flex items-center">
+                    <input 
+                      type="radio" 
+                      name="compTechnical" 
+                      [value]="rating" 
+                      [(ngModel)]="formData.competency_technical"
+                      class="text-primary focus:ring-primary">
+                    <span class="ml-1 text-xs">{{ rating }}</span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-12 gap-2 items-center">
+                <span class="col-span-6 text-sm font-medium text-gray-700">Communication skills</span>
+                <div class="col-span-6 flex justify-end space-x-2">
+                  <label *ngFor="let rating of [1,2,3,4,5]" class="flex items-center">
+                    <input 
+                      type="radio" 
+                      name="compCommunication" 
+                      [value]="rating" 
+                      [(ngModel)]="formData.competency_communication"
+                      class="text-primary focus:ring-primary">
+                    <span class="ml-1 text-xs">{{ rating }}</span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-12 gap-2 items-center">
+                <span class="col-span-6 text-sm font-medium text-gray-700">Problem-solving</span>
+                <div class="col-span-6 flex justify-end space-x-2">
+                  <label *ngFor="let rating of [1,2,3,4,5]" class="flex items-center">
+                    <input 
+                      type="radio" 
+                      name="compProblemSolving" 
+                      [value]="rating" 
+                      [(ngModel)]="formData.competency_problem_solving"
+                      class="text-primary focus:ring-primary">
+                    <span class="ml-1 text-xs">{{ rating }}</span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-12 gap-2 items-center">
+                <span class="col-span-6 text-sm font-medium text-gray-700">Teamwork</span>
+                <div class="col-span-6 flex justify-end space-x-2">
+                  <label *ngFor="let rating of [1,2,3,4,5]" class="flex items-center">
+                    <input 
+                      type="radio" 
+                      name="compTeamwork" 
+                      [value]="rating" 
+                      [(ngModel)]="formData.competency_teamwork"
+                      class="text-primary focus:ring-primary">
+                    <span class="ml-1 text-xs">{{ rating }}</span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-12 gap-2 items-center">
+                <span class="col-span-6 text-sm font-medium text-gray-700">Computer/digital skills</span>
+                <div class="col-span-6 flex justify-end space-x-2">
+                  <label *ngFor="let rating of [1,2,3,4,5]" class="flex items-center">
+                    <input 
+                      type="radio" 
+                      name="compComputer" 
+                      [value]="rating" 
+                      [(ngModel)]="formData.competency_computer"
+                      class="text-primary focus:ring-primary">
+                    <span class="ml-1 text-xs">{{ rating }}</span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-12 gap-2 items-center">
+                <span class="col-span-6 text-sm font-medium text-gray-700">Critical thinking</span>
+                <div class="col-span-6 flex justify-end space-x-2">
+                  <label *ngFor="let rating of [1,2,3,4,5]" class="flex items-center">
+                    <input 
+                      type="radio" 
+                      name="compCritical" 
+                      [value]="rating" 
+                      [(ngModel)]="formData.competency_critical_thinking"
+                      class="text-primary focus:ring-primary">
+                    <span class="ml-1 text-xs">{{ rating }}</span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-12 gap-2 items-center">
+                <span class="col-span-6 text-sm font-medium text-gray-700">Entrepreneurship skills</span>
+                <div class="col-span-6 flex justify-end space-x-2">
+                  <label *ngFor="let rating of [1,2,3,4,5]" class="flex items-center">
+                    <input 
+                      type="radio" 
+                      name="compEntrepreneurship" 
+                      [value]="rating" 
+                      [(ngModel)]="formData.competency_entrepreneurship"
+                      class="text-primary focus:ring-primary">
+                    <span class="ml-1 text-xs">{{ rating }}</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Skills to Strengthen -->
+          <div>
+            <label for="skillsStrengthen" class="block text-sm font-medium text-gray-700 mb-1">
+              Which areas or skills should be strengthened in your programme? (Optional, max 200 characters)
+            </label>
+            <textarea 
+              id="skillsStrengthen" 
+              name="skillsStrengthen" 
+              rows="3"
+              maxlength="200"
+              [(ngModel)]="formData.skills_to_strengthen"
+              placeholder="E.g., More practical training, industry partnerships, modern equipment..."
+              class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300"></textarea>
+            <p class="text-xs text-gray-500 mt-1">{{ formData.skills_to_strengthen?.length || 0 }}/200 characters</p>
+          </div>
+
+          <!-- Current Situation Satisfaction -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3">
+              How satisfied are you with your current situation?
+            </label>
+            <div class="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0 bg-gray-50 p-4 rounded-lg">
+              <span class="text-sm text-gray-600 font-medium">Very dissatisfied</span>
+              <div class="flex space-x-3">
+                <label *ngFor="let rating of [1,2,3,4,5]" class="flex flex-col items-center cursor-pointer">
+                  <input 
+                    type="radio" 
+                    name="situationSatisfaction" 
+                    [value]="rating" 
+                    [(ngModel)]="formData.current_situation_satisfaction"
+                    class="text-primary focus:ring-primary w-5 h-5">
+                  <span class="mt-2 text-sm font-medium text-gray-700">{{ rating }}</span>
+                </label>
+              </div>
+              <span class="text-sm text-gray-600 font-medium">Very satisfied</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="flex justify-between mt-8 pt-6 border-t border-gray-200">
+          <button 
+            type="button" 
+            (click)="showSection(getPreviousSection(4))" 
+            class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-300 font-medium flex items-center">
+            <i class="fas fa-arrow-left mr-2"></i>
+            Previous
+          </button>
+          <button 
+            type="button" 
+            (click)="showSection(5)" 
+            class="bg-primary text-white px-6 py-3 rounded-lg hover:bg-opacity-90 transition-colors duration-300 font-medium flex items-center">
+            Next Section
+            <i class="fas fa-arrow-right ml-2"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- SECTION 5: Feedback on ATU Experience -->
+      <div id="section5" class="form-section bg-white rounded-xl shadow-md p-6 card-hover slide-in" 
+           [style.display]="currentSection === 5 ? 'block' : 'none'">
+        <div class="flex items-center space-x-3 mb-6">
+          <div class="bg-accent text-white p-2 rounded-lg">
+            <i class="fas fa-comment-alt text-lg"></i>
+          </div>
+          <h2 class="text-2xl font-bold text-primary">Feedback on ATU Experience</h2>
+        </div>
+
+        <div class="space-y-6">
+          <!-- Programme Quality -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3">
+              How would you rate the overall quality of your programme? <span class="text-red-500">*</span>
+            </label>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <label class="flex items-center justify-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+                <input 
+                  type="radio" 
+                  name="programmeQuality" 
+                  value="Excellent" 
+                  [(ngModel)]="formData.programme_quality_rating"
+                  required
+                  class="text-primary focus:ring-primary">
+                <span class="ml-3 text-gray-700">Excellent</span>
+              </label>
+              <label class="flex items-center justify-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+                <input 
+                  type="radio" 
+                  name="programmeQuality" 
+                  value="Good" 
+                  [(ngModel)]="formData.programme_quality_rating"
+                  required
+                  class="text-primary focus:ring-primary">
+                <span class="ml-3 text-gray-700">Good</span>
+              </label>
+              <label class="flex items-center justify-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+                <input 
+                  type="radio" 
+                  name="programmeQuality" 
+                  value="Fair" 
+                  [(ngModel)]="formData.programme_quality_rating"
+                  required
+                  class="text-primary focus:ring-primary">
+                <span class="ml-3 text-gray-700">Fair</span>
+              </label>
+              <label class="flex items-center justify-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+                <input 
+                  type="radio" 
+                  name="programmeQuality" 
+                  value="Poor" 
+                  [(ngModel)]="formData.programme_quality_rating"
+                  required
+                  class="text-primary focus:ring-primary">
+                <span class="ml-3 text-gray-700">Poor</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Rate ATU Aspects -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3">
+              Rate these aspects of your ATU experience (Excellent / Good / Fair / Poor / N/A)
+            </label>
+            <div class="space-y-3 bg-gray-50 p-4 rounded-lg">
+              <!-- Teaching Quality -->
+              <div class="grid grid-cols-12 gap-2 items-center">
+                <span class="col-span-5 md:col-span-6 text-sm font-medium text-gray-700">Quality of teaching/lecturers</span>
+                <div class="col-span-7 md:col-span-6 flex justify-end space-x-1">
+                  <label class="flex flex-col items-center cursor-pointer">
+                    <input 
+                      type="radio" 
+                      name="teachingQuality" 
+                      value="Excellent" 
+                      [(ngModel)]="formData.teaching_quality"
+                      class="text-primary focus:ring-primary">
+                    <span class="text-xs mt-1">Exc</span>
+                  </label>
+                  <label class="flex flex-col items-center cursor-pointer">
+                    <input 
+                      type="radio" 
+                      name="teachingQuality" 
+                      value="Good" 
+                      [(ngModel)]="formData.teaching_quality"
+                      class="text-primary focus:ring-primary">
+                    <span class="text-xs mt-1">Good</span>
+                  </label>
+                  <label class="flex flex-col items-center cursor-pointer">
+                    <input 
+                      type="radio" 
+                      name="teachingQuality" 
+                      value="Fair" 
+                      [(ngModel)]="formData.teaching_quality"
+                      class="text-primary focus:ring-primary">
+                    <span class="text-xs mt-1">Fair</span>
+                  </label>
+                  <label class="flex flex-col items-center cursor-pointer">
+                    <input 
+                      type="radio" 
+                      name="teachingQuality" 
+                      value="Poor" 
+                      [(ngModel)]="formData.teaching_quality"
+                      class="text-primary focus:ring-primary">
+                    <span class="text-xs mt-1">Poor</span>
+                  </label>
+                  <label class="flex flex-col items-center cursor-pointer">
+                    <input 
+                      type="radio" 
+                      name="teachingQuality" 
+                      value="N/A" 
+                      [(ngModel)]="formData.teaching_quality"
+                      class="text-primary focus:ring-primary">
+                    <span class="text-xs mt-1">N/A</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Curriculum Relevance -->
+              <div class="grid grid-cols-12 gap-2 items-center">
+                <span class="col-span-5 md:col-span-6 text-sm font-medium text-gray-700">Curriculum relevance</span>
+                <div class="col-span-7 md:col-span-6 flex justify-end space-x-1">
+                  <label class="flex flex-col items-center cursor-pointer">
+                    <input 
+                      type="radio" 
+                      name="curriculumRelevance" 
+                      value="Excellent" 
+                      [(ngModel)]="formData.curriculum_relevance"
+                      class="text-primary focus:ring-primary">
+                    <span class="text-xs mt-1">Exc</span>
+                  </label>
+                  <label class="flex flex-col items-center cursor-pointer">
+                    <input 
+                      type="radio" 
+                      name="curriculumRelevance" 
+                      value="Good" 
+                      [(ngModel)]="formData.curriculum_relevance"
+                      class="text-primary focus:ring-primary">
+                    <span class="text-xs mt-1">Good</span>
+                  </label>
+                  <label class="flex flex-col items-center cursor-pointer">
+                    <input 
+                      type="radio" 
+                      name="curriculumRelevance" 
+                      value="Fair" 
+                      [(ngModel)]="formData.curriculum_relevance"
+                      class="text-primary focus:ring-primary">
+                    <span class="text-xs mt-1">Fair</span>
+                  </label>
+                  <label class="flex flex-col items-center cursor-pointer">
+                    <input 
+                      type="radio" 
+                      name="curriculumRelevance" 
+                      value="Poor" 
+                      [(ngModel)]="formData.curriculum_relevance"
+                      class="text-primary focus:ring-primary">
+                    <span class="text-xs mt-1">Poor</span>
+                  </label>
+                  <label class="flex flex-col items-center cursor-pointer">
+                    <input 
+                      type="radio" 
+                      name="curriculumRelevance" 
+                      value="N/A" 
+                      [(ngModel)]="formData.curriculum_relevance"
+                      class="text-primary focus:ring-primary">
+                    <span class="text-xs mt-1">N/A</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Practical Training -->
+              <div class="grid grid-cols-12 gap-2 items-center">
+                <span class="col-span-5 md:col-span-6 text-sm font-medium text-gray-700">Practical training</span>
+                <div class="col-span-7 md:col-span-6 flex justify-end space-x-1">
+                  <label class="flex flex-col items-center cursor-pointer">
+                    <input 
+                      type="radio" 
+                      name="practicalTraining" 
+                      value="Excellent" 
+                      [(ngModel)]="formData.practical_training"
+                      class="text-primary focus:ring-primary">
+                    <span class="text-xs mt-1">Exc</span>
+                  </label>
+                  <label class="flex flex-col items-center cursor-pointer">
+                    <input 
+                      type="radio" 
+                      name="practicalTraining" 
+                      value="Good" 
+                      [(ngModel)]="formData.practical_training"
+                      class="text-primary focus:ring-primary">
+                    <span class="text-xs mt-1">Good</span>
+                  </label>
+                  <label class="flex flex-col items-center cursor-pointer">
+                    <input 
+                      type="radio" 
+                      name="practicalTraining" 
+                      value="Fair" 
+                      [(ngModel)]="formData.practical_training"
+                      class="text-primary focus:ring-primary">
+                    <span class="text-xs mt-1">Fair</span>
+                  </label>
+                  <label class="flex flex-col items-center cursor-pointer">
+                    <input 
+                      type="radio" 
+                      name="practicalTraining" 
+                      value="Poor" 
+                      [(ngModel)]="formData.practical_training"
+                      class="text-primary focus:ring-primary">
+                    <span class="text-xs mt-1">Poor</span>
+                  </label>
+                  <label class="flex flex-col items-center cursor-pointer">
+                    <input 
+                      type="radio" 
+                      name="practicalTraining" 
+                      value="N/A" 
+                      [(ngModel)]="formData.practical_training"
+                      class="text-primary focus:ring-primary">
+                    <span class="text-xs mt-1">N/A</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Facilities & Equipment -->
+              <div class="grid grid-cols-12 gap-2 items-center">
+                <span class="col-span-5 md:col-span-6 text-sm font-medium text-gray-700">Facilities/equipment</span>
+                <div class="col-span-7 md:col-span-6 flex justify-end space-x-1">
+                  <label class="flex flex-col items-center cursor-pointer">
+                    <input 
+                      type="radio" 
+                      name="facilitiesEquipment" 
+                      value="Excellent" 
+                      [(ngModel)]="formData.facilities_equipment"
+                      class="text-primary focus:ring-primary">
+                    <span class="text-xs mt-1">Exc</span>
+                  </label>
+                  <label class="flex flex-col items-center cursor-pointer">
+                    <input 
+                      type="radio" 
+                      name="facilitiesEquipment" 
+                      value="Good" 
+                      [(ngModel)]="formData.facilities_equipment"
+                      class="text-primary focus:ring-primary">
+                    <span class="text-xs mt-1">Good</span>
+                  </label>
+                  <label class="flex flex-col items-center cursor-pointer">
+                    <input 
+                      type="radio" 
+                      name="facilitiesEquipment" 
+                      value="Fair" 
+                      [(ngModel)]="formData.facilities_equipment"
+                      class="text-primary focus:ring-primary">
+                    <span class="text-xs mt-1">Fair</span>
+                  </label>
+                  <label class="flex flex-col items-center cursor-pointer">
+                    <input 
+                      type="radio" 
+                      name="facilitiesEquipment" 
+                      value="Poor" 
+                      [(ngModel)]="formData.facilities_equipment"
+                      class="text-primary focus:ring-primary">
+                    <span class="text-xs mt-1">Poor</span>
+                  </label>
+                  <label class="flex flex-col items-center cursor-pointer">
+                    <input 
+                      type="radio" 
+                      name="facilitiesEquipment" 
+                      value="N/A" 
+                      [(ngModel)]="formData.facilities_equipment"
+                      class="text-primary focus:ring-primary">
+                    <span class="text-xs mt-1">N/A</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Internship Organization -->
+              <div class="grid grid-cols-12 gap-2 items-center">
+                <span class="col-span-5 md:col-span-6 text-sm font-medium text-gray-700">Internship organization</span>
+                <div class="col-span-7 md:col-span-6 flex justify-end space-x-1">
+                  <label class="flex flex-col items-center cursor-pointer">
+                    <input 
+                      type="radio" 
+                      name="internshipOrg" 
+                      value="Excellent" 
+                      [(ngModel)]="formData.internship_organization"
+                      class="text-primary focus:ring-primary">
+                    <span class="text-xs mt-1">Exc</span>
+                  </label>
+                  <label class="flex flex-col items-center cursor-pointer">
+                    <input 
+                      type="radio" 
+                      name="internshipOrg" 
+                      value="Good" 
+                      [(ngModel)]="formData.internship_organization"
+                      class="text-primary focus:ring-primary">
+                    <span class="text-xs mt-1">Good</span>
+                  </label>
+                  <label class="flex flex-col items-center cursor-pointer">
+                    <input 
+                      type="radio" 
+                      name="internshipOrg" 
+                      value="Fair" 
+                      [(ngModel)]="formData.internship_organization"
+                      class="text-primary focus:ring-primary">
+                    <span class="text-xs mt-1">Fair</span>
+                  </label>
+                  <label class="flex flex-col items-center cursor-pointer">
+                    <input 
+                      type="radio" 
+                      name="internshipOrg" 
+                      value="Poor" 
+                      [(ngModel)]="formData.internship_organization"
+                      class="text-primary focus:ring-primary">
+                    <span class="text-xs mt-1">Poor</span>
+                  </label>
+                  <label class="flex flex-col items-center cursor-pointer">
+                    <input 
+                      type="radio" 
+                      name="internshipOrg" 
+                      value="N/A" 
+                      [(ngModel)]="formData.internship_organization"
+                      class="text-primary focus:ring-primary">
+                    <span class="text-xs mt-1">N/A</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Career Guidance -->
+              <div class="grid grid-cols-12 gap-2 items-center">
+                <span class="col-span-5 md:col-span-6 text-sm font-medium text-gray-700">Career guidance</span>
+                <div class="col-span-7 md:col-span-6 flex justify-end space-x-1">
+                  <label class="flex flex-col items-center cursor-pointer">
+                    <input 
+                      type="radio" 
+                      name="careerGuidance" 
+                      value="Excellent" 
+                      [(ngModel)]="formData.career_guidance"
+                      class="text-primary focus:ring-primary">
+                    <span class="text-xs mt-1">Exc</span>
+                  </label>
+                  <label class="flex flex-col items-center cursor-pointer">
+                    <input 
+                      type="radio" 
+                      name="careerGuidance" 
+                      value="Good" 
+                      [(ngModel)]="formData.career_guidance"
+                      class="text-primary focus:ring-primary">
+                    <span class="text-xs mt-1">Good</span>
+                  </label>
+                  <label class="flex flex-col items-center cursor-pointer">
+                    <input 
+                      type="radio" 
+                      name="careerGuidance" 
+                      value="Fair" 
+                      [(ngModel)]="formData.career_guidance"
+                      class="text-primary focus:ring-primary">
+                    <span class="text-xs mt-1">Fair</span>
+                  </label>
+                  <label class="flex flex-col items-center cursor-pointer">
+                    <input 
+                      type="radio" 
+                      name="careerGuidance" 
+                      value="Poor" 
+                      [(ngModel)]="formData.career_guidance"
+                      class="text-primary focus:ring-primary">
+                    <span class="text-xs mt-1">Poor</span>
+                  </label>
+                  <label class="flex flex-col items-center cursor-pointer">
+                    <input 
+                      type="radio" 
+                      name="careerGuidance" 
+                      value="N/A" 
+                      [(ngModel)]="formData.career_guidance"
+                      class="text-primary focus:ring-primary">
+                    <span class="text-xs mt-1">N/A</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Student Support -->
+              <div class="grid grid-cols-12 gap-2 items-center">
+                <span class="col-span-5 md:col-span-6 text-sm font-medium text-gray-700">Student support services</span>
+                <div class="col-span-7 md:col-span-6 flex justify-end space-x-1">
+                  <label class="flex flex-col items-center cursor-pointer">
+                    <input 
+                      type="radio" 
+                      name="studentSupport" 
+                      value="Excellent" 
+                      [(ngModel)]="formData.student_support"
+                      class="text-primary focus:ring-primary">
+                    <span class="text-xs mt-1">Exc</span>
+                  </label>
+                  <label class="flex flex-col items-center cursor-pointer">
+                    <input 
+                      type="radio" 
+                      name="studentSupport" 
+                      value="Good" 
+                      [(ngModel)]="formData.student_support"
+                      class="text-primary focus:ring-primary">
+                    <span class="text-xs mt-1">Good</span>
+                  </label>
+                  <label class="flex flex-col items-center cursor-pointer">
+                    <input 
+                      type="radio" 
+                      name="studentSupport" 
+                      value="Fair" 
+                      [(ngModel)]="formData.student_support"
+                      class="text-primary focus:ring-primary">
+                    <span class="text-xs mt-1">Fair</span>
+                  </label>
+                  <label class="flex flex-col items-center cursor-pointer">
+                    <input 
+                      type="radio" 
+                      name="studentSupport" 
+                      value="Poor" 
+                      [(ngModel)]="formData.student_support"
+                      class="text-primary focus:ring-primary">
+                    <span class="text-xs mt-1">Poor</span>
+                  </label>
+                  <label class="flex flex-col items-center cursor-pointer">
+                    <input 
+                      type="radio" 
+                      name="studentSupport" 
+                      value="N/A" 
+                      [(ngModel)]="formData.student_support"
+                      class="text-primary focus:ring-primary">
+                    <span class="text-xs mt-1">N/A</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Would Recommend ATU -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3">
+              Would you recommend ATU to others? <span class="text-red-500">*</span>
+            </label>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <label class="flex items-center justify-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+                <input 
+                  type="radio" 
+                  name="wouldRecommend" 
+                  value="Yes" 
+                  [(ngModel)]="formData.would_recommend_atu"
+                  required
+                  class="text-primary focus:ring-primary">
+                <span class="ml-3 text-gray-700">Yes</span>
+              </label>
+              <label class="flex items-center justify-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+                <input 
+                  type="radio" 
+                  name="wouldRecommend" 
+                  value="Maybe" 
+                  [(ngModel)]="formData.would_recommend_atu"
+                  required
+                  class="text-primary focus:ring-primary">
+                <span class="ml-3 text-gray-700">Maybe</span>
+              </label>
+              <label class="flex items-center justify-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+                <input 
+                  type="radio" 
+                  name="wouldRecommend" 
+                  value="No" 
+                  [(ngModel)]="formData.would_recommend_atu"
+                  required
+                  class="text-primary focus:ring-primary">
+                <span class="ml-3 text-gray-700">No</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- What ATU Did Well -->
+          <div>
+            <label for="atuDidWell" class="block text-sm font-medium text-gray-700 mb-1">
+              What did ATU do well? (Optional, max 200 characters)
+            </label>
+            <textarea 
+              id="atuDidWell" 
+              name="atuDidWell" 
+              rows="2"
+              maxlength="200"
+              [(ngModel)]="formData.atu_did_well"
+              placeholder="E.g., Experienced lecturers, good facilities, supportive environment..."
+              class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300"></textarea>
+            <p class="text-xs text-gray-500 mt-1">{{ formData.atu_did_well?.length || 0 }}/200 characters</p>
+          </div>
+
+          <!-- What ATU Should Improve -->
+          <div>
+            <label for="atuShouldImprove" class="block text-sm font-medium text-gray-700 mb-1">
+              What should ATU improve? (Optional, max 200 characters)
+            </label>
+            <textarea 
+              id="atuShouldImprove" 
+              name="atuShouldImprove" 
+              rows="2"
+              maxlength="200"
+              [(ngModel)]="formData.atu_should_improve"
+              placeholder="E.g., More industry linkages, updated equipment, better career support..."
+              class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300"></textarea>
+            <p class="text-xs text-gray-500 mt-1">{{ formData.atu_should_improve?.length || 0 }}/200 characters</p>
+          </div>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="flex justify-between mt-8 pt-6 border-t border-gray-200">
+          <button 
+            type="button" 
+            (click)="showSection(getPreviousSection(5))" 
+            class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-300 font-medium flex items-center">
+            <i class="fas fa-arrow-left mr-2"></i>
+            Previous
+          </button>
+          <button 
+            type="button" 
+            (click)="showSection(6)" 
+            class="bg-primary text-white px-6 py-3 rounded-lg hover:bg-opacity-90 transition-colors duration-300 font-medium flex items-center">
+            Next Section
+            <i class="fas fa-arrow-right ml-2"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- SECTION 6: Alumni Engagement -->
+      <div id="section6" class="form-section bg-white rounded-xl shadow-md p-6 card-hover slide-in" 
+           [style.display]="currentSection === 6 ? 'block' : 'none'">
+        <div class="flex items-center space-x-3 mb-6">
+          <div class="bg-secondary text-white p-2 rounded-lg">
+            <i class="fas fa-users text-lg"></i>
+          </div>
+          <h2 class="text-2xl font-bold text-primary">Alumni Engagement</h2>
+        </div>
+
+        <div class="space-y-6">
+          <!-- Alumni Association Membership -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3">
+              Are you a member of the ATU Alumni Association?
+            </label>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+                <input 
+                  type="radio" 
+                  name="alumniMember" 
+                  [value]="true" 
+                  [(ngModel)]="formData.is_alumni_member"
+                  class="text-primary focus:ring-primary">
+                <span class="ml-3 text-gray-700">Yes</span>
+              </label>
+              <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+                <input 
+                  type="radio" 
+                  name="alumniMember" 
+                  [value]="false" 
+                  [(ngModel)]="formData.is_alumni_member"
+                  class="text-primary focus:ring-primary">
+                <span class="ml-3 text-gray-700">No</span>
+              </label>
+              <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+                <input 
+                  type="radio" 
+                  name="alumniMember" 
+                  value="Not aware" 
+                  [(ngModel)]="formData.is_alumni_member"
+                  class="text-primary focus:ring-primary">
+                <span class="ml-3 text-gray-700">Not aware of it</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Willingness to Mentor -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3">
+              Would you be willing to mentor current students or participate in alumni activities?
+            </label>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+                <input 
+                  type="radio" 
+                  name="willingMentor" 
+                  [value]="true" 
+                  [(ngModel)]="formData.willing_to_mentor"
+                  class="text-primary focus:ring-primary">
+                <span class="ml-3 text-gray-700">Yes</span>
+              </label>
+              <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+                <input 
+                  type="radio" 
+                  name="willingMentor" 
+                  value="Maybe" 
+                  [(ngModel)]="formData.willing_to_mentor"
+                  class="text-primary focus:ring-primary">
+                <span class="ml-3 text-gray-700">Maybe</span>
+              </label>
+              <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+                <input 
+                  type="radio" 
+                  name="willingMentor" 
+                  [value]="false" 
+                  [(ngModel)]="formData.willing_to_mentor"
+                  class="text-primary focus:ring-primary">
+                <span class="ml-3 text-gray-700">No</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Preferred Contact Method -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3">
+              Preferred contact method for alumni activities
+            </label>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+                <input 
+                  type="radio" 
+                  name="contactMethod" 
+                  value="Email" 
+                  [(ngModel)]="formData.preferred_contact_method"
+                  class="text-primary focus:ring-primary">
+                <span class="ml-3 text-gray-700">Email</span>
+              </label>
+              <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+                <input 
+                  type="radio" 
+                  name="contactMethod" 
+                  value="Phone" 
+                  [(ngModel)]="formData.preferred_contact_method"
+                  class="text-primary focus:ring-primary">
+                <span class="ml-3 text-gray-700">Phone</span>
+              </label>
+              <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+                <input 
+                  type="radio" 
+                  name="contactMethod" 
+                  value="Social Media" 
+                  [(ngModel)]="formData.preferred_contact_method"
+                  class="text-primary focus:ring-primary">
+                <span class="ml-3 text-gray-700">Social Media</span>
+              </label>
+              <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+                <input 
+                  type="radio" 
+                  name="contactMethod" 
+                  value="WhatsApp" 
+                  [(ngModel)]="formData.preferred_contact_method"
+                  class="text-primary focus:ring-primary">
+                <span class="ml-3 text-gray-700">WhatsApp</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Willing to Collaborate -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3">
+              Would you be willing to collaborate with ATU on research or projects?
+            </label>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+                <input 
+                  type="radio" 
+                  name="willingCollaborate" 
+                  [value]="true" 
+                  [(ngModel)]="formData.willing_to_collaborate"
+                  class="text-primary focus:ring-primary">
+                <span class="ml-3 text-gray-700">Yes</span>
+              </label>
+              <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+                <input 
+                  type="radio" 
+                  name="willingCollaborate" 
+                  value="Maybe" 
+                  [(ngModel)]="formData.willing_to_collaborate"
+                  class="text-primary focus:ring-primary">
+                <span class="ml-3 text-gray-700">Maybe</span>
+              </label>
+              <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+                <input 
+                  type="radio" 
+                  name="willingCollaborate" 
+                  [value]="false" 
+                  [(ngModel)]="formData.willing_to_collaborate"
+                  class="text-primary focus:ring-primary">
+                <span class="ml-3 text-gray-700">No</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="flex justify-between mt-8 pt-6 border-t border-gray-200">
+          <button 
+            type="button" 
+            (click)="showSection(5)" 
+            class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-300 font-medium flex items-center">
+            <i class="fas fa-arrow-left mr-2"></i>
+            Previous
+          </button>
+          <button 
+            type="button" 
+            (click)="showSection(7)" 
+            class="bg-primary text-white px-6 py-3 rounded-lg hover:bg-opacity-90 transition-colors duration-300 font-medium flex items-center">
+            Next Section
+            <i class="fas fa-arrow-right ml-2"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- SECTION 7: Survey Feedback -->
+      <div id="section7" class="form-section bg-white rounded-xl shadow-md p-6 card-hover slide-in" 
+           [style.display]="currentSection === 7 ? 'block' : 'none'">
+        <div class="flex items-center space-x-3 mb-6">
+          <div class="bg-primary text-white p-2 rounded-lg">
+            <i class="fas fa-clipboard-check text-lg"></i>
+          </div>
+          <h2 class="text-2xl font-bold text-primary">Survey Feedback</h2>
+        </div>
+
+        <div class="space-y-6">
+          <!-- How Heard About Survey -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3">
+              How did you hear about this tracer study?
+            </label>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+                <input 
+                  type="radio" 
+                  name="heardAbout" 
+                  value="Email from ATU" 
+                  [(ngModel)]="formData.how_heard_about_survey"
+                  class="text-primary focus:ring-primary">
+                <span class="ml-3 text-gray-700">Email from ATU</span>
+              </label>
+              <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+                <input 
+                  type="radio" 
+                  name="heardAbout" 
+                  value="SMS/Text message" 
+                  [(ngModel)]="formData.how_heard_about_survey"
+                  class="text-primary focus:ring-primary">
+                <span class="ml-3 text-gray-700">SMS/Text message</span>
+              </label>
+              <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+                <input 
+                  type="radio" 
+                  name="heardAbout" 
+                  value="WhatsApp" 
+                  [(ngModel)]="formData.how_heard_about_survey"
+                  class="text-primary focus:ring-primary">
+                <span class="ml-3 text-gray-700">WhatsApp</span>
+              </label>
+              <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+                <input 
+                  type="radio" 
+                  name="heardAbout" 
+                  value="Phone call from ATU staff" 
+                  [(ngModel)]="formData.how_heard_about_survey"
+                  class="text-primary focus:ring-primary">
+                <span class="ml-3 text-gray-700">Phone call from ATU staff</span>
+              </label>
+              <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+                <input 
+                  type="radio" 
+                  name="heardAbout" 
+                  value="Social media" 
+                  [(ngModel)]="formData.how_heard_about_survey"
+                  class="text-primary focus:ring-primary">
+                <span class="ml-3 text-gray-700">Social media</span>
+              </label>
+              <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+                <input 
+                  type="radio" 
+                  name="heardAbout" 
+                  value="Through a friend/classmate" 
+                  [(ngModel)]="formData.how_heard_about_survey"
+                  class="text-primary focus:ring-primary">
+                <span class="ml-3 text-gray-700">Through a friend/classmate</span>
+              </label>
+              <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-300">
+                <input 
+                  type="radio" 
+                  name="heardAbout" 
+                  value="Other" 
+                  [(ngModel)]="formData.how_heard_about_survey"
+                  class="text-primary focus:ring-primary">
+                <span class="ml-3 text-gray-700">Other</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Thank You Message -->
+          <div class="bg-gradient-to-r from-primary to-accent text-white rounded-lg p-6 text-center">
+            <i class="fas fa-heart text-4xl mb-3"></i>
+            <h3 class="text-xl font-bold mb-2">Thank You for Your Time!</h3>
+            <p class="opacity-90">Your feedback will help improve ATU programmes and support future graduates.</p>
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="flex justify-between mt-8 pt-6 border-t border-gray-200">
+          <button 
+            type="button" 
+            (click)="showSection(6)" 
+            class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-300 font-medium flex items-center">
+            <i class="fas fa-arrow-left mr-2"></i>
+            Previous
+          </button>
+          <button 
+            type="submit" 
+            [disabled]="isSubmitting"
+            class="bg-primary text-white px-8 py-3 rounded-lg hover:bg-opacity-90 transition-colors duration-300 font-medium flex items-center disabled:opacity-50 disabled:cursor-not-allowed">
+            <span *ngIf="!isSubmitting">Submit Survey</span>
+            <span *ngIf="isSubmitting">Submitting...</span>
+            <i *ngIf="!isSubmitting" class="fas fa-paper-plane ml-2"></i>
+            <i *ngIf="isSubmitting" class="fas fa-spinner fa-spin ml-2"></i>
+          </button>
+        </div>
+      </div>
+
+    </form>
+  </ng-container>
+
+  <!-- Thank You Message -->
+  <div id="thankYouMessage" class="hidden bg-gradient-to-r from-primary to-accent text-white rounded-2xl shadow-lg p-8 mb-8 slide-in text-center">
+    <div class="mb-6">
+      <i class="fas fa-check-circle text-6xl mb-4"></i>
+      <h2 class="text-3xl font-bold mb-2">Thank You!</h2>
+      <p class="text-lg opacity-90">Your feedback has been successfully submitted.</p>
+    </div>
+    <div class="bg-white/10 rounded-lg p-6">
+      <p class="mb-4">Your responses will help Accra Technical University improve its programmes and better support future graduates.</p>
+      <p class="text-sm opacity-80">If you have any questions, please contact the Alumni Office.</p>
+    </div>
+  </div>
+</div>
+
+
+
+  
+  

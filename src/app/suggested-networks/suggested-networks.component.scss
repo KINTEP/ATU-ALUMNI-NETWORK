@@ -1,0 +1,42 @@
+
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .slide-in {
+    animation: slideIn 0.5s ease-out forwards;
+    opacity: 0;
+  }
+  
+  .card-hover {
+    transition: all 0.3s ease;
+  }
+  
+  .card-hover:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  }
+  
+  :root {
+    --primary: #3b82f6;
+    --accent: #8b5cf6;
+    --secondary: #10b981;
+  }
+  
+  .bg-primary { background-color: var(--primary); }
+  .bg-accent { background-color: var(--accent); }
+  .bg-secondary { background-color: var(--secondary); }
+  .text-primary { color: var(--primary); }
+  .text-accent { color: var(--accent); }
+  .text-secondary { color: var(--secondary); }
+  
+  .from-primary { --tw-gradient-from: var(--primary); }
+  .to-accent { --tw-gradient-to: var(--accent); }
+  .to-secondary { --tw-gradient-to: var(--secondary); }

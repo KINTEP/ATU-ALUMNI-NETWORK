@@ -1,0 +1,418 @@
+<div class="container mx-auto px-4 py-8">
+  <!-- Search Bar Section -->
+  <div class="mb-8">
+    <div class="bg-white rounded-xl shadow-md p-4 card-hover slide-in">
+      <div class="flex flex-col md:flex-row gap-4">
+        <div class="flex-1 relative">
+          <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+          <input 
+            type="text" 
+            placeholder="Search for posts, events, jobs, alumni..." 
+            class="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
+        </div>
+        <div class="flex gap-2">
+          <button class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors duration-300 flex items-center space-x-2">
+            <span>Search</span>
+            <i class="fas fa-search"></i>
+          </button>
+        </div>
+      </div>
+      
+      <!-- Search Suggestions -->
+      <div class="mt-3">
+        <div class="flex flex-wrap gap-2">
+          <span class="text-xs text-gray-500">Popular searches:</span>
+          <button class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-2 py-1 rounded-full transition-colors duration-300">Career Fair</button>
+          <button class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-2 py-1 rounded-full transition-colors duration-300">Software Engineer</button>
+          <button class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-2 py-1 rounded-full transition-colors duration-300">Tech Summit</button>
+          <button class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-2 py-1 rounded-full transition-colors duration-300">Alumni Dinner</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="flex flex-col lg:flex-row gap-8">
+    <!-- Left Sidebar -->
+    <div class="w-full lg:w-1/4">
+      <div class="space-y-6">
+        <!-- User Profile Card -->
+        <div class="bg-white rounded-xl shadow-md overflow-hidden card-hover slide-in">
+          <div class="bg-gradient-to-r from-blue-600 to-indigo-600 p-4 text-white">
+            <div class="flex items-center space-x-4">
+
+              <div *ngIf="hasProfilePicture(currentUser?.profile_picture); else userInitials" 
+                  class="w-16 h-16 rounded-full overflow-hidden border-2 border-white">
+                <img [src]="getCurrentUserProfilePicture()" 
+                    [alt]="getUserFullName()" 
+                    class="w-full h-full object-cover"
+                    (error)="onImageError($event)">
+              </div>
+              <ng-template #userInitials>
+                <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center text-blue-600 font-bold text-xl">
+                  {{ getUserInitials() }}
+                </div>
+              </ng-template>
+
+              <div>
+                <h3 class="font-bold text-lg">{{ getUserFullName() }}</h3>
+                <p class="text-sm opacity-90">{{ getUserGraduationInfo() }}</p>
+              </div>
+            </div>
+          </div>
+          <div class="p-4">
+            <div class="flex justify-between text-sm mb-4">
+              <div class="text-center">
+                <p class="font-bold text-blue-600">128</p>
+                <p class="text-gray-500">Connections</p>
+              </div>
+              <div class="text-center">
+                <p class="font-bold text-blue-600">{{ myEvents.length }}</p>
+                <p class="text-gray-500">Events</p>
+              </div>
+              <div class="text-center">
+                <p class="font-bold text-blue-600">5</p>
+                <p class="text-gray-500">Forums</p>
+              </div>
+            </div>
+            <button (click)="viewProfile()" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors duration-300 flex items-center justify-center space-x-2">
+              <i class="fas fa-user-edit"></i>
+              <span>View Profile</span>
+            </button>
+          </div>
+        </div>
+        
+        <!-- Quick Access -->
+        <div class="bg-white rounded-xl shadow-md p-4 card-hover slide-in">
+          <h3 class="font-bold text-lg mb-4 text-blue-600">Quick Access</h3>
+          <div class="space-y-3">
+            <button (click)="browseEvents()" class="w-full flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-100 transition-colors duration-300">
+              <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600">
+                <i class="fas fa-calendar-day"></i>
+              </div>
+              <span>Browse Events</span>
+            </button>
+            <button (click)="findJobs()" class="w-full flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-100 transition-colors duration-300">
+              <div class="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center text-indigo-600">
+                <i class="fas fa-briefcase"></i>
+              </div>
+              <span>Find Jobs</span>
+            </button>
+            <button (click)="joinForums()" class="w-full flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-100 transition-colors duration-300">
+              <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center text-purple-600">
+                <i class="fas fa-comments"></i>
+              </div>
+              <span>Join Forums</span>
+            </button>
+            <button (click)="findJobs()" class="w-full flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-100 transition-colors duration-300">
+              <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600">
+                <i class="fas fa-bookmark"></i>
+              </div>
+              <span>Saved Jobs</span>
+            </button>
+          </div>
+        </div>
+        
+        <!-- My Events -->
+        <div class="bg-white rounded-xl shadow-md p-4 card-hover slide-in">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="font-bold text-lg text-blue-600">My Events</h3>
+            <button (click)="browseEvents()" class="text-sm text-blue-600 hover:underline">See all</button>
+          </div>
+          
+          <!-- Loading State -->
+          <div *ngIf="isLoadingEvents" class="text-center py-4">
+            <i class="fas fa-spinner fa-spin text-blue-600"></i>
+            <p class="text-sm text-gray-500 mt-2">Loading events...</p>
+          </div>
+
+          <!-- My Events List -->
+          <div *ngIf="!isLoadingEvents && myEvents.length > 0" class="space-y-4">
+            <div *ngFor="let event of myEvents" class="flex items-start space-x-3 cursor-pointer" (click)="viewEvent(event.id)">
+              <div class="w-12 h-12 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 flex items-center justify-center text-white">
+                <i class="fas fa-calendar"></i>
+              </div>
+              <div class="flex-1">
+                <p class="font-medium">{{ event.title }}</p>
+                <p class="text-sm text-gray-500">{{ formatDateTime(event.start_date) }}</p>
+                <button class="mt-1 text-xs text-blue-600 hover:underline">View Details</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Empty State -->
+          <div *ngIf="!isLoadingEvents && myEvents.length === 0" class="text-center py-4">
+            <p class="text-sm text-gray-500">No upcoming events</p>
+            <button (click)="browseEvents()" class="text-sm text-blue-600 hover:underline mt-2">Browse Events</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Main Feed -->
+    <div class="w-full lg:w-2/4">
+      <div class="space-y-6">
+        
+        <!-- Loading State for News -->
+        <div *ngIf="isLoadingNews" class="bg-white rounded-xl shadow-md p-8 text-center">
+          <i class="fas fa-spinner fa-spin text-blue-600 text-3xl"></i>
+          <p class="text-gray-500 mt-4">Loading news...</p>
+        </div>
+
+        <!-- Featured News Spotlight -->
+        <div *ngFor="let news of featuredNews; let i = index" class="bg-white rounded-xl shadow-md overflow-hidden card-hover slide-in">
+          <div *ngIf="news.featured_image" class="w-full h-48 overflow-hidden">
+            <img [src]="getNewsImageUrl(news.featured_image)" 
+                [alt]="news.title" 
+                class="w-full h-full object-cover"
+                (error)="onNewsImageError($event)">
+          </div>
+          <div class="p-4">
+            <div class="flex justify-between items-start mb-3">
+              <div class="flex space-x-3">
+                
+                <div *ngIf="news.author_picture; else authorInitials" 
+                  class="w-10 h-10 rounded-full overflow-hidden border border-gray-200">
+                  <img [src]="getProfilePictureUrl(news.author_picture)" 
+                      [alt]="news.author_name || 'Author'" 
+                      class="w-full h-full object-cover"
+                      (error)="onAuthorImageError($event, news.author_name)">
+                </div>
+                <ng-template #authorInitials>
+                  <div class="w-10 h-10 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full flex items-center justify-center text-white font-bold">
+                    {{ news.author_name ? news.author_name.substring(0, 2).toUpperCase() : 'AT' }}
+                  </div>
+                </ng-template>
+              
+                <div>
+                  <h4 class="font-bold">{{ news.author_name || 'Alumni Team' }}</h4>
+                  <p class="text-sm text-gray-500">{{ formatDate(news.published_at) }}</p>
+                </div>
+
+              </div>
+            </div>
+            
+            <h3 class="text-xl font-bold mb-2">{{ news.title }}</h3>
+            <p class="text-gray-700 mb-4">{{ news.excerpt }}</p>
+            
+            <div class="flex justify-between items-center pt-4 border-t border-gray-200">
+              <div class="flex space-x-4">
+                <button (click)="likeNews(news.id, i)" class="flex items-center space-x-1 text-gray-500 hover:text-blue-600 transition-colors duration-300">
+                  <i [class]="news.user_has_liked ? 'fas fa-thumbs-up text-blue-600' : 'far fa-thumbs-up'"></i>
+                  <span>{{ news.likes_count }}</span>
+                </button>
+                <button class="flex items-center space-x-1 text-gray-500 hover:text-blue-600 transition-colors duration-300">
+                  <i class="far fa-comment"></i>
+                  <span>{{ news.comments_count }}</span>
+                </button>
+                <div class="flex items-center space-x-1 text-gray-500">
+                  <i class="far fa-eye"></i>
+                  <span>{{ news.views_count }}</span>
+                </div>
+              </div>
+              <button (click)="viewNews(news.id)" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors duration-300">
+                Read More
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Upcoming Events Feed -->
+        <div *ngFor="let event of upcomingEvents" class="bg-white rounded-xl shadow-md overflow-hidden card-hover slide-in">
+          <div *ngIf="event.event_image" class="w-full h-48 overflow-hidden">
+            <img [src]="event.event_image" 
+                 [alt]="event.title" 
+                 class="w-full h-full object-cover">
+          </div>
+          <div class="p-4">
+            <div class="flex justify-between items-start mb-3">
+              <div class="flex space-x-3">
+                <div class="w-10 h-10 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full flex items-center justify-center text-white font-bold">
+                  <i class="fas fa-calendar"></i>
+                </div>
+                <div>
+                  <h4 class="font-bold">{{ event.created_by_name || 'Alumni Team' }}</h4>
+                  <p class="text-sm text-gray-500">{{ formatDate(event.created_at) }}</p>
+                </div>
+              </div>
+            </div>
+            <p class="mb-3">{{ event.description }}</p>
+            <div class="bg-gray-50 p-4 rounded-lg">
+              <h5 class="font-bold text-lg">{{ event.title }}</h5>
+              <p class="text-sm text-gray-600">{{ formatDateTime(event.start_date) }}</p>
+              <p class="text-sm text-gray-600 mt-1">{{ event.location }}</p>
+              <div class="flex flex-wrap gap-2 mt-3">
+                <button (click)="viewEvent(event.id)" class="bg-blue-600 text-white px-4 py-1 rounded-full text-sm font-medium hover:bg-blue-700 transition-colors duration-300">
+                  Register Now
+                </button>
+                <button (click)="viewEvent(event.id)" class="border border-gray-300 text-gray-600 px-4 py-1 rounded-full text-sm font-medium hover:bg-gray-50 transition-colors duration-300">
+                  View Details
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Jobs Feed -->
+        <div *ngFor="let job of recentJobs; let i = index" class="bg-white rounded-xl shadow-md overflow-hidden card-hover slide-in">
+          <div class="p-4">
+            <div class="flex justify-between items-start mb-3">
+              <div class="flex space-x-3">
+                <div class="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 font-bold">
+                  {{ getCompanyInitials(job.company_name) }}
+                </div>
+                <div>
+                  <h4 class="font-bold">{{ job.posted_by_name }}</h4>
+                  <p class="text-sm text-gray-500">{{ formatDate(job.created_at) }}</p>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Job Description Preview -->
+            <p *ngIf="job.job_description" class="text-gray-700 mb-3 text-sm">
+              {{ truncateDescription(job.job_description, 120) }}
+            </p>
+            
+            <div class="border border-gray-200 rounded-lg p-4">
+              <div class="flex items-start space-x-3">
+                <div class="w-12 h-12 bg-blue-600 rounded flex items-center justify-center text-white">
+                  <i class="fas fa-briefcase"></i>
+                </div>
+                <div class="flex-1">
+                  <h5 class="font-bold text-lg">{{ job.job_title }}</h5>
+                  <p class="text-sm text-gray-600">{{ job.company_name }}</p>
+                  <div class="flex items-center gap-2 mt-1 flex-wrap">
+                    <span class="text-sm text-gray-600">
+                      <i class="fas fa-map-marker-alt mr-1"></i>{{ job.location }}
+                    </span>
+                    <span class="text-gray-400">•</span>
+                    <span [class]="getJobTypeBadgeClass(job.job_type)" 
+                          class="text-xs px-2 py-1 rounded-full border">
+                      {{ job.job_type }}
+                    </span>
+                  </div>
+                  <p *ngIf="job.salary_min || job.salary_max" class="text-sm text-gray-600 mt-1">
+                    <i class="fas fa-dollar-sign mr-1"></i>{{ formatSalary(job) }}
+                  </p>
+                </div>
+              </div>
+              
+              <!-- Job Skills/Requirements (if available) -->
+              <div *ngIf="job.skills_required && job.skills_required.length > 0" class="flex flex-wrap gap-1 mt-3">
+                <span *ngFor="let skill of job.skills_required.slice(0, 3); let idx = index" 
+                      [class]="getSkillBadgeClass(idx)" 
+                      class="text-xs px-2 py-1 rounded-full border">
+                  {{ skill }}
+                </span>
+                <span *ngIf="job.skills_required.length > 3" class="text-xs text-gray-500 px-2 py-1">
+                  +{{ job.skills_required.length - 3 }} more
+                </span>
+              </div>
+              
+              <div class="flex flex-wrap gap-2 mt-3">
+                <button (click)="viewJob(job.id)" class="bg-blue-600 text-white px-4 py-1 rounded-full text-sm font-medium hover:bg-blue-700 transition-colors duration-300">
+                  Apply Now
+                </button>
+                <button 
+                  (click)="saveJob(job.id, i); $event.stopPropagation()" 
+                  [class.bg-blue-50]="isJobSaved(job.id)"
+                  class="border border-blue-600 text-blue-600 px-4 py-1 rounded-full text-sm font-medium hover:bg-blue-50 transition-colors duration-300">
+                  <i [class]="isJobSaved(job.id) ? 'fas fa-bookmark' : 'far fa-bookmark'"></i> 
+                  {{ isJobSaved(job.id) ? 'Saved' : 'Save' }}
+                </button>
+                <button (click)="viewJob(job.id)" class="border border-gray-300 text-gray-600 px-4 py-1 rounded-full text-sm font-medium hover:bg-gray-50 transition-colors duration-300">
+                  View Details
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    
+    <!-- Right Sidebar -->
+    <div class="w-full lg:w-1/4">
+      <div class="space-y-6">
+        
+        <!-- Active Forums -->
+        <div class="bg-white rounded-xl shadow-md p-4 card-hover slide-in">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="font-bold text-lg text-blue-600">Active Forums</h3>
+            <button (click)="joinForums()" class="text-sm text-blue-600 hover:underline">See all</button>
+          </div>
+
+          <!-- Loading State -->
+          <div *ngIf="isLoadingForums" class="text-center py-4">
+            <i class="fas fa-spinner fa-spin text-blue-600"></i>
+          </div>
+
+          <!-- Forum Posts List -->
+          <div *ngIf="!isLoadingForums && activeForums.length > 0" class="space-y-4">
+            <div *ngFor="let forum of activeForums" class="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50 transition-colors duration-300 cursor-pointer" (click)="viewForumPost(forum.id)">
+              <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 flex items-center justify-center text-white">
+                  <i class="fas fa-comments"></i>
+                </div>
+                <div>
+                  <p class="font-medium text-sm">{{ forum.title }}</p>
+                  <p class="text-xs text-gray-500">{{ forum.replies_count }} replies</p>
+                </div>
+              </div>
+              <button class="text-xs text-blue-600 hover:underline">View</button>
+            </div>
+          </div>
+
+          <!-- Empty State -->
+          <div *ngIf="!isLoadingForums && activeForums.length === 0" class="text-center py-4">
+            <p class="text-sm text-gray-500">No active discussions</p>
+          </div>
+        </div>
+        
+        <!-- Job Opportunities -->
+        <div class="bg-white rounded-xl shadow-md p-4 card-hover slide-in">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="font-bold text-lg text-blue-600">Job Opportunities</h3>
+            <button (click)="findJobs()" class="text-sm text-blue-600 hover:underline">See all</button>
+          </div>
+
+          <!-- Loading State -->
+          <div *ngIf="isLoadingJobs" class="text-center py-4">
+            <i class="fas fa-spinner fa-spin text-blue-600"></i>
+          </div>
+
+          <!-- Recent Jobs List -->
+          <div *ngIf="!isLoadingJobs && recentJobs.length > 0" class="space-y-4">
+            <div *ngFor="let job of recentJobs.slice(0, 3)" class="flex items-start space-x-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors" (click)="viewJob(job.id)">
+              <div class="w-10 h-10 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 flex items-center justify-center text-white">
+                <i class="fas fa-briefcase"></i>
+              </div>
+              <div class="flex-1">
+                <p class="font-medium text-sm">{{ job.job_title }}</p>
+                <p class="text-xs text-gray-500">{{ job.company_name }} • {{ job.location }}</p>
+                <button class="mt-1 text-xs text-blue-600 hover:underline">View Details</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Alumni Spotlight -->
+        <div class="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl shadow-md p-4 text-white card-hover slide-in">
+          <h3 class="font-bold text-lg mb-2">Alumni Spotlight</h3>
+          <div class="flex items-center space-x-3">
+            <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center text-blue-600 font-bold">AK</div>
+            <div>
+              <h4 class="font-bold">Ama Kwarteng</h4>
+              <p class="text-sm opacity-90">Founder, GreenTech Solutions</p>
+              <p class="text-xs mt-1">"ATU gave me the foundation to build my sustainable tech company."</p>
+            </div>
+          </div>
+          <button class="w-full mt-4 bg-white text-blue-600 py-2 rounded-lg font-medium hover:bg-opacity-90 transition-colors duration-300">
+            View Profile
+          </button>
+        </div>
+        
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,192 @@
+<div class="container mx-auto px-4 py-8">
+  <!-- Back Button -->
+  <div class="mb-6">
+    <button 
+      (click)="goBack()"
+      class="flex items-center text-blue-600 hover:text-blue-800 transition-colors duration-300"
+    >
+      <i class="fas fa-arrow-left mr-2"></i>
+      <span>Back to News</span>
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="bg-white rounded-2xl shadow-md p-8 text-center">
+    <i class="fas fa-spinner fa-spin text-blue-600 text-4xl"></i>
+    <p class="text-gray-500 mt-4">Loading article...</p>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="errorMessage && !isLoading" class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-6">
+    <i class="fas fa-exclamation-circle mr-2"></i>
+    {{ errorMessage }}
+  </div>
+
+  <!-- News Article -->
+  <div *ngIf="!isLoading && article" class="bg-white rounded-2xl shadow-md overflow-hidden mb-8 border border-gray-100">
+    <!-- Featured Image -->
+    <div *ngIf="article.featured_image" class="h-96 overflow-hidden">
+      <img 
+        [src]="getNewsImageUrl(article.featured_image)" 
+        [alt]="article.title" 
+        class="w-full h-full object-cover"
+        (error)="onNewsImageError($event)">
+    </div>
+    
+    <div class="p-8">
+      <div class="flex items-center mb-6 flex-wrap gap-3">
+        <span 
+          *ngIf="article.is_featured" 
+          class="bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-medium"
+        >
+          Featured
+        </span>
+        <span 
+          [class]="'px-3 py-1 rounded-full text-sm font-medium ' + getCategoryBadgeClass(article.category)"
+        >
+          {{ article.category }}
+        </span>
+        <span class="text-gray-500 text-sm">{{ formatDate(article.published_at) }}</span>
+        <span class="text-gray-500 text-sm flex items-center">
+          <i class="fas fa-eye mr-1"></i>
+          <span>{{ formatViewCount(article.views_count) }} views</span>
+        </span>
+      </div>
+      
+      <h1 class="text-3xl font-bold text-gray-800 mb-6">{{ article.title }}</h1>
+      
+      <div class="prose max-w-none mb-8">
+        <p class="text-gray-600 mb-4 text-lg">{{ article.excerpt }}</p>
+        
+        <div class="text-gray-700 leading-relaxed" [innerHTML]="article.content"></div>
+      </div>
+      
+      <div class="flex items-center justify-between pt-6 border-t border-gray-200">
+        <div class="flex items-center space-x-4">
+          <button 
+            (click)="toggleLike()"
+            [class]="article.user_has_liked ? 'flex items-center text-blue-600 hover:text-blue-800 transition-colors duration-300' : 'flex items-center text-gray-500 hover:text-blue-600 transition-colors duration-300'"
+          >
+            <i [class]="article.user_has_liked ? 'fas fa-thumbs-up mr-2' : 'far fa-thumbs-up mr-2'"></i>
+            <span>{{ article.likes_count }}</span>
+          </button>
+          <button class="flex items-center text-gray-500 hover:text-blue-600 transition-colors duration-300">
+            <i class="far fa-share-square mr-2"></i>
+            <span>Share</span>
+          </button>
+        </div>
+        <div class="text-sm text-gray-500">
+          Posted by <span class="font-medium text-gray-700">{{ article.author_name || 'Alumni Relations Office' }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Comments Section -->
+  <div *ngIf="!isLoading && article" class="bg-white rounded-2xl shadow-md p-6 mb-8 border border-gray-100">
+    <h2 class="text-2xl font-bold text-gray-800 mb-6">Comments ({{ article.comments_count }})</h2>
+    
+    <!-- Comment Form -->
+    <div *ngIf="currentUser" class="mb-8 p-4 bg-gray-50 rounded-xl">
+      <div class="flex items-start space-x-3 mb-4">
+        <!-- Updated Current User Avatar - Fixed optional chaining -->
+        <div *ngIf="hasProfilePicture(currentUser.profile_picture); else currentUserInitials" 
+             class="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 border-2 border-gray-200">
+          <img [src]="getProfilePictureUrl(currentUser.profile_picture)"
+               [alt]="currentUser.first_name"
+               class="w-full h-full object-cover">
+        </div>
+        <ng-template #currentUserInitials>
+          <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0">
+            {{ getUserInitials(currentUser.first_name + ' ' + currentUser.last_name) }}
+          </div>
+        </ng-template>
+        
+        <div class="flex-1">
+          <textarea 
+            [(ngModel)]="newComment"
+            placeholder="Add a comment..." 
+            rows="3"
+            class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent resize-none"
+          ></textarea>
+          <div class="flex justify-end mt-2">
+            <button 
+              (click)="addComment()"
+              [disabled]="isSubmittingComment || !newComment.trim()"
+              class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-300 font-medium flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <i *ngIf="!isSubmittingComment" class="fas fa-paper-plane mr-2"></i>
+              <i *ngIf="isSubmittingComment" class="fas fa-spinner fa-spin mr-2"></i>
+              {{ isSubmittingComment ? 'Posting...' : 'Post Comment' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Login Prompt -->
+    <div *ngIf="!currentUser" class="mb-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+      <p class="text-blue-800 text-sm">
+        <i class="fas fa-info-circle mr-2"></i>
+        <a [routerLink]="['/login']" class="underline hover:text-blue-900">Login</a> to join the conversation
+      </p>
+    </div>
+    
+    <!-- Loading Comments -->
+    <div *ngIf="isLoadingComments" class="text-center py-8">
+      <i class="fas fa-spinner fa-spin text-blue-600 text-2xl"></i>
+      <p class="text-gray-500 mt-2">Loading comments...</p>
+    </div>
+
+    <!-- Comments List -->
+    <div *ngIf="!isLoadingComments && comments.length > 0" class="space-y-6">
+      <div *ngFor="let comment of comments" class="flex items-start space-x-3 border-b border-gray-100 pb-4 last:border-0">
+        <!-- Updated Comment Avatar -->
+        <div *ngIf="hasProfilePicture(comment.author_picture); else commentInitials" 
+             class="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 border-2 border-gray-200">
+          <img [src]="getProfilePictureUrl(comment.author_picture)"
+               [alt]="comment.author_name"
+               class="w-full h-full object-cover">
+        </div>
+        <ng-template #commentInitials>
+          <div class="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0">
+            {{ getUserInitials(comment.author_name) }}
+          </div>
+        </ng-template>
+        
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center justify-between mb-1">
+            <h4 class="font-medium text-gray-800">{{ comment.author_name || 'Anonymous' }}</h4>
+            <span class="text-xs text-gray-500">{{ formatRelativeTime(comment.created_at) }}</span>
+          </div>
+          <p class="text-gray-600 mb-2 whitespace-pre-wrap">{{ comment.comment }}</p>
+          <div class="flex items-center space-x-4 text-sm text-gray-500">
+            <button 
+              (click)="toggleCommentLike(comment)"
+              [class]="comment.user_has_liked ? 'flex items-center text-blue-600 hover:text-blue-800 transition-colors duration-300' : 'flex items-center hover:text-blue-600 transition-colors duration-300'"
+            >
+              <i [class]="comment.user_has_liked ? 'fas fa-thumbs-up mr-1' : 'far fa-thumbs-up mr-1'"></i>
+              <span>{{ comment.likes_count }}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty Comments State -->
+    <div *ngIf="!isLoadingComments && comments.length === 0" class="text-center py-8">
+      <i class="fas fa-comments text-gray-300 text-4xl mb-3"></i>
+      <p class="text-gray-500">No comments yet. Be the first to comment!</p>
+    </div>
+  </div>
+
+  <!-- Related Articles -->
+  <div *ngIf="!isLoading && article" class="bg-white rounded-2xl shadow-md p-6 border border-gray-100">
+    <h2 class="text-2xl font-bold text-gray-800 mb-6">Related Articles</h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="text-center py-8 col-span-3">
+        <p class="text-gray-500">Related articles coming soon...</p>
+      </div>
+    </div>
+  </div>
+</div>

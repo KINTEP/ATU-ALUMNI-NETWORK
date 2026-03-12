@@ -1,0 +1,678 @@
+<!-- src/app/admin/admin-tracer/admin-tracer.component.html -->
+<div class="min-h-screen bg-gray-50">
+  <!-- Sidebar -->
+  <app-sidebar></app-sidebar>
+
+  <!-- Main Content -->
+  <div class="lg:ml-64 transition-all duration-300">
+    <div class="p-4 md:p-6 lg:p-8">
+      <!-- Header -->
+      <div class="container mx-auto">
+        <div class="bg-gradient-to-r from-primary to-accent text-white rounded-2xl shadow-lg p-5 mb-6 slide-in relative overflow-hidden">
+          <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-32 translate-x-32"></div>
+          <div class="relative z-10">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
+              <div>
+                <h1 class="text-2xl font-bold mb-2">Tracer Survey Management</h1>
+                <p class="opacity-90 text-sm">View and manage alumni tracer survey responses</p>
+              </div>
+              <button (click)="viewAnalytics()" class="mt-4 md:mt-0 bg-white text-primary px-5 py-2.5 rounded-xl hover:bg-opacity-90 transition-all duration-300 font-medium shadow-sm text-sm flex items-center">
+                <i class="fas fa-chart-bar mr-2"></i>View Analytics
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Survey Statistics -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8" *ngIf="analytics">
+        <!-- Total Responses -->
+        <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-500 text-sm font-medium">Total Responses</p>
+              <h3 class="text-2xl font-bold text-gray-800 mt-1">
+                {{ analytics.overview.total_responses || 0 | number }}
+              </h3>
+              <p class="text-gray-600 text-xs mt-1">
+                All time submissions
+              </p>
+            </div>
+            <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600">
+              <i class="fas fa-clipboard-list text-xl"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Employment Rate -->
+        <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-500 text-sm font-medium">Employment Rate</p>
+              <h3 class="text-2xl font-bold text-gray-800 mt-1">
+                {{ employmentRate | number:'1.1-1' }}%
+              </h3>
+              <p class="text-green-600 text-xs mt-1 flex items-center">
+                <i class="fas fa-check-circle mr-1"></i>Employed + Self-employed
+              </p>
+            </div>
+            <div class="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center text-green-600">
+              <i class="fas fa-briefcase text-xl"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- This Month -->
+        <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-500 text-sm font-medium">Avg Skills Rating</p>
+              <h3 class="text-2xl font-bold text-gray-800 mt-1">
+                {{ analytics.overview.avg_skills_relevance || 0 | number:'1.1-1' }}/5
+              </h3>
+              <p class="text-purple-600 text-xs mt-1 flex items-center">
+                <i class="fas fa-star mr-1"></i>Skills relevance
+              </p>
+            </div>
+            <div class="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center text-purple-600">
+              <i class="fas fa-star text-xl"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Job Satisfaction -->
+        <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-500 text-sm font-medium">Job Satisfaction</p>
+              <h3 class="text-2xl font-bold text-gray-800 mt-1">
+                {{ analytics.overview.avg_job_satisfaction || 0 | number:'1.1-1' }}/5
+              </h3>
+              <p class="text-orange-600 text-xs mt-1 flex items-center">
+                <i class="fas fa-smile mr-1"></i>Average rating
+              </p>
+            </div>
+            <div class="w-12 h-12 bg-orange-50 rounded-xl flex items-center justify-center text-orange-600">
+              <i class="fas fa-smile text-xl"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="bg-white rounded-2xl shadow-sm p-6 mb-6">
+        <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 mb-4">
+          <h3 class="text-lg font-bold text-gray-800">Filter Responses</h3>
+          <button (click)="clearFilters()" class="text-sm text-primary hover:text-primary-dark flex items-center">
+            <i class="fas fa-times-circle mr-2"></i>Clear Filters
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <!-- Programme Filter -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Programme</label>
+            <select [(ngModel)]="filters.programme" (change)="applyFilters()" 
+                    class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+              <option value="">All Programmes</option>
+              <option *ngFor="let prog of programmeOptions" [value]="prog">{{ prog }}</option>
+            </select>
+          </div>
+
+          <!-- Year Filter -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Graduation Year</label>
+            <select [(ngModel)]="filters.year" (change)="applyFilters()"
+                    class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+              <option value="">All Years</option>
+              <option *ngFor="let year of yearOptions" [value]="year">{{ year }}</option>
+            </select>
+          </div>
+
+          <!-- Status Filter -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Current Status</label>
+            <select [(ngModel)]="filters.current_status" (change)="applyFilters()"
+                    class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+              <option value="">All Statuses</option>
+              <option *ngFor="let status of statusOptions" [value]="status">{{ status }}</option>
+            </select>
+          </div>
+
+          <!-- Sector Filter -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Sector</label>
+            <select [(ngModel)]="filters.sector" (change)="applyFilters()"
+                    class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+              <option value="">All Sectors</option>
+              <option *ngFor="let sector of sectorOptions" [value]="sector">{{ sector }}</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      <div *ngIf="isLoading" class="bg-white rounded-2xl shadow-sm p-12 text-center">
+        <i class="fas fa-spinner fa-spin text-4xl text-primary mb-4"></i>
+        <p class="text-gray-600">Loading responses...</p>
+      </div>
+
+      <!-- Survey Responses Table -->
+      <div *ngIf="!isLoading" class="bg-white rounded-2xl shadow-sm overflow-hidden mb-6">
+        <!-- Table Header Actions -->
+        <div class="p-4 border-b border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div class="flex items-center space-x-2">
+            <input type="checkbox" 
+                   [checked]="areAllSelected()" 
+                   (change)="toggleAllSelections()"
+                   class="rounded border-gray-300">
+            <span class="text-sm text-gray-600">
+              {{ selectedResponses.size }} selected
+            </span>
+          </div>
+
+          <div class="flex items-center space-x-2">
+            <select [(ngModel)]="bulkAction"
+                    class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+              <option value="">Bulk Actions</option>
+              <option value="export">Export Selected</option>
+              <option value="follow-up">Send Follow-up Email</option>
+              <option value="mark-reviewed">Mark as Reviewed</option>
+              <option value="delete">Delete Selected</option>
+            </select>
+            <button (click)="applyBulkAction()" 
+                    [disabled]="!bulkAction || selectedResponses.size === 0"
+                    class="bg-primary text-white px-4 py-2 rounded-lg text-sm hover:bg-opacity-90 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed">
+              Apply
+            </button>
+          </div>
+        </div>
+
+        <!-- Table -->
+        <div class="overflow-x-auto">
+          <table class="w-full min-w-[1000px]">
+            <thead class="bg-gray-50 border-b border-gray-200">
+              <tr>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Respondent
+                </th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                    (click)="changeSort('programme_of_study')">
+                  Programme
+                  <i class="fas fa-sort ml-1" *ngIf="sortBy !== 'programme_of_study'"></i>
+                  <i class="fas fa-sort-up ml-1" *ngIf="sortBy === 'programme_of_study' && sortOrder === 'ASC'"></i>
+                  <i class="fas fa-sort-down ml-1" *ngIf="sortBy === 'programme_of_study' && sortOrder === 'DESC'"></i>
+                </th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                    (click)="changeSort('year_of_graduation')">
+                  Graduation Year
+                  <i class="fas fa-sort ml-1" *ngIf="sortBy !== 'year_of_graduation'"></i>
+                  <i class="fas fa-sort-up ml-1" *ngIf="sortBy === 'year_of_graduation' && sortOrder === 'ASC'"></i>
+                  <i class="fas fa-sort-down ml-1" *ngIf="sortBy === 'year_of_graduation' && sortOrder === 'DESC'"></i>
+                </th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Current Status
+                </th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Employment
+                </th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                    (click)="changeSort('submitted_at')">
+                  Submitted
+                  <i class="fas fa-sort ml-1" *ngIf="sortBy !== 'submitted_at'"></i>
+                  <i class="fas fa-sort-up ml-1" *ngIf="sortBy === 'submitted_at' && sortOrder === 'ASC'"></i>
+                  <i class="fas fa-sort-down ml-1" *ngIf="sortBy === 'submitted_at' && sortOrder === 'DESC'"></i>
+                </th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              <!-- Empty State -->
+              <tr *ngIf="responses.length === 0">
+                <td colspan="7" class="px-4 py-12 text-center">
+                  <i class="fas fa-inbox text-4xl text-gray-300 mb-4"></i>
+                  <p class="text-gray-500 text-lg">No responses found</p>
+                  <p class="text-gray-400 text-sm mt-2">Try adjusting your filters</p>
+                </td>
+              </tr>
+
+              <!-- Response Rows -->
+              <tr *ngFor="let response of responses; let i = index" 
+                  class="hover:bg-gray-50 transition-colors duration-200">
+                <!-- Respondent -->
+                <td class="px-4 py-4 whitespace-nowrap">
+                  <div class="flex items-center">
+                    <input type="checkbox" 
+                           [checked]="selectedResponses.has(response.id!)"
+                           (change)="toggleSelection(response.id!)"
+                           class="rounded border-gray-300 mr-3">
+                    <div class="flex items-start space-x-3">
+                      <!-- Avatar -->
+                      <div *ngIf="!response.user_picture"
+                           [class]="'w-16 h-16 bg-gradient-to-r ' + getAvatarGradient(i) + ' rounded-xl flex items-center justify-center text-white'">
+                        <span class="text-sm font-bold">{{ getUserInitials(response.full_name) }}</span>
+                      </div>
+                      <img *ngIf="response.user_picture"
+                           [src]="response.user_picture"
+                           [alt]="response.full_name"
+                           class="w-16 h-16 rounded-xl object-cover">
+                      
+                      <!-- Info -->
+                      <div>
+                        <div class="flex items-center space-x-2">
+                          <h3 class="text-sm font-medium text-gray-900">{{ response.full_name }}</h3>
+                          <span [class]="'px-1.5 py-0.5 text-xs rounded-full ' + getCompletionClass(response.is_completed || false)">
+                            {{ getCompletionText(response.is_completed || false) }}
+                          </span>
+                        </div>
+                        <p class="text-sm text-gray-500 mt-1">{{ response.email }}</p>
+                        <div class="flex items-center space-x-4 mt-1 text-xs text-gray-400">
+                          <span>Index: {{ response.index_number }}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </td>
+
+                <!-- Programme -->
+                <td class="px-4 py-4 whitespace-nowrap">
+                  <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                    {{ response.programme_of_study }}
+                  </span>
+                </td>
+
+                <!-- Graduation Year -->
+                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
+                  {{ response.year_of_graduation }}
+                </td>
+
+                <!-- Current Status -->
+                <td class="px-4 py-4 whitespace-nowrap">
+                  <span [class]="'px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ' + getStatusClass(response.current_status)">
+                    {{ response.current_status }}
+                  </span>
+                </td>
+
+                <!-- Employment -->
+                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {{ response.job_title || '-' }}
+                </td>
+
+                <!-- Submitted -->
+                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {{ formatDate(response.submitted_at || '') }}
+                </td>
+
+                <!-- Actions -->
+                <td class="px-4 py-4 whitespace-nowrap text-sm font-medium">
+                  <div class="flex space-x-1">
+                    <button (click)="viewResponse(response)"
+                            class="text-blue-600 hover:text-blue-900 p-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 transition-colors duration-200" 
+                            title="View Full Response">
+                      <i class="fas fa-eye text-sm"></i>
+                    </button>
+                    <button (click)="downloadPDF(response)"
+                            class="text-purple-600 hover:text-purple-900 p-1.5 rounded-lg bg-purple-50 hover:bg-purple-100 transition-colors duration-200" 
+                            title="Download PDF">
+                      <i class="fas fa-download text-sm"></i>
+                    </button>
+                    <button (click)="sendFollowUp(response)"
+                            class="text-green-600 hover:text-green-900 p-1.5 rounded-lg bg-green-50 hover:bg-green-100 transition-colors duration-200" 
+                            title="Send Follow-up">
+                      <i class="fas fa-envelope text-sm"></i>
+                    </button>
+                    <button (click)="confirmDelete(response)"
+                            class="text-red-600 hover:text-red-900 p-1.5 rounded-lg bg-red-50 hover:bg-red-100 transition-colors duration-200" 
+                            title="Delete Response">
+                      <i class="fas fa-trash text-sm"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="bg-white px-4 py-4 border-t border-gray-200">
+          <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="text-sm text-gray-700">
+              Showing <span class="font-medium">{{ ((pagination.page - 1) * pagination.limit) + 1 }}</span> 
+              to <span class="font-medium">{{ Math.min(pagination.page * pagination.limit, pagination.total) }}</span> 
+              of <span class="font-medium">{{ pagination.total }}</span> responses
+            </div>
+            <div class="flex space-x-1">
+              <button (click)="changePage(pagination.page - 1)"
+                      [disabled]="pagination.page === 1"
+                      class="px-3 py-1.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+                Previous
+              </button>
+              
+              <!-- Page Numbers -->
+              <button *ngFor="let page of [].constructor(pagination.total_pages); let i = index"
+                      (click)="changePage(i + 1)"
+                      [class.border-primary]="pagination.page === i + 1"
+                      [class.bg-primary]="pagination.page === i + 1"
+                      [class.text-white]="pagination.page === i + 1"
+                      [class.border-gray-300]="pagination.page !== i + 1"
+                      [class.text-gray-700]="pagination.page !== i + 1"
+                      class="px-3 py-1.5 border rounded-lg text-sm font-medium bg-white hover:bg-gray-50 transition-colors duration-200">
+                {{ i + 1 }}
+              </button>
+              
+              <button (click)="changePage(pagination.page + 1)"
+                      [disabled]="pagination.page === pagination.total_pages"
+                      class="px-3 py-1.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+                Next
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Response Analytics -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6" *ngIf="analytics">
+        <!-- Employment Status Distribution -->
+        <div class="bg-white rounded-2xl shadow-sm p-6">
+          <h3 class="text-lg font-bold text-gray-800 mb-4">Employment Status Distribution</h3>
+          <div class="space-y-4">
+            <div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors duration-200">
+              <div class="flex items-center space-x-3">
+                <div class="w-4 h-4 bg-green-500 rounded-full"></div>
+                <span class="text-sm font-medium text-gray-900">Employed</span>
+              </div>
+              <div class="text-right">
+                <span class="text-sm font-bold text-gray-900">
+                  {{ ((analytics.overview.employed_count || 0) / (analytics.overview.total_responses || 1) * 100) | number:'1.0-0' }}%
+                </span>
+                <span class="text-xs text-gray-500 ml-2">({{ analytics.overview.employed_count || 0 }})</span>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors duration-200">
+              <div class="flex items-center space-x-3">
+                <div class="w-4 h-4 bg-purple-500 rounded-full"></div>
+                <span class="text-sm font-medium text-gray-900">Self-employed</span>
+              </div>
+              <div class="text-right">
+                <span class="text-sm font-bold text-gray-900">
+                  {{ ((analytics.overview.self_employed_count || 0) / (analytics.overview.total_responses || 1) * 100) | number:'1.0-0' }}%
+                </span>
+                <span class="text-xs text-gray-500 ml-2">({{ analytics.overview.self_employed_count || 0 }})</span>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors duration-200">
+              <div class="flex items-center space-x-3">
+                <div class="w-4 h-4 bg-red-500 rounded-full"></div>
+                <span class="text-sm font-medium text-gray-900">Unemployed</span>
+              </div>
+              <div class="text-right">
+                <span class="text-sm font-bold text-gray-900">
+                  {{ ((analytics.overview.unemployed_count || 0) / (analytics.overview.total_responses || 1) * 100) | number:'1.0-0' }}%
+                </span>
+                <span class="text-xs text-gray-500 ml-2">({{ analytics.overview.unemployed_count || 0 }})</span>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors duration-200">
+              <div class="flex items-center space-x-3">
+                <div class="w-4 h-4 bg-blue-500 rounded-full"></div>
+                <span class="text-sm font-medium text-gray-900">Further Studies</span>
+              </div>
+              <div class="text-right">
+                <span class="text-sm font-bold text-gray-900">
+                  {{ ((analytics.overview.further_studies_count || 0) / (analytics.overview.total_responses || 1) * 100) | number:'1.0-0' }}%
+                </span>
+                <span class="text-xs text-gray-500 ml-2">({{ analytics.overview.further_studies_count || 0 }})</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+       
+        <!-- Programme Distribution -->
+      <div class="bg-white rounded-2xl shadow-sm p-6">
+        <h3 class="text-lg font-bold text-gray-800 mb-4">Top Programmes (by Responses)</h3>
+        <div class="space-y-4">
+          <div *ngFor="let prog of analytics.employment_by_programme.slice(0, 5); let i = index"
+              class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors duration-200">
+            <div class="flex items-center space-x-3">
+              <div [class]="'w-4 h-4 rounded-full ' + ['bg-blue-500', 'bg-green-500', 'bg-orange-500', 'bg-purple-500', 'bg-pink-500'][i]"></div>
+              <span class="text-sm font-medium text-gray-900">{{ prog.programme_of_study }}</span>
+            </div>
+            <div class="text-right">
+              <!-- Fixed: Show percentage of total responses, not employment rate -->
+              <span class="text-sm font-bold text-gray-900">
+                {{ (prog.total_responses / pagination.total * 100) | number:'1.0-0' }}%
+              </span>
+              <span class="text-xs text-gray-500 ml-2">({{ prog.total_responses }})</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      </div>
+
+      <!-- Export Button -->
+      <div class="bg-white rounded-2xl shadow-sm p-6">
+        <div class="flex flex-col lg:flex-row items-center justify-between gap-4">
+          <div>
+            <h3 class="text-lg font-bold text-gray-800 mb-1">Export Data</h3>
+            <p class="text-sm text-gray-600">Download all tracer study responses as CSV</p>
+          </div>
+          <button (click)="exportAllData()"
+                  [disabled]="isExporting"
+                  class="w-full lg:w-auto text-white bg-primary hover:bg-primary-dark px-6 py-3 rounded-lg text-sm flex items-center justify-center space-x-2 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed">
+            <i [class.fa-spin]="isExporting" class="fas" [class.fa-download]="!isExporting" [class.fa-spinner]="isExporting"></i>
+            <span>{{ isExporting ? 'Exporting...' : 'Export All Data' }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- View Response Modal -->
+<div *ngIf="showViewModal" class="fixed inset-0 z-50 overflow-y-auto">
+  <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+    <!-- Backdrop -->
+    <div class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" (click)="closeViewModal()"></div>
+
+    <!-- Modal -->
+    <div class="inline-block w-full max-w-4xl my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl">
+      <!-- Header -->
+      <div class="bg-gradient-to-r from-primary to-accent px-6 py-4 flex items-center justify-between">
+        <h3 class="text-xl font-bold text-white">Response Details</h3>
+        <button (click)="closeViewModal()" class="text-white hover:text-gray-200">
+          <i class="fas fa-times text-xl"></i>
+        </button>
+      </div>
+
+      <!-- Content -->
+      <div class="px-6 py-6 max-h-[70vh] overflow-y-auto" *ngIf="selectedResponse">
+        <!-- Personal Information -->
+        <div class="mb-6">
+          <h4 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
+            <i class="fas fa-user text-primary mr-2"></i>
+            Personal Information
+          </h4>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <p class="text-sm text-gray-500">Full Name</p>
+              <p class="text-sm font-medium text-gray-900">{{ selectedResponse.full_name }}</p>
+            </div>
+            <div>
+              <p class="text-sm text-gray-500">Index Number</p>
+              <p class="text-sm font-medium text-gray-900">{{ selectedResponse.index_number }}</p>
+            </div>
+            <div>
+              <p class="text-sm text-gray-500">Email</p>
+              <p class="text-sm font-medium text-gray-900">{{ selectedResponse.email }}</p>
+            </div>
+            <div>
+              <p class="text-sm text-gray-500">Phone</p>
+              <p class="text-sm font-medium text-gray-900">{{ selectedResponse.phone_number }}</p>
+            </div>
+            <div>
+              <p class="text-sm text-gray-500">Programme</p>
+              <p class="text-sm font-medium text-gray-900">{{ selectedResponse.programme_of_study }}</p>
+            </div>
+            <div>
+              <p class="text-sm text-gray-500">Graduation Year</p>
+              <p class="text-sm font-medium text-gray-900">{{ selectedResponse.year_of_graduation }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Employment Information -->
+        <div class="mb-6" *ngIf="selectedResponse.current_status === 'Employed' || selectedResponse.current_status === 'Self-employed'">
+          <h4 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
+            <i class="fas fa-briefcase text-primary mr-2"></i>
+            Employment Information
+          </h4>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <p class="text-sm text-gray-500">Current Status</p>
+              <p class="text-sm font-medium text-gray-900">{{ selectedResponse.current_status }}</p>
+            </div>
+            <div>
+              <p class="text-sm text-gray-500">Job Title</p>
+              <p class="text-sm font-medium text-gray-900">{{ selectedResponse.job_title || 'N/A' }}</p>
+            </div>
+            <div>
+              <p class="text-sm text-gray-500">Employer</p>
+              <p class="text-sm font-medium text-gray-900">{{ selectedResponse.employer_name || 'N/A' }}</p>
+            </div>
+            <div>
+              <p class="text-sm text-gray-500">Sector</p>
+              <p class="text-sm font-medium text-gray-900">{{ selectedResponse.sector || 'N/A' }}</p>
+            </div>
+            <div>
+              <p class="text-sm text-gray-500">Job Related to Field?</p>
+              <p class="text-sm font-medium text-gray-900">{{ selectedResponse.job_related_to_field || 'N/A' }}</p>
+            </div>
+            <div>
+              <p class="text-sm text-gray-500">Monthly Income Range</p>
+              <p class="text-sm font-medium text-gray-900">{{ selectedResponse.monthly_income_range || 'N/A' }}</p>
+            </div>
+            <div>
+              <p class="text-sm text-gray-500">Time to First Job</p>
+              <p class="text-sm font-medium text-gray-900">{{ selectedResponse.time_to_first_job || 'N/A' }}</p>
+            </div>
+            <div>
+              <p class="text-sm text-gray-500">How Found Job</p>
+              <p class="text-sm font-medium text-gray-900">{{ selectedResponse.how_found_job || 'N/A' }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Ratings -->
+        <div class="mb-6">
+          <h4 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
+            <i class="fas fa-star text-primary mr-2"></i>
+            Ratings & Feedback
+          </h4>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <p class="text-sm text-gray-500">Skills Relevance</p>
+              <p class="text-sm font-medium text-gray-900">{{ selectedResponse.skills_relevance_rating || 'N/A' }}/5</p>
+            </div>
+            <div>
+              <p class="text-sm text-gray-500">Job Satisfaction</p>
+              <p class="text-sm font-medium text-gray-900">{{ selectedResponse.job_satisfaction_rating || 'N/A' }}/5</p>
+            </div>
+            <div>
+              <p class="text-sm text-gray-500">Would Recommend ATU?</p>
+              <p class="text-sm font-medium text-gray-900">{{ selectedResponse.would_recommend_atu || 'N/A' }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Alumni Engagement -->
+        <div>
+          <h4 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
+            <i class="fas fa-handshake text-primary mr-2"></i>
+            Alumni Engagement
+          </h4>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <p class="text-sm text-gray-500">Alumni Member</p>
+              <p class="text-sm font-medium text-gray-900">{{ selectedResponse.is_alumni_member ? 'Yes' : 'No' }}</p>
+            </div>
+            <div>
+              <p class="text-sm text-gray-500">Willing to Mentor</p>
+              <p class="text-sm font-medium text-gray-900">{{ selectedResponse.willing_to_mentor ? 'Yes' : 'No' }}</p>
+            </div>
+            <div>
+              <p class="text-sm text-gray-500">Preferred Contact</p>
+              <p class="text-sm font-medium text-gray-900">{{ selectedResponse.preferred_contact_method || 'N/A' }}</p>
+            </div>
+            <div>
+              <p class="text-sm text-gray-500">Willing to Collaborate</p>
+              <p class="text-sm font-medium text-gray-900">{{ selectedResponse.willing_to_collaborate ? 'Yes' : 'No' }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="px-6 py-4 bg-gray-50 flex justify-end space-x-3">
+        <button (click)="closeViewModal()"
+                class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors duration-200">
+          Close
+        </button>
+        <button (click)="downloadPDF(selectedResponse!)"
+                class="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary-dark transition-colors duration-200">
+          <i class="fas fa-download mr-2"></i>Download PDF
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div *ngIf="showDeleteModal" class="fixed inset-0 z-50 overflow-y-auto">
+  <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+    <!-- Backdrop -->
+    <div class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" (click)="closeDeleteModal()"></div>
+
+    <!-- Modal -->
+    <div class="inline-block w-full max-w-md my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl">
+      <!-- Header -->
+      <div class="px-6 py-4">
+        <div class="flex items-center space-x-3">
+          <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+            <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+          </div>
+          <div>
+            <h3 class="text-lg font-bold text-gray-900">Delete Response</h3>
+            <p class="text-sm text-gray-500 mt-1">This action cannot be undone</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Content -->
+      <div class="px-6 py-4">
+        <p class="text-sm text-gray-600">
+          Are you sure you want to delete the response from <strong>{{ selectedResponse?.full_name }}</strong>? 
+          This will permanently remove all associated data.
+        </p>
+      </div>
+
+      <!-- Footer -->
+      <div class="px-6 py-4 bg-gray-50 flex justify-end space-x-3">
+        <button (click)="closeDeleteModal()"
+                class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors duration-200">
+          Cancel
+        </button>
+        <button (click)="deleteResponse()"
+                class="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors duration-200">
+          <i class="fas fa-trash mr-2"></i>Delete Response
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

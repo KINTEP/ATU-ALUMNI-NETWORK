@@ -1,0 +1,465 @@
+<div class="min-h-screen bg-gray-50">
+  <app-sidebar></app-sidebar>
+
+  <div class="lg:ml-64 transition-all duration-300 p-4 md:p-6 lg:p-8">
+    <div class="container mx-auto max-w-4xl">
+
+      <!-- Header -->
+      <div class="bg-gradient-to-r from-primary to-accent text-white rounded-2xl shadow-lg p-5 mb-6 slide-in relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-32 translate-x-32"></div>
+        <div class="relative z-10">
+          <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
+            <div>
+              <h1 class="text-2xl font-bold mb-2">
+                <i class="fas fa-plus-circle mr-2"></i>Create New Project
+              </h1>
+              <p class="opacity-90 text-sm">Add a new project for alumni to support and contribute to</p>
+            </div>
+            <button (click)="goBack()"
+              class="mt-4 md:mt-0 bg-white/20 text-white px-5 py-2.5 rounded-xl hover:bg-white/30 transition-all duration-300 font-medium shadow-sm text-sm flex items-center border border-white/30">
+              <i class="fas fa-arrow-left mr-2"></i>Back to Projects
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Form Card -->
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden slide-in">
+
+        <!-- Progress Steps -->
+        <div class="bg-gray-50 px-6 py-4 border-b border-gray-100">
+          <div class="flex items-center justify-between max-w-lg mx-auto">
+            <div class="flex items-center">
+              <div [class]="currentStep >= 1
+                ? 'w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center text-sm font-bold'
+                : 'w-8 h-8 bg-gray-300 text-white rounded-full flex items-center justify-center text-sm font-bold'">1</div>
+              <span class="ml-2 text-sm font-medium"
+                [class.text-primary]="currentStep >= 1"
+                [class.text-gray-400]="currentStep < 1">Details</span>
+            </div>
+            <div class="flex-1 h-0.5 mx-4"
+              [class.bg-primary]="currentStep >= 2"
+              [class.bg-gray-300]="currentStep < 2"></div>
+            <div class="flex items-center">
+              <div [class]="currentStep >= 2
+                ? 'w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center text-sm font-bold'
+                : 'w-8 h-8 bg-gray-300 text-white rounded-full flex items-center justify-center text-sm font-bold'">2</div>
+              <span class="ml-2 text-sm font-medium"
+                [class.text-primary]="currentStep >= 2"
+                [class.text-gray-400]="currentStep < 2">Funding</span>
+            </div>
+            <div class="flex-1 h-0.5 mx-4"
+              [class.bg-primary]="currentStep >= 3"
+              [class.bg-gray-300]="currentStep < 3"></div>
+            <div class="flex items-center">
+              <div [class]="currentStep >= 3
+                ? 'w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center text-sm font-bold'
+                : 'w-8 h-8 bg-gray-300 text-white rounded-full flex items-center justify-center text-sm font-bold'">3</div>
+              <span class="ml-2 text-sm font-medium"
+                [class.text-primary]="currentStep >= 3"
+                [class.text-gray-400]="currentStep < 3">Media</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-6 md:p-8">
+
+          <!-- ── STEP 1: Project Details ──────────────────────────────────── -->
+          <div *ngIf="currentStep === 1">
+            <h2 class="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+              <i class="fas fa-info-circle text-primary"></i>
+              Project Details
+            </h2>
+
+            <!-- Title -->
+            <div class="mb-5">
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                Project Title <span class="text-red-500">*</span>
+              </label>
+              <input type="text" [(ngModel)]="project.title"
+                placeholder="e.g. ICT Laboratory Construction"
+                class="w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
+                [class.border-red-500]="submitted && !project.title"
+                [class.border-gray-300]="!(submitted && !project.title)">
+              <p *ngIf="submitted && !project.title" class="text-red-500 text-xs mt-1">Project title is required</p>
+            </div>
+
+            <!-- Description -->
+            <div class="mb-5">
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                Short Description <span class="text-red-500">*</span>
+              </label>
+              <textarea [(ngModel)]="project.description" rows="4"
+                placeholder="Provide a summary of the project, its goals, and expected impact..."
+                maxlength="2000"
+                class="w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm resize-none"
+                [class.border-red-500]="submitted && !project.description"
+                [class.border-gray-300]="!(submitted && !project.description)"></textarea>
+              <div class="flex justify-between items-center mt-1">
+                <p *ngIf="submitted && !project.description" class="text-red-500 text-xs">Description is required</p>
+                <p class="text-xs text-gray-400 ml-auto">{{ descriptionLength }} / 2000</p>
+              </div>
+            </div>
+
+            <!-- Long Description -->
+            <div class="mb-5">
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                Full Description <span class="text-xs text-gray-400">(optional)</span>
+              </label>
+              <textarea [(ngModel)]="project.long_description" rows="5"
+                placeholder="Provide a more detailed description, background, methodology, expected outcomes..."
+                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm resize-none"></textarea>
+            </div>
+
+            <!-- Category & Status -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  Category <span class="text-red-500">*</span>
+                </label>
+                <select [(ngModel)]="project.category"
+                  class="w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm bg-white"
+                  [class.border-red-500]="submitted && !project.category"
+                  [class.border-gray-300]="!(submitted && !project.category)">
+                  <option value="">Select a category</option>
+                  <option value="Infrastructure">Infrastructure</option>
+                  <option value="Education">Education</option>
+                  <option value="Healthcare">Healthcare</option>
+                  <option value="Technology">Technology</option>
+                  <option value="Agriculture">Agriculture</option>
+                  <option value="Community Development">Community Development</option>
+                  <option value="Other">Other</option>
+                </select>
+                <p *ngIf="submitted && !project.category" class="text-red-500 text-xs mt-1">Category is required</p>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  Initial Status <span class="text-red-500">*</span>
+                </label>
+                <select [(ngModel)]="project.status"
+                  class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm bg-white">
+                  <option value="proposed">Proposed</option>
+                  <option value="ongoing">Ongoing</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Location -->
+            <div class="mb-5">
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                Location <span class="text-red-500">*</span>
+              </label>
+              <div class="relative">
+                <i class="fas fa-map-marker-alt absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                <input type="text" [(ngModel)]="project.location"
+                  placeholder="e.g. ATU Main Campus, Accra"
+                  class="w-full pl-10 pr-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
+                  [class.border-red-500]="submitted && !project.location"
+                  [class.border-gray-300]="!(submitted && !project.location)">
+              </div>
+              <p *ngIf="submitted && !project.location" class="text-red-500 text-xs mt-1">Location is required</p>
+            </div>
+
+            <!-- Dates -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  Start Date <span class="text-red-500">*</span>
+                </label>
+                <input type="date" [(ngModel)]="project.startDate"
+                  class="w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
+                  [class.border-red-500]="submitted && !project.startDate"
+                  [class.border-gray-300]="!(submitted && !project.startDate)">
+                <p *ngIf="submitted && !project.startDate" class="text-red-500 text-xs mt-1">Start date is required</p>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  Target Completion Date <span class="text-xs text-gray-400">(optional)</span>
+                </label>
+                <input type="date" [(ngModel)]="project.targetDate"
+                  class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm">
+              </div>
+            </div>
+
+            <!-- Featured Toggle -->
+            <div class="mb-6 flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200">
+              <div>
+                <p class="text-sm font-medium text-gray-700">Featured Project</p>
+                <p class="text-xs text-gray-500">Featured projects appear at the top of the projects page</p>
+              </div>
+              <button (click)="project.isFeatured = !project.isFeatured"
+                [class]="project.isFeatured
+                  ? 'w-12 h-6 bg-primary rounded-full relative transition-colors duration-300'
+                  : 'w-12 h-6 bg-gray-300 rounded-full relative transition-colors duration-300'">
+                <div [class]="project.isFeatured
+                  ? 'w-5 h-5 bg-white rounded-full absolute top-0.5 right-0.5 transition-all duration-300 shadow'
+                  : 'w-5 h-5 bg-white rounded-full absolute top-0.5 left-0.5 transition-all duration-300 shadow'"></div>
+              </button>
+            </div>
+
+            <div class="flex justify-end">
+              <button (click)="nextStep()"
+                class="bg-primary text-white px-8 py-3 rounded-xl hover:bg-opacity-90 transition-all duration-300 font-medium text-sm flex items-center gap-2">
+                Next: Funding Details
+                <i class="fas fa-arrow-right"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- ── STEP 2: Funding Details ──────────────────────────────────── -->
+          <div *ngIf="currentStep === 2">
+            <h2 class="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+              <i class="fas fa-donate text-primary"></i>
+              Funding Details
+            </h2>
+
+            <!-- Funding Goal -->
+            <div class="mb-5">
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                Funding Goal (GHS) <span class="text-red-500">*</span>
+              </label>
+              <div class="relative">
+                <span class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 font-medium text-sm">GHS</span>
+                <input type="number" [(ngModel)]="project.fundingGoal" placeholder="e.g. 80000" min="1"
+                  class="w-full pl-14 pr-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
+                  [class.border-red-500]="submitted && !project.fundingGoal"
+                  [class.border-gray-300]="!(submitted && !project.fundingGoal)">
+              </div>
+              <p *ngIf="submitted && !project.fundingGoal" class="text-red-500 text-xs mt-1">Funding goal is required</p>
+            </div>
+
+            <!-- Current Amount (for ongoing projects) -->
+            <div class="mb-5" *ngIf="project.status === 'ongoing'">
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                Current Amount Already Raised (GHS)
+              </label>
+              <div class="relative">
+                <span class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 font-medium text-sm">GHS</span>
+                <input type="number" [(ngModel)]="project.currentAmount" placeholder="e.g. 45000" min="0"
+                  class="w-full pl-14 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm">
+              </div>
+              <p class="text-xs text-gray-400 mt-1">Leave at 0 for new projects</p>
+            </div>
+
+            <!-- Enable Donations -->
+            <div class="mb-4">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Donation Settings</label>
+              <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200 mb-3">
+                <div>
+                  <p class="text-sm font-medium text-gray-700">Enable Donations</p>
+                  <p class="text-xs text-gray-500">Allow alumni to donate to this project</p>
+                </div>
+                <button (click)="project.acceptDonations = !project.acceptDonations"
+                  [class]="project.acceptDonations
+                    ? 'w-12 h-6 bg-primary rounded-full relative transition-colors duration-300'
+                    : 'w-12 h-6 bg-gray-300 rounded-full relative transition-colors duration-300'">
+                  <div [class]="project.acceptDonations
+                    ? 'w-5 h-5 bg-white rounded-full absolute top-0.5 right-0.5 transition-all duration-300 shadow'
+                    : 'w-5 h-5 bg-white rounded-full absolute top-0.5 left-0.5 transition-all duration-300 shadow'"></div>
+                </button>
+              </div>
+
+              <!-- Enable Volunteers -->
+              <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200">
+                <div>
+                  <p class="text-sm font-medium text-gray-700">Accept Volunteers</p>
+                  <p class="text-xs text-gray-500">Allow alumni to sign up as volunteers</p>
+                </div>
+                <button (click)="project.acceptVolunteers = !project.acceptVolunteers"
+                  [class]="project.acceptVolunteers
+                    ? 'w-12 h-6 bg-primary rounded-full relative transition-colors duration-300'
+                    : 'w-12 h-6 bg-gray-300 rounded-full relative transition-colors duration-300'">
+                  <div [class]="project.acceptVolunteers
+                    ? 'w-5 h-5 bg-white rounded-full absolute top-0.5 right-0.5 transition-all duration-300 shadow'
+                    : 'w-5 h-5 bg-white rounded-full absolute top-0.5 left-0.5 transition-all duration-300 shadow'"></div>
+                </button>
+              </div>
+            </div>
+
+            <!-- Max Volunteers -->
+            <div class="mb-6" *ngIf="project.acceptVolunteers">
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                Maximum Volunteers <span class="text-xs text-gray-400">(optional)</span>
+              </label>
+              <input type="number" [(ngModel)]="project.maxVolunteers" placeholder="e.g. 50" min="1"
+                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm">
+              <p class="text-xs text-gray-400 mt-1">Leave empty for unlimited</p>
+            </div>
+
+            <div class="flex justify-between">
+              <button (click)="prevStep()"
+                class="bg-gray-100 text-gray-700 px-8 py-3 rounded-xl hover:bg-gray-200 transition-all duration-300 font-medium text-sm flex items-center gap-2">
+                <i class="fas fa-arrow-left"></i>Back
+              </button>
+              <button (click)="nextStep()"
+                class="bg-primary text-white px-8 py-3 rounded-xl hover:bg-opacity-90 transition-all duration-300 font-medium text-sm flex items-center gap-2">
+                Next: Media <i class="fas fa-arrow-right"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- ── STEP 3: Media & Review ───────────────────────────────────── -->
+          <div *ngIf="currentStep === 3">
+            <h2 class="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+              <i class="fas fa-image text-primary"></i>
+              Media & Review
+            </h2>
+
+            <!-- Cover Image Upload -->
+            <div class="mb-6">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Cover Image <span class="text-xs text-gray-400">(optional)</span></label>
+
+              <div class="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-primary transition-colors duration-300 cursor-pointer"
+                (click)="coverImageInput.click()">
+                <div *ngIf="!imagePreview">
+                  <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-3"></i>
+                  <p class="text-gray-600 font-medium">Click to upload cover image</p>
+                  <p class="text-xs text-gray-400 mt-1">PNG, JPG or WEBP (max 5MB)</p>
+                </div>
+                <div *ngIf="imagePreview">
+                  <img [src]="imagePreview" alt="Preview" class="max-h-48 mx-auto rounded-lg object-cover">
+                  <p class="text-sm text-primary mt-3 font-medium">Click to change image</p>
+                </div>
+              </div>
+              <input #coverImageInput type="file" accept="image/*" class="hidden" (change)="onImageSelected($event)">
+
+              <!-- Upload error -->
+              <p *ngIf="uploadError" class="text-red-500 text-xs mt-2 flex items-center gap-1">
+                <i class="fas fa-exclamation-circle"></i> {{ uploadError }}
+              </p>
+
+              <!-- Upload progress -->
+              <div *ngIf="uploadProgress !== null" class="mt-3">
+                <div class="flex justify-between text-xs text-gray-500 mb-1">
+                  <span>Uploading image...</span>
+                  <span>{{ uploadProgress }}%</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-1.5">
+                  <div class="bg-primary h-1.5 rounded-full transition-all duration-300" [style.width.%]="uploadProgress"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Review Summary -->
+            <div class="bg-gray-50 rounded-xl p-6 mb-6 border border-gray-200">
+              <h3 class="font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <i class="fas fa-clipboard-check text-primary"></i>
+                Project Summary
+              </h3>
+              <div class="space-y-3">
+                <div class="flex justify-between items-start py-2 border-b border-gray-200">
+                  <span class="text-sm text-gray-500">Title</span>
+                  <span class="text-sm font-medium text-gray-800 text-right max-w-xs">{{ project.title || '—' }}</span>
+                </div>
+                <div class="flex justify-between items-start py-2 border-b border-gray-200">
+                  <span class="text-sm text-gray-500">Category</span>
+                  <span class="text-sm font-medium text-gray-800">{{ project.category || '—' }}</span>
+                </div>
+                <div class="flex justify-between items-start py-2 border-b border-gray-200">
+                  <span class="text-sm text-gray-500">Status</span>
+                  <span [class]="getStatusBadgeClass(project.status)" class="text-xs px-3 py-1 rounded-full font-medium">
+                    {{ project.status | titlecase }}
+                  </span>
+                </div>
+                <div class="flex justify-between items-start py-2 border-b border-gray-200">
+                  <span class="text-sm text-gray-500">Location</span>
+                  <span class="text-sm font-medium text-gray-800">{{ project.location || '—' }}</span>
+                </div>
+                <div class="flex justify-between items-start py-2 border-b border-gray-200">
+                  <span class="text-sm text-gray-500">Start Date</span>
+                  <span class="text-sm font-medium text-gray-800">{{ project.startDate || '—' }}</span>
+                </div>
+                <div class="flex justify-between items-start py-2 border-b border-gray-200">
+                  <span class="text-sm text-gray-500">Target Date</span>
+                  <span class="text-sm font-medium text-gray-800">{{ project.targetDate || 'Not set' }}</span>
+                </div>
+                <div class="flex justify-between items-start py-2 border-b border-gray-200">
+                  <span class="text-sm text-gray-500">Funding Goal</span>
+                  <span class="text-sm font-bold text-primary">
+                    {{ project.fundingGoal ? 'GHS ' + formatNumber(project.fundingGoal) : '—' }}
+                  </span>
+                </div>
+                <div class="flex justify-between items-start py-2 border-b border-gray-200">
+                  <span class="text-sm text-gray-500">Donations</span>
+                  <span class="text-sm font-medium"
+                    [class.text-green-600]="project.acceptDonations"
+                    [class.text-gray-400]="!project.acceptDonations">
+                    {{ project.acceptDonations ? 'Enabled' : 'Disabled' }}
+                  </span>
+                </div>
+                <div class="flex justify-between items-start py-2 border-b border-gray-200">
+                  <span class="text-sm text-gray-500">Volunteers</span>
+                  <span class="text-sm font-medium"
+                    [class.text-green-600]="project.acceptVolunteers"
+                    [class.text-gray-400]="!project.acceptVolunteers">
+                    {{ project.acceptVolunteers ? (project.maxVolunteers ? 'Up to ' + project.maxVolunteers : 'Unlimited') : 'Disabled' }}
+                  </span>
+                </div>
+                <div class="flex justify-between items-start py-2">
+                  <span class="text-sm text-gray-500">Featured</span>
+                  <span class="text-sm font-medium"
+                    [class.text-yellow-600]="project.isFeatured"
+                    [class.text-gray-400]="!project.isFeatured">
+                    <i *ngIf="project.isFeatured" class="fas fa-star mr-1"></i>
+                    {{ project.isFeatured ? 'Yes' : 'No' }}
+                  </span>
+                </div>
+              </div>
+              <div class="mt-4 pt-4 border-t border-gray-200">
+                <p class="text-sm text-gray-500 mb-1">Description</p>
+                <p class="text-sm text-gray-700 line-clamp-4">{{ project.description || 'No description provided' }}</p>
+              </div>
+            </div>
+
+            <!-- Submit Error -->
+            <div *ngIf="submitError" class="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm flex items-center gap-2">
+              <i class="fas fa-exclamation-circle"></i>
+              {{ submitError }}
+            </div>
+
+            <div class="flex justify-between">
+              <button (click)="prevStep()"
+                class="bg-gray-100 text-gray-700 px-8 py-3 rounded-xl hover:bg-gray-200 transition-all duration-300 font-medium text-sm flex items-center gap-2">
+                <i class="fas fa-arrow-left"></i>Back
+              </button>
+              <div class="flex gap-3">
+                <button (click)="saveAsDraft()" [disabled]="isSubmitting"
+                  class="border border-gray-300 text-gray-700 px-6 py-3 rounded-xl hover:bg-gray-50 transition-all duration-300 font-medium text-sm flex items-center gap-2 disabled:opacity-50">
+                  <i class="fas fa-save"></i>Save as Draft
+                </button>
+                <button (click)="submitProject()" [disabled]="isSubmitting"
+                  class="bg-primary text-white px-8 py-3 rounded-xl hover:bg-opacity-90 transition-all duration-300 font-medium text-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                  <i [class]="isSubmitting ? 'fas fa-spinner fa-spin' : 'fas fa-check-circle'"></i>
+                  {{ isSubmitting ? 'Publishing...' : 'Publish Project' }}
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Success Modal ───────────────────────────────────────────────────────── -->
+<div *ngIf="showSuccess" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+  <div class="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center slide-in">
+    <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+      <i class="fas fa-check-circle text-green-600 text-3xl"></i>
+    </div>
+    <h3 class="text-xl font-bold text-gray-800 mb-2">Project Created Successfully!</h3>
+    <p class="text-gray-600 mb-6">Your project has been published and is now visible to alumni.</p>
+    <div class="flex gap-3 justify-center">
+      <button (click)="viewProject()"
+        class="bg-primary text-white px-6 py-2.5 rounded-xl hover:bg-opacity-90 transition-all duration-300 text-sm font-medium">
+        View Project
+      </button>
+      <button (click)="createAnother()"
+        class="border border-gray-300 text-gray-700 px-6 py-2.5 rounded-xl hover:bg-gray-50 transition-all duration-300 text-sm font-medium">
+        Create Another
+      </button>
+    </div>
+  </div>
+</div>
