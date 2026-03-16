@@ -46,9 +46,10 @@ export class NetworksComponent implements OnInit {
   // Error handling
   errorMessage = '';
   
-  // Dropdowns data
-  departments = ['Computer Science', 'Business Administration', 'Electrical Engineering', 'Architecture', 'Marketing'];
-  years = ['2023', '2022', '2021', '2020', '2019', '2018', '2017'];
+ 
+
+departments: string[] = [];  // was hardcoded
+years: string[] = [];
 
   constructor(
     private connectionService: ConnectionService,
@@ -64,6 +65,7 @@ export class NetworksComponent implements OnInit {
       this.currentUser = user;
       if (user) {
         this.loadAllData();
+        this.loadDepartmentsAndYears();
       }
     });
   }
@@ -315,4 +317,38 @@ export class NetworksComponent implements OnInit {
   viewAllSuggestions(): void {
     this.router.navigate(['/suggested-networks']);
   }
+
+  loadDepartmentsAndYears(): void {
+  this.userService.getAllUsers({ page: 1, limit: 1000 }).subscribe({
+    next: (response: ApiResponse<User[]>) => {
+      if (response.success && response.data) {
+        // Extract unique programs
+        const programs = response.data
+          .map(u => u.program_of_study)
+          .filter((p): p is string => !!p && p.trim() !== '')
+          .map(p => p.trim());
+        this.departments = [...new Set(programs)].sort();
+
+        // Extract unique years — handle number or string, exclude nulls
+        const graduationYears = response.data
+          .map(u => u.graduation_year)
+          .filter(y => y !== null && y !== undefined && y !== 0)
+          .map(y => String(y))
+          .filter(y => y !== 'null' && y !== 'undefined' && y !== '0' && y.length === 4);
+
+        this.years = [...new Set(graduationYears)].sort((a, b) => Number(b) - Number(a));
+
+        console.log('Departments loaded:', this.departments.length);
+        console.log('Years loaded:', this.years);
+        // Add this line right after the departments log
+        console.log('Sample user object:', response.data[0]);
+        console.log('All graduation years raw:', response.data.map(u => (u as any).graduation_year).slice(0, 10));
+      }
+    },
+    error: (err) => {
+      console.error('Failed to load departments/years:', err);
+    }
+  });
+}
+
 }

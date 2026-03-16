@@ -3,6 +3,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject, tap } from 'rxjs';
 
+
 import { 
   User, 
   LoginRequest, 
@@ -29,15 +30,11 @@ export class AuthService {
     @Inject(PLATFORM_ID) platformId: Object
   ) {
     this.isBrowser = isPlatformBrowser(platformId);
-    // Load user from localStorage on service initialization (only in browser)
     if (this.isBrowser) {
       this.loadUserFromStorage();
     }
   }
 
-  /**
-   * Register a new user
-   */
   register(data: RegisterRequest): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.apiUrl}/register`, data)
       .pipe(
@@ -49,9 +46,6 @@ export class AuthService {
       );
   }
 
-  /**
-   * Login user
-   */
   login(credentials: LoginRequest): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.apiUrl}/login`, credentials)
       .pipe(
@@ -63,9 +57,6 @@ export class AuthService {
       );
   }
 
-  /**
-   * Get current user profile
-   */
   getMe(): Observable<ApiResponse<User>> {
     return this.http.get<ApiResponse<User>>(`${this.apiUrl}/me`)
       .pipe(
@@ -80,37 +71,22 @@ export class AuthService {
       );
   }
 
-  /**
-   * Change password
-   */
   changePassword(data: ChangePasswordRequest): Observable<ApiResponse> {
     return this.http.post<ApiResponse>(`${this.apiUrl}/change-password`, data);
   }
 
-  /**
-   * Request password reset
-   */
   requestPasswordReset(data: PasswordResetRequest): Observable<ApiResponse> {
     return this.http.post<ApiResponse>(`${this.apiUrl}/request-password-reset`, data);
   }
 
-  /**
-   * Reset password with token
-   */
   resetPassword(data: ResetPasswordRequest): Observable<ApiResponse> {
     return this.http.post<ApiResponse>(`${this.apiUrl}/reset-password`, data);
   }
 
-  /**
-   * Verify email
-   */
   verifyEmail(token: string): Observable<ApiResponse> {
     return this.http.post<ApiResponse>(`${this.apiUrl}/verify-email`, { token });
   }
 
-  /**
-   * Logout user
-   */
   logout(): Observable<ApiResponse> {
     return this.http.post<ApiResponse>(`${this.apiUrl}/logout`, {})
       .pipe(
@@ -120,9 +96,6 @@ export class AuthService {
       );
   }
 
-  /**
-   * Set user session (save token and user data)
-   */
   private setSession(token: string, user: User): void {
     if (this.isBrowser) {
       localStorage.setItem('token', token);
@@ -131,10 +104,7 @@ export class AuthService {
     this.currentUserSubject.next(user);
   }
 
-  /**
-   * Clear user session
-   */
-  private clearSession(): void {
+  clearSession(): void { // ← changed from private so interceptor can call it
     if (this.isBrowser) {
       localStorage.removeItem('token');
       localStorage.removeItem('currentUser');
@@ -142,11 +112,16 @@ export class AuthService {
     this.currentUserSubject.next(null);
   }
 
-  /**
-   * Load user from localStorage (browser only)
-   */
   private loadUserFromStorage(): void {
     if (!this.isBrowser) return;
+
+    const token = localStorage.getItem('token');
+    
+    // ✅ Clear session immediately if token is already expired on app load
+    if (token && this.isTokenExpired(token)) {
+      this.clearSession();
+      return;
+    }
 
     const userStr = localStorage.getItem('currentUser');
     if (userStr) {
@@ -160,49 +135,65 @@ export class AuthService {
     }
   }
 
-  /**
-   * Get authentication token (browser only)
-   */
   getToken(): string | null {
     if (!this.isBrowser) return null;
     return localStorage.getItem('token');
   }
 
   /**
-   * Check if user is authenticated
+   * ✅ Decode JWT and check expiry against current time
    */
-  isAuthenticated(): boolean {
-    return !!this.getToken();
+  /**
+ * ✅ Decode JWT manually — no external library needed
+ */
+isTokenExpired(token?: string): boolean {
+  const t = token ?? this.getToken();
+  if (!t) return true;
+
+  try {
+    // JWT is 3 base64 parts: header.payload.signature
+    const payload = t.split('.')[1];
+
+    // Fix base64 padding if needed
+    const base64 = payload.replace(/-/g, '+').replace(/_/g, '/');
+    const padded = base64.padEnd(base64.length + (4 - base64.length % 4) % 4, '=');
+
+    const decoded = JSON.parse(atob(padded));
+
+    // exp is in seconds, Date.now() is in milliseconds
+    return decoded.exp * 1000 < Date.now();
+  } catch {
+    return true; // treat malformed token as expired
   }
+}
 
   /**
-   * Check if user is admin
+   * ✅ Now checks both existence AND expiry
    */
+  isAuthenticated(): boolean {
+    const token = this.getToken();
+    if (!token) return false;
+    return !this.isTokenExpired(token);
+  }
+
   isAdmin(): boolean {
     const user = this.currentUserSubject.value;
     return user?.role === 'admin';
   }
 
-  /**
-   * Get current user value (synchronous)
-   */
   getCurrentUser(): User | null {
     return this.currentUserSubject.value;
   }
 
   updateCurrentUser(user: User): void {
-  if (this.isBrowser) {
-    localStorage.setItem('currentUser', JSON.stringify(user));
+    if (this.isBrowser) {
+      localStorage.setItem('currentUser', JSON.stringify(user));
+    }
+    this.currentUserSubject.next(user);
   }
-  this.currentUserSubject.next(user);
-}
 
-/**
- * Get current user ID (synchronous)
- */
-getCurrentUserId(): number | null {
-  const user = this.currentUserSubject.value;
-  return user?.id || null;
-}
-
+  getCurrentUserId(): number | null {
+    const user = this.currentUserSubject.value;
+    return user?.id || null;
+  }
 }

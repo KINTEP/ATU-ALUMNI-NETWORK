@@ -33,9 +33,13 @@
   </div>
 
   <div class="flex flex-col lg:flex-row gap-8">
-    <!-- Left Sidebar -->
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- LEFT SIDEBAR                                               -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
     <div class="w-full lg:w-1/4">
       <div class="space-y-6">
+
         <!-- User Profile Card -->
         <div class="bg-white rounded-xl shadow-md overflow-hidden card-hover slide-in">
           <div class="bg-gradient-to-r from-blue-600 to-indigo-600 p-4 text-white">
@@ -60,21 +64,24 @@
               </div>
             </div>
           </div>
+
           <div class="p-4">
+            <!-- Dynamic stats — no more hardcoded numbers -->
             <div class="flex justify-between text-sm mb-4">
               <div class="text-center">
-                <p class="font-bold text-blue-600">128</p>
-                <p class="text-gray-500">Connections</p>
+                <p class="font-bold text-blue-600">{{ upcomingEventsCount }}</p>
+                <p class="text-gray-500">Upcoming Events</p>
               </div>
               <div class="text-center">
-                <p class="font-bold text-blue-600">{{ myEvents.length }}</p>
-                <p class="text-gray-500">Events</p>
+                <p class="font-bold text-blue-600">{{ myForumPostsCount }}</p>
+                <p class="text-gray-500">My Posts</p>
               </div>
               <div class="text-center">
-                <p class="font-bold text-blue-600">5</p>
-                <p class="text-gray-500">Forums</p>
+                <p class="font-bold text-blue-600">{{ savedJobs.length }}</p>
+                <p class="text-gray-500">Saved Jobs</p>
               </div>
             </div>
+
             <button (click)="viewProfile()" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors duration-300 flex items-center justify-center space-x-2">
               <i class="fas fa-user-edit"></i>
               <span>View Profile</span>
@@ -110,46 +117,22 @@
               </div>
               <span>Saved Jobs</span>
             </button>
+            <!-- Projects quick access -->
+            <button (click)="browseProjects()" class="w-full flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-100 transition-colors duration-300">
+              <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center text-green-600">
+                <i class="fas fa-project-diagram"></i>
+              </div>
+              <span>Community Projects</span>
+            </button>
           </div>
         </div>
         
-        <!-- My Events -->
-        <div class="bg-white rounded-xl shadow-md p-4 card-hover slide-in">
-          <div class="flex justify-between items-center mb-4">
-            <h3 class="font-bold text-lg text-blue-600">My Events</h3>
-            <button (click)="browseEvents()" class="text-sm text-blue-600 hover:underline">See all</button>
-          </div>
-          
-          <!-- Loading State -->
-          <div *ngIf="isLoadingEvents" class="text-center py-4">
-            <i class="fas fa-spinner fa-spin text-blue-600"></i>
-            <p class="text-sm text-gray-500 mt-2">Loading events...</p>
-          </div>
-
-          <!-- My Events List -->
-          <div *ngIf="!isLoadingEvents && myEvents.length > 0" class="space-y-4">
-            <div *ngFor="let event of myEvents" class="flex items-start space-x-3 cursor-pointer" (click)="viewEvent(event.id)">
-              <div class="w-12 h-12 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 flex items-center justify-center text-white">
-                <i class="fas fa-calendar"></i>
-              </div>
-              <div class="flex-1">
-                <p class="font-medium">{{ event.title }}</p>
-                <p class="text-sm text-gray-500">{{ formatDateTime(event.start_date) }}</p>
-                <button class="mt-1 text-xs text-blue-600 hover:underline">View Details</button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Empty State -->
-          <div *ngIf="!isLoadingEvents && myEvents.length === 0" class="text-center py-4">
-            <p class="text-sm text-gray-500">No upcoming events</p>
-            <button (click)="browseEvents()" class="text-sm text-blue-600 hover:underline mt-2">Browse Events</button>
-          </div>
-        </div>
       </div>
     </div>
     
-    <!-- Main Feed -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- MAIN FEED                                                  -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
     <div class="w-full lg:w-2/4">
       <div class="space-y-6">
         
@@ -159,7 +142,7 @@
           <p class="text-gray-500 mt-4">Loading news...</p>
         </div>
 
-        <!-- Featured News Spotlight -->
+        <!-- ─── Featured News ─────────────────────────────────────── -->
         <div *ngFor="let news of featuredNews; let i = index" class="bg-white rounded-xl shadow-md overflow-hidden card-hover slide-in">
           <div *ngIf="news.featured_image" class="w-full h-48 overflow-hidden">
             <img [src]="getNewsImageUrl(news.featured_image)" 
@@ -170,7 +153,6 @@
           <div class="p-4">
             <div class="flex justify-between items-start mb-3">
               <div class="flex space-x-3">
-                
                 <div *ngIf="news.author_picture; else authorInitials" 
                   class="w-10 h-10 rounded-full overflow-hidden border border-gray-200">
                   <img [src]="getProfilePictureUrl(news.author_picture)" 
@@ -183,12 +165,10 @@
                     {{ news.author_name ? news.author_name.substring(0, 2).toUpperCase() : 'AT' }}
                   </div>
                 </ng-template>
-              
                 <div>
                   <h4 class="font-bold">{{ news.author_name || 'Alumni Team' }}</h4>
                   <p class="text-sm text-gray-500">{{ formatDate(news.published_at) }}</p>
                 </div>
-
               </div>
             </div>
             
@@ -217,7 +197,7 @@
           </div>
         </div>
 
-        <!-- Upcoming Events Feed -->
+        <!-- ─── Upcoming Events ────────────────────────────────────── -->
         <div *ngFor="let event of upcomingEvents" class="bg-white rounded-xl shadow-md overflow-hidden card-hover slide-in">
           <div *ngIf="event.event_image" class="w-full h-48 overflow-hidden">
             <img [src]="event.event_image" 
@@ -253,7 +233,90 @@
           </div>
         </div>
 
-        <!-- Recent Jobs Feed -->
+        <!-- ─── Featured Community Projects ───────────────────────── -->
+
+        <!-- Loading State for Projects -->
+        <div *ngIf="isLoadingProjects" class="bg-white rounded-xl shadow-md p-8 text-center">
+          <i class="fas fa-spinner fa-spin text-green-600 text-3xl"></i>
+          <p class="text-gray-500 mt-4">Loading projects...</p>
+        </div>
+
+        <div *ngFor="let project of featuredProjects" class="bg-white rounded-xl shadow-md overflow-hidden card-hover slide-in">
+
+          <!-- Cover Image -->
+          <div *ngIf="project.cover_image" class="w-full h-48 overflow-hidden">
+            <img [src]="project.cover_image" 
+                 [alt]="project.title" 
+                 class="w-full h-full object-cover">
+          </div>
+
+          <div class="p-4">
+            <!-- Header row -->
+            <div class="flex justify-between items-start mb-3">
+              <div class="flex space-x-3">
+                <div class="w-10 h-10 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full flex items-center justify-center text-white">
+                  <i class="fas fa-project-diagram"></i>
+                </div>
+                <div>
+                  <h4 class="font-bold">Community Project</h4>
+                  <p class="text-sm text-gray-500">{{ formatDate(project.created_at) }}</p>
+                </div>
+              </div>
+              <!-- Ongoing badge -->
+              <span class="text-xs px-2 py-1 rounded-full bg-green-100 text-green-700 border border-green-200 font-medium flex items-center">
+                <i class="fas fa-circle text-[8px] mr-1 animate-pulse"></i>Ongoing
+              </span>
+            </div>
+
+            <!-- Title + Description -->
+            <h3 class="text-xl font-bold mb-1">{{ project.title }}</h3>
+            <p class="text-gray-700 mb-3 text-sm">{{ truncateDescription(project.description, 140) }}</p>
+
+            <!-- Category + Location badges -->
+            <div class="flex flex-wrap gap-2 mb-4">
+              <span class="text-xs px-2 py-1 rounded-full bg-green-50 text-green-700 border border-green-100">
+                <i class="fas fa-tag mr-1"></i>{{ project.category }}
+              </span>
+              <span class="text-xs px-2 py-1 rounded-full bg-gray-50 text-gray-600 border border-gray-100">
+                <i class="fas fa-map-marker-alt mr-1"></i>{{ project.location }}
+              </span>
+            </div>
+
+            <!-- Funding Progress -->
+            <div class="bg-gray-50 rounded-lg p-3 mb-4">
+              <div class="flex justify-between items-center mb-2">
+                <span class="text-sm font-medium text-gray-700">Funding Progress</span>
+                <span class="text-sm font-bold text-green-600">
+                  {{ project.funding_percentage | number:'1.0-0' }}%
+                </span>
+              </div>
+              <div class="w-full bg-gray-200 rounded-full h-2 mb-2">
+                <div class="bg-gradient-to-r from-green-500 to-emerald-600 h-2 rounded-full transition-all duration-500"
+                     [style.width.%]="project.funding_percentage > 100 ? 100 : project.funding_percentage">
+                </div>
+              </div>
+              <div class="flex justify-between text-xs text-gray-500">
+                <span>{{ formatCurrency(project.current_amount) }} raised</span>
+                <span>Goal: {{ formatCurrency(project.funding_goal) }}</span>
+              </div>
+            </div>
+
+            <!-- Action buttons -->
+            <div class="flex flex-wrap gap-2 pt-3 border-t border-gray-200">
+              <button (click)="donateToProject(project.id)"
+                      class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors duration-300 flex items-center space-x-1">
+                <i class="fas fa-hand-holding-heart mr-1"></i>
+                <span>Donate</span>
+              </button>
+              <button (click)="viewProject(project.id)"
+                      class="border border-gray-300 text-gray-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors duration-300">
+                View Project
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ─── Recent Jobs ────────────────────────────────────────── -->
         <div *ngFor="let job of recentJobs; let i = index" class="bg-white rounded-xl shadow-md overflow-hidden card-hover slide-in">
           <div class="p-4">
             <div class="flex justify-between items-start mb-3">
@@ -268,7 +331,6 @@
               </div>
             </div>
             
-            <!-- Job Description Preview -->
             <p *ngIf="job.job_description" class="text-gray-700 mb-3 text-sm">
               {{ truncateDescription(job.job_description, 120) }}
             </p>
@@ -297,7 +359,6 @@
                 </div>
               </div>
               
-              <!-- Job Skills/Requirements (if available) -->
               <div *ngIf="job.skills_required && job.skills_required.length > 0" class="flex flex-wrap gap-1 mt-3">
                 <span *ngFor="let skill of job.skills_required.slice(0, 3); let idx = index" 
                       [class]="getSkillBadgeClass(idx)" 
@@ -331,7 +392,9 @@
       </div>
     </div>
     
-    <!-- Right Sidebar -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- RIGHT SIDEBAR                                              -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
     <div class="w-full lg:w-1/4">
       <div class="space-y-6">
         
@@ -342,14 +405,14 @@
             <button (click)="joinForums()" class="text-sm text-blue-600 hover:underline">See all</button>
           </div>
 
-          <!-- Loading State -->
           <div *ngIf="isLoadingForums" class="text-center py-4">
             <i class="fas fa-spinner fa-spin text-blue-600"></i>
           </div>
 
-          <!-- Forum Posts List -->
           <div *ngIf="!isLoadingForums && activeForums.length > 0" class="space-y-4">
-            <div *ngFor="let forum of activeForums" class="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50 transition-colors duration-300 cursor-pointer" (click)="viewForumPost(forum.id)">
+            <div *ngFor="let forum of activeForums" 
+                 class="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50 transition-colors duration-300 cursor-pointer" 
+                 (click)="viewForumPost(forum.id)">
               <div class="flex items-center space-x-3">
                 <div class="w-10 h-10 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 flex items-center justify-center text-white">
                   <i class="fas fa-comments"></i>
@@ -363,7 +426,6 @@
             </div>
           </div>
 
-          <!-- Empty State -->
           <div *ngIf="!isLoadingForums && activeForums.length === 0" class="text-center py-4">
             <p class="text-sm text-gray-500">No active discussions</p>
           </div>
@@ -376,14 +438,14 @@
             <button (click)="findJobs()" class="text-sm text-blue-600 hover:underline">See all</button>
           </div>
 
-          <!-- Loading State -->
           <div *ngIf="isLoadingJobs" class="text-center py-4">
             <i class="fas fa-spinner fa-spin text-blue-600"></i>
           </div>
 
-          <!-- Recent Jobs List -->
           <div *ngIf="!isLoadingJobs && recentJobs.length > 0" class="space-y-4">
-            <div *ngFor="let job of recentJobs.slice(0, 3)" class="flex items-start space-x-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors" (click)="viewJob(job.id)">
+            <div *ngFor="let job of recentJobs.slice(0, 3)" 
+                 class="flex items-start space-x-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors" 
+                 (click)="viewJob(job.id)">
               <div class="w-10 h-10 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 flex items-center justify-center text-white">
                 <i class="fas fa-briefcase"></i>
               </div>
@@ -395,24 +457,57 @@
             </div>
           </div>
         </div>
-        
-        <!-- Alumni Spotlight -->
-        <div class="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl shadow-md p-4 text-white card-hover slide-in">
-          <h3 class="font-bold text-lg mb-2">Alumni Spotlight</h3>
-          <div class="flex items-center space-x-3">
-            <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center text-blue-600 font-bold">AK</div>
-            <div>
-              <h4 class="font-bold">Ama Kwarteng</h4>
-              <p class="text-sm opacity-90">Founder, GreenTech Solutions</p>
-              <p class="text-xs mt-1">"ATU gave me the foundation to build my sustainable tech company."</p>
+
+        <!-- Community Projects Sidebar -->
+        <div class="bg-white rounded-xl shadow-md p-4 card-hover slide-in">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="font-bold text-lg text-green-600">Community Projects</h3>
+            <button (click)="browseProjects()" class="text-sm text-green-600 hover:underline">See all</button>
+          </div>
+
+          <!-- Loading State -->
+          <div *ngIf="isLoadingProjects" class="text-center py-4">
+            <i class="fas fa-spinner fa-spin text-green-600"></i>
+          </div>
+
+          <!-- Projects List -->
+          <div *ngIf="!isLoadingProjects && featuredProjects.length > 0" class="space-y-4">
+            <div *ngFor="let project of featuredProjects" 
+                 class="cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors"
+                 (click)="viewProject(project.id)">
+              <div class="flex items-start space-x-3 mb-2">
+                <div class="w-10 h-10 rounded-lg bg-gradient-to-r from-green-500 to-emerald-600 flex items-center justify-center text-white flex-shrink-0">
+                  <i class="fas fa-project-diagram"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="font-medium text-sm truncate">{{ project.title }}</p>
+                  <p class="text-xs text-gray-500">{{ project.category }} • {{ project.location }}</p>
+                </div>
+              </div>
+              <!-- Mini progress bar -->
+              <div class="w-full bg-gray-200 rounded-full h-1.5 mb-1">
+                <div class="bg-gradient-to-r from-green-500 to-emerald-600 h-1.5 rounded-full"
+                     [style.width.%]="project.funding_percentage > 100 ? 100 : project.funding_percentage">
+                </div>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-xs text-gray-500">{{ project.funding_percentage | number:'1.0-0' }}% funded</span>
+                <button (click)="donateToProject(project.id); $event.stopPropagation()"
+                        class="text-xs text-green-600 hover:underline font-medium">
+                  Donate
+                </button>
+              </div>
             </div>
           </div>
-          <button class="w-full mt-4 bg-white text-blue-600 py-2 rounded-lg font-medium hover:bg-opacity-90 transition-colors duration-300">
-            View Profile
-          </button>
+
+          <!-- Empty State -->
+          <div *ngIf="!isLoadingProjects && featuredProjects.length === 0" class="text-center py-4">
+            <p class="text-sm text-gray-500">No active projects</p>
+          </div>
         </div>
-        
+
       </div>
     </div>
+
   </div>
 </div>

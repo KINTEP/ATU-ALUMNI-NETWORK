@@ -13,6 +13,7 @@ import { JobsService } from '../../services/jobs.service';
 import { ForumService } from '../../services/forum.service';
 import { ApiResponse } from '../../models/api-response';
 import { ImageService } from '../../services/image.service';
+import { Project, ProjectsService } from '../../services/projects.service';
 
 @Component({
   selector: 'app-home',
@@ -36,6 +37,7 @@ export class HomeComponent implements OnInit {
   // For instant heart icon updates
   savedJobIds = new Set<number>();
 
+
   // Loading states
   isLoadingNews = true;
   isLoadingEvents = true;
@@ -48,6 +50,16 @@ export class HomeComponent implements OnInit {
   jobsError = '';
   forumsError = '';
 
+  upcomingEventsCount = 0;
+  myForumPostsCount = 0;
+  savedJobsCount = 0;
+
+
+  featuredProjects: Project[] = [];
+  isLoadingProjects = false;
+
+
+
   constructor(
     private authService: AuthService,
     private newsService: NewsService,
@@ -55,26 +67,29 @@ export class HomeComponent implements OnInit {
     private jobsService: JobsService,
     private forumService: ForumService,
     private router: Router,
-    private imageService: ImageService
+    private imageService: ImageService,
+    private projectsService: ProjectsService
   ) {}
 
   ngOnInit(): void {
-    // Subscribe to current user
-    this.authService.currentUser$.subscribe(user => {
-      this.currentUser = user;
-      if (user) {
-        this.loadSavedJobIds();
-        this.loadSavedJobs();
-        //this.loadMyEvents();
-      }
-    });
+  // Load public data immediately — no auth needed
+  this.loadFeaturedNews();
+  this.loadUpcomingEvents();
+  this.loadRecentJobs();
+  this.loadActiveForums();
+  this.loadFeaturedProjects();
+  this.loadUpcomingEventsCount(); // public stat, load for everyone
 
-    // Load public data
-    this.loadFeaturedNews();
-    this.loadUpcomingEvents();
-    this.loadRecentJobs();
-    this.loadActiveForums();
-  }
+  // Load user-specific data only when logged in
+  this.authService.currentUser$.subscribe(user => {
+    this.currentUser = user;
+    if (user) {
+      this.loadSavedJobIds();
+      this.loadSavedJobs();
+      this.loadMyForumPostsCount(); // user-specific stat
+    }
+  });
+}
 
   /**
    * Load saved job IDs for instant heart icon updates
@@ -114,6 +129,79 @@ export class HomeComponent implements OnInit {
     });
   }
 
+
+  loadProfileStats(): void {
+  // Upcoming events count
+  this.eventsService.getUpcomingEvents(1, 1).subscribe({
+    next: (response) => {
+      this.upcomingEventsCount = response.total || 0;
+    },
+    error: () => {}
+  });
+
+  // My forum posts count (only when user is logged in)
+  if (this.currentUser) {
+    this.forumService.getMyPosts(this.currentUser.id, 1, 1).subscribe({
+      next: (response) => {
+        this.myForumPostsCount = response.total || 0;
+      },
+      error: () => {}
+    });
+  }
+}
+
+
+loadFeaturedProjects(): void {
+  this.isLoadingProjects = true;
+  this.projectsService.getAllProjects({ 
+    status: 'ongoing', 
+    featured: true, 
+    limit: 2, 
+    page: 1 
+  }).subscribe({
+    next: (response) => {
+      if (response.success && response.data) {
+        this.featuredProjects = response.data;
+        // Fallback: if no featured, just grab any 2 ongoing
+        if (this.featuredProjects.length === 0) {
+          this.projectsService.getAllProjects({ 
+            status: 'ongoing', 
+            limit: 2, 
+            page: 1 
+          }).subscribe({
+            next: (r) => {
+              if (r.success && r.data) this.featuredProjects = r.data;
+              this.isLoadingProjects = false;
+            },
+            error: () => { this.isLoadingProjects = false; }
+          });
+        } else {
+          this.isLoadingProjects = false;
+        }
+      } else {
+        this.isLoadingProjects = false;
+      }
+    },
+    error: () => { this.isLoadingProjects = false; }
+  });
+}
+
+browseProjects(): void { this.router.navigate(['/projects']); }
+
+
+viewProject(projectId: number): void { 
+  this.router.navigate(['/projects', projectId]); 
+}
+
+donateToProject(projectId: number): void { 
+  this.router.navigate(['/projects', projectId], { fragment: 'donate' }); 
+}
+
+// Reuse this from projects.component.ts
+formatCurrency(amount: number | string): string {
+  return `GHS ${Number(amount).toLocaleString()}`;
+}
+
   /**
    * Load upcoming events
    */
@@ -134,6 +222,32 @@ export class HomeComponent implements OnInit {
     });
   }
 
+
+  loadUpcomingEventsCount(): void {
+  this.eventsService.getUpcomingEvents(1, 1).subscribe({
+    next: (response) => {
+      this.upcomingEventsCount = response.total || 0;
+    },
+    error: (err) => {
+      console.warn('Could not load upcoming events count:', err);
+      this.upcomingEventsCount = 0;
+    }
+  });
+}
+
+loadMyForumPostsCount(): void {
+  if (!this.currentUser) return;
+  this.forumService.getMyPosts(this.currentUser.id, 1, 1).subscribe({
+    next: (response) => {
+      this.myForumPostsCount = response.total || 0;
+    },
+    error: (err) => {
+      // Backend 500 on my-posts — fail silently but log it
+      console.warn('Could not load forum post count (backend error):', err.status);
+      this.myForumPostsCount = 0;
+    }
+  });
+}
   /**
    * Load my events (events user is attending)
    */
@@ -235,7 +349,8 @@ export class HomeComponent implements OnInit {
     this.newsService.likeArticle(newsId, this.currentUser.id).subscribe({
       next: (response: ApiResponse) => {
         if (response.success) {
-          const article = this.featuredNews[index] || this.latestNews[index];
+          //const article = this.featuredNews[index] || this.latestNews[index];
+          const article = this.featuredNews.find(n => n.id === newsId);
           if (article) {
             article.likes_count++;
             article.user_has_liked = true;

@@ -50,11 +50,11 @@ export class JobsComponent implements OnInit {
   jobTypes = ['Full-time', 'Part-time', 'Contract', 'Internship', 'Temporary'];
   locations = ['Accra', 'Kumasi', 'Lagos', 'Remote', 'Worldwide'];
   salaryRanges = [
-    { label: '$0 - $30,000', value: '0-30000' },
-    { label: '$30,000 - $50,000', value: '30000-50000' },
-    { label: '$50,000 - $70,000', value: '50000-70000' },
-    { label: '$70,000 - $90,000', value: '70000-90000' },
-    { label: '$90,000+', value: '90000+' }
+    { label: 'GHC 0 - GHC 30,000', value: '0-30000' },
+    { label: 'GHC 30,000 - GHC 50,000', value: '30000-50000' },
+    { label: 'GHC 50,000 - GHC 70,000', value: '50000-70000' },
+    { label: 'GHC 70,000 - GHC 90,000', value: '70000-90000' },
+    { label: 'GHC 90,000+', value: '90000+' }
   ];
   experienceLevels = ['Intern', 'Entry Level', 'Mid Level', 'Senior Level', 'Executive'];
 
@@ -357,7 +357,7 @@ export class JobsComponent implements OnInit {
   formatSalary(job: Job): string {
     if (!job.salary_min && !job.salary_max) return 'Competitive';
 
-    const currency = job.salary_currency || '$';
+    const currency = job.salary_currency || 'GHC';
     const min = job.salary_min ? `${currency}${(job.salary_min / 1000).toFixed(0)}k` : '';
     const max = job.salary_max ? `${currency}${(job.salary_max / 1000).toFixed(0)}k` : '';
 

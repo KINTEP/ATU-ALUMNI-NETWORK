@@ -317,6 +317,6 @@ export class ForumComponent implements OnInit, OnDestroy {
 
 
   navigateToCreateForum() {
- this.router.navigate(["/createForum"])
+ this.router.navigate(["/create-forum"])
 }
 }

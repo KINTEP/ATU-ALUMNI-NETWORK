@@ -1,6 +1,6 @@
 <div class="container mx-auto px-4 py-8">
   <!-- Header -->
-  <div class="bg-gradient-to-r from-primary to-accent text-white rounded-2xl shadow-lg p-6 mb-8 slide-in relative overflow-hidden">
+  <div class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl shadow-lg p-6 mb-8 slide-in relative overflow-hidden">
     <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-32 translate-x-32"></div>
     <div class="relative z-10 flex items-center justify-between">
       <div>
@@ -27,7 +27,7 @@
             [(ngModel)]="searchQuery"
             (keyup.enter)="searchUsers()"
             placeholder="Search by name, skills, or company..." 
-            class="w-full border border-gray-300 rounded-lg px-4 py-3 pl-10 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+            class="w-full border border-gray-300 rounded-lg px-4 py-3 pl-10 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent">
           <i class="fas fa-search absolute left-3 top-4 text-gray-400"></i>
         </div>
       </div>
@@ -38,7 +38,7 @@
         <select 
           [(ngModel)]="selectedDepartment"
           (change)="searchUsers()"
-          class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+          class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent">
           <option value="">All Departments</option>
           <option *ngFor="let dept of departments" [value]="dept">{{ dept }}</option>
         </select>
@@ -50,7 +50,7 @@
         <select 
           [(ngModel)]="selectedYear"
           (change)="searchUsers()"
-          class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+          class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent">
           <option value="">All Years</option>
           <option *ngFor="let year of graduationYears" [value]="year">{{ year }}</option>
         </select>
@@ -71,7 +71,7 @@
         <button 
           (click)="searchUsers()"
           [disabled]="isLoading"
-          class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-opacity-90 transition-colors duration-300 text-sm disabled:opacity-50">
+          class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-300 text-sm disabled:opacity-50">
           <i class="fas fa-search mr-2"></i>Search
         </button>
       </div>
@@ -80,7 +80,7 @@
 
   <!-- Loading State -->
   <div *ngIf="isLoading" class="text-center py-12">
-    <i class="fas fa-spinner fa-spin text-primary text-4xl mb-4"></i>
+    <i class="fas fa-spinner fa-spin text-blue-600 text-4xl mb-4"></i>
     <p class="text-gray-600">Loading alumni...</p>
   </div>
 
@@ -93,7 +93,7 @@
       <p class="text-gray-500 mb-4">Try adjusting your search filters</p>
       <button 
         (click)="resetFilters()"
-        class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-opacity-90 transition-colors duration-300">
+        class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-300">
         Reset Filters
       </button>
     </div>
@@ -106,38 +106,31 @@
         [style.animation-delay]="(i * 0.05) + 's'">
         
         <!-- User Header -->
-        <div class="flex items-center justify-between mb-4">
-          <div class="flex items-center space-x-3">
-            <!-- Avatar -->
-            <div 
-              *ngIf="user.profile_picture; else userInitials"
-              class="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
-              <img [src]="user.profile_picture" [alt]="user.first_name + ' ' + user.last_name" class="w-full h-full object-cover">
+        <div class="flex items-center space-x-3 mb-4">
+          <div 
+            *ngIf="user.profile_picture; else userInitials"
+            class="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
+            <img [src]="user.profile_picture" [alt]="user.first_name + ' ' + user.last_name" class="w-full h-full object-cover">
+          </div>
+          <ng-template #userInitials>
+            <div [class]="'w-12 h-12 rounded-full flex-shrink-0 flex items-center justify-center text-white font-bold text-lg ' + getAvatarColorClass(i)">
+              {{ getUserInitials(user) }}
             </div>
-            <ng-template #userInitials>
-              <div [class]="'w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg ' + getAvatarColorClass(i)">
-                {{ getUserInitials(user) }}
-              </div>
-            </ng-template>
-            
-            <div class="min-w-0 flex-1">
-              <h3 class="font-bold text-lg truncate">{{ user.first_name }} {{ user.last_name }}</h3>
-              <p class="text-sm text-gray-500 truncate">{{ user.program_of_study }}, {{ user.graduation_year }}</p>
-            </div>
+          </ng-template>
+          
+          <div class="min-w-0 flex-1">
+            <h3 class="font-bold text-lg truncate text-gray-800">{{ user.first_name }} {{ user.last_name }}</h3>
+            <p class="text-sm text-gray-500 truncate">{{ user.program_of_study }}<span *ngIf="user.graduation_year">, {{ user.graduation_year }}</span></p>
           </div>
         </div>
         
         <!-- User Bio -->
-        <p *ngIf="user.bio" class="text-gray-600 text-sm mb-4 line-clamp-3">
-          {{ user.bio }}
-        </p>
-        <p *ngIf="!user.bio" class="text-gray-400 text-sm mb-4 italic">
-          No bio available
-        </p>
+        <p *ngIf="user.bio" class="text-gray-600 text-sm mb-4 line-clamp-3">{{ user.bio }}</p>
+        <p *ngIf="!user.bio" class="text-gray-400 text-sm mb-4 italic">No bio available</p>
         
         <!-- Current Position -->
-        <p *ngIf="user.job_title || user.current_company" class="text-sm text-gray-600 mb-4 flex items-center">
-          <i class="fas fa-briefcase mr-2 text-primary"></i>
+        <p *ngIf="user.job_title || user.current_company" class="text-sm text-gray-600 mb-3 flex items-center">
+          <i class="fas fa-briefcase mr-2 text-blue-600"></i>
           <span class="truncate">
             <span *ngIf="user.job_title">{{ user.job_title }}</span>
             <span *ngIf="user.job_title && user.current_company"> at </span>
@@ -146,16 +139,18 @@
         </p>
 
         <!-- Location -->
-        <p *ngIf="user.location" class="text-sm text-gray-600 mb-4 flex items-center">
-          <i class="fas fa-map-marker-alt mr-2 text-primary"></i>
-          <span>{{ user.location }}</span>
+        <p *ngIf="user.current_city || user.current_country" class="text-sm text-gray-600 mb-3 flex items-center">
+          <i class="fas fa-map-marker-alt mr-2 text-blue-600"></i>
+          <span class="truncate">
+            {{ user.current_city }}<span *ngIf="user.current_city && user.current_country">, </span>{{ user.current_country }}
+          </span>
         </p>
         
         <!-- Skills -->
         <div *ngIf="user.skills && user.skills.length > 0" class="flex flex-wrap gap-2 mb-4">
           <span 
             *ngFor="let skill of user.skills.slice(0, 3)" 
-            class="bg-primary bg-opacity-10 text-primary px-2 py-1 rounded-full text-xs border border-primary border-opacity-20">
+            class="bg-blue-50 text-blue-700 px-2 py-1 rounded-full text-xs border border-blue-100">
             {{ skill }}
           </span>
           <span 
@@ -170,14 +165,14 @@
           <button 
             (click)="sendConnectionRequest(user)"
             [disabled]="loadingConnectionId === user.id"
-            class="flex-1 bg-primary text-white py-2 rounded-lg hover:bg-opacity-90 transition-colors duration-300 flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed">
+            class="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors duration-300 flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed">
             <i *ngIf="loadingConnectionId !== user.id" class="fas fa-user-plus"></i>
             <i *ngIf="loadingConnectionId === user.id" class="fas fa-spinner fa-spin"></i>
             <span>{{ loadingConnectionId === user.id ? 'Sending...' : 'Connect' }}</span>
           </button>
           <button 
             (click)="viewProfile(user.id)"
-            class="flex-1 border border-primary text-primary py-2 rounded-lg hover:bg-primary hover:text-white transition-colors duration-300 flex items-center justify-center space-x-2">
+            class="flex-1 border border-blue-600 text-blue-600 py-2 rounded-lg hover:bg-blue-600 hover:text-white transition-colors duration-300 flex items-center justify-center space-x-2">
             <i class="fas fa-eye"></i>
             <span>Profile</span>
           </button>
@@ -198,7 +193,7 @@
         *ngFor="let page of getPageNumbers()"
         (click)="changePage(page)"
         [class]="page === currentPage 
-          ? 'px-4 py-2 bg-primary text-white rounded-lg font-medium' 
+          ? 'px-4 py-2 bg-blue-600 text-white rounded-lg font-medium' 
           : 'px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-300'">
         {{ page }}
       </button>

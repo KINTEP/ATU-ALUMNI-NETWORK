@@ -1,9 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
-
 
 @Component({
   selector: 'app-login',
@@ -18,52 +17,56 @@ export class LoginComponent implements OnInit {
   rememberMe: boolean = false;
   isLoading: boolean = false;
   errorMessage: string = '';
+  sessionExpiredMessage: string = ''; // ✅ new
   showPassword: boolean = false;
   emailError: string = '';
   passwordError: string = '';
+  private returnUrl: string = '/home'; // ✅ new
 
   constructor(
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute // ✅ new
   ) {}
 
   ngOnInit(): void {
-    // If user is already logged in, redirect to home
     if (this.authService.isAuthenticated()) {
       this.router.navigate(['/home']);
+      return;
+    }
+
+    // ✅ Read returnUrl and session_expired reason from interceptor redirect
+    this.returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') || '/home';
+    const reason = this.route.snapshot.queryParamMap.get('reason');
+    if (reason === 'session_expired') {
+      this.sessionExpiredMessage = 'Your session has expired. Please sign in again.';
     }
   }
 
   onSubmit(): void {
-    // Reset error message
     this.errorMessage = '';
+    this.sessionExpiredMessage = ''; // ✅ clear on new attempt
 
-    // Validate inputs
     if (!this.email || !this.password) {
       this.errorMessage = 'Please enter both email and password';
       return;
     }
 
-    // Set loading state
     this.isLoading = true;
 
-    // Call login service
     this.authService.login({ email: this.email, password: this.password })
       .subscribe({
         next: (response) => {
-          console.log('Login successful:', response);
-          
-          // Check user role and redirect accordingly
           const user = this.authService.getCurrentUser();
           if (user?.role === 'admin') {
-            this.router.navigate(['admin/dashboard']);
+            this.router.navigate(['/admin/dashboard']);
           } else {
-            this.router.navigate(['/home']);
+            this.router.navigate([this.returnUrl]); // ✅ redirect to where they were
           }
         },
         error: (error) => {
-          console.error('Login error:', error);
-          this.errorMessage = error.message || 'Invalid email or password';
+          // ✅ backend error is in error.error.error, not error.message
+          this.errorMessage = error.error?.error || 'Invalid email or password';
           this.isLoading = false;
         },
         complete: () => {
