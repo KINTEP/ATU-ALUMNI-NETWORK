@@ -52,7 +52,7 @@ export class HomeComponent implements OnInit {
 
   upcomingEventsCount = 0;
   myForumPostsCount = 0;
-  savedJobsCount = 0;
+  savedJobsCount: number = 0;
 
 
   featuredProjects: Project[] = [];
@@ -95,19 +95,17 @@ export class HomeComponent implements OnInit {
    * Load saved job IDs for instant heart icon updates
    */
   private loadSavedJobIds(): void {
-    if (!this.currentUser) return;
-
-    this.jobsService.getSavedJobs(1, 1000).subscribe({
-      next: (response) => {
-        if (response.success && response.data) {
-          this.savedJobIds = new Set(response.data.map(job => job.id));
-        }
-      },
-      error: (err) => {
-        console.error('Failed to load saved job IDs:', err);
+  if (!this.currentUser) return;
+  this.jobsService.getSavedJobs(1, 1000).subscribe({
+    next: (response) => {
+      if (response.success && response.data) {
+        this.savedJobIds = new Set(response.data.map(job => job.id));
+        this.savedJobsCount = response.data.length; // ✅ real count
       }
-    });
-  }
+    },
+    error: (err) => console.error('Failed to load saved job IDs:', err)
+  });
+}
 
   /**
    * Load featured news articles
@@ -130,25 +128,6 @@ export class HomeComponent implements OnInit {
   }
 
 
-  loadProfileStats(): void {
-  // Upcoming events count
-  this.eventsService.getUpcomingEvents(1, 1).subscribe({
-    next: (response) => {
-      this.upcomingEventsCount = response.total || 0;
-    },
-    error: () => {}
-  });
-
-  // My forum posts count (only when user is logged in)
-  if (this.currentUser) {
-    this.forumService.getMyPosts(this.currentUser.id, 1, 1).subscribe({
-      next: (response) => {
-        this.myForumPostsCount = response.total || 0;
-      },
-      error: () => {}
-    });
-  }
-}
 
 
 loadFeaturedProjects(): void {
@@ -334,34 +313,41 @@ loadMyForumPostsCount(): void {
   viewAllNews(): void { this.router.navigate(['/news']); }
   viewEvent(eventId: number): void { this.router.navigate(['/events', eventId]); }
   viewJob(jobId: number): void { this.router.navigate(['/jobs', jobId]); }
-  viewForumPost(postId: number): void { this.router.navigate(['/forum', postId]); }
+  viewForumPost(postId: number): void { this.router.navigate(['/forum/posts', postId]); }
   viewNews(newsId: number): void { this.router.navigate(['/news', newsId]); }
 
   /**
    * Like a news article
    */
   likeNews(newsId: number, index: number): void {
-    if (!this.currentUser) {
-      this.router.navigate(['/login']);
-      return;
-    }
-
-    this.newsService.likeArticle(newsId, this.currentUser.id).subscribe({
-      next: (response: ApiResponse) => {
-        if (response.success) {
-          //const article = this.featuredNews[index] || this.latestNews[index];
-          const article = this.featuredNews.find(n => n.id === newsId);
-          if (article) {
-            article.likes_count++;
-            article.user_has_liked = true;
-          }
-        }
-      },
-      error: (error: any) => {
-        console.error('Error liking news:', error);
-      }
-    });
+  if (!this.currentUser) {
+    this.router.navigate(['/login']);
+    return;
   }
+
+  const article = this.featuredNews.find(n => n.id === newsId);
+  if (!article) return;
+
+  // ✅ Optimistic toggle
+  const wasLiked = article.user_has_liked;
+  article.user_has_liked = !wasLiked;
+  article.likes_count += wasLiked ? -1 : 1;
+
+  this.newsService.likeArticle(newsId, this.currentUser.id).subscribe({
+    next: (response: ApiResponse) => {
+      if (!response.success) {
+        // Revert if failed
+        article.user_has_liked = wasLiked;
+        article.likes_count += wasLiked ? 1 : -1;
+      }
+    },
+    error: () => {
+      // Revert on error
+      article.user_has_liked = wasLiked;
+      article.likes_count += wasLiked ? 1 : -1;
+    }
+  });
+}
 
   /**
    * Save a job (optimistic UI + instant feedback)
@@ -411,10 +397,16 @@ loadMyForumPostsCount(): void {
   /**
    * Show toast message
    */
-  private showToast(message: string, type: 'success' | 'warning' | 'error' = 'success'): void {
-    alert(message);
-  }
+  toastMessage: string = '';
+    toastType: 'success' | 'warning' | 'error' = 'success';
+    showToastFlag: boolean = false;
 
+    private showToast(message: string, type: 'success' | 'warning' | 'error' = 'success'): void {
+      this.toastMessage = message;
+      this.toastType = type;
+      this.showToastFlag = true;
+      setTimeout(() => this.showToastFlag = false, 3000);
+    }
   /**
    * Format date to readable string
    */

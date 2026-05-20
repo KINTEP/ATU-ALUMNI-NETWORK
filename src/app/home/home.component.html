@@ -1,4 +1,20 @@
 <div class="container mx-auto px-4 py-8">
+  <!-- Toast Notification -->
+  <div *ngIf="showToastFlag"
+      class="fixed bottom-6 right-6 z-50 px-5 py-3 rounded-xl shadow-lg text-white text-sm font-medium transition-all duration-300"
+      [ngClass]="{
+        'bg-green-600': toastType === 'success',
+        'bg-amber-500': toastType === 'warning',
+        'bg-red-600': toastType === 'error'
+      }">
+    <i class="fas mr-2"
+      [ngClass]="{
+        'fa-check-circle': toastType === 'success',
+        'fa-exclamation-triangle': toastType === 'warning',
+        'fa-times-circle': toastType === 'error'
+      }"></i>
+    {{ toastMessage }}
+  </div>
   <!-- Search Bar Section -->
   <div class="mb-8">
     <div class="bg-white rounded-xl shadow-md p-4 card-hover slide-in">
@@ -77,7 +93,7 @@
                 <p class="text-gray-500">My Posts</p>
               </div>
               <div class="text-center">
-                <p class="font-bold text-blue-600">{{ savedJobs.length }}</p>
+                <p class="font-bold text-blue-600">{{ savedJobsCount }}</p>
                 <p class="text-gray-500">Saved Jobs</p>
               </div>
             </div>

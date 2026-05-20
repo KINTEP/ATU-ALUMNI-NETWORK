@@ -26,7 +26,6 @@ import { ForumComponent } from './forum/forum.component';
 import { TracerPageComponent } from './tracer-page/tracer-page.component';
 import { SuggestedNetworksComponent } from './suggested-networks/suggested-networks.component';
 import { SettingsComponent } from './admin/settings/settings.component';
-import { ReportsComponent } from './admin/reports/reports.component';
 import { AdminTracerComponent } from './admin/admin-tracer/admin-tracer.component';
 import { CreateForumComponent } from './create-forum/create-forum.component';
 import { loginRedirectGuard } from '../guards/login-redirect.guard';
@@ -38,6 +37,9 @@ import { ProjectsComponent } from './projects/projects.component';
 import { ProjectManagementComponent } from './admin/project-management/project-management.component';
 import { CreateProjectComponent } from './admin/create-project/create-project.component';
 import { ProjectDetailsComponent } from './project-details/project-details.component';
+import { ForgotPasswordComponent } from './forgot-password/forgot-password.component';
+import { ResetPasswordComponent } from './reset-password/reset-password.component';
+import { SelfRegisterComponent } from './self-register/self-register.component';
 
 export const routes: Routes = [
   // Root redirect
@@ -48,6 +50,18 @@ export const routes: Routes = [
     path: 'login',
     component: LoginComponent,
     canActivate: [loginRedirectGuard],
+  },
+  { path: 'self-register', 
+    component: SelfRegisterComponent 
+  },
+  {
+    path: 'forgot-password',
+    component: ForgotPasswordComponent,
+    canActivate: [loginRedirectGuard]
+  },
+  {
+    path: 'reset-password',
+    component: ResetPasswordComponent
   },
 
   // Main application routes (protected by auth guard)
@@ -120,8 +134,8 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
   {
-  path: 'projects/:id',
-  component: ProjectDetailsComponent,
+    path: 'projects/:id',
+    component: ProjectDetailsComponent,
     data: { prerender: false },
     canActivate: [authGuard],
   },
@@ -233,6 +247,6 @@ export const routes: Routes = [
     canActivate: [adminGuard],
   },
 
-  // Wildcard — send to login, auth guard on /home would cause double redirect
+  // Wildcard — send to login
   { path: '**', redirectTo: '/login' },
 ];

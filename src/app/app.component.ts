@@ -1,8 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
-import { Router } from '@angular/router';
+import { RouterOutlet, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { HeaderComponent } from "./header/header.component";
+import { HeaderComponent } from './header/header.component';
 import { environment } from '../environments/environment';
 
 @Component({
@@ -17,15 +16,21 @@ export class AppComponent implements OnInit {
   constructor(private router: Router) {}
 
   ngOnInit(): void {
-    console.log('🌍 Environment Configuration:');
-    console.log('API URL:', environment.apiUrl);
-    console.log('Production Mode:', environment.production);
-    console.log('App Name:', environment.appName);
-    console.log('App Version:', environment.appVersion);
+    if (!environment.production) {
+      console.log('🌍 Environment Configuration:');
+      console.log('API URL:', environment.apiUrl);
+      console.log('Production Mode:', environment.production);
+      console.log('App Name:', environment.appName);
+      console.log('App Version:', environment.appVersion);
+    }
   }
 
-  get isAdminRoute(): boolean {
-    return this.router.url.startsWith('/admin/') || 
-           this.router.url.startsWith('/login');
-  }
+  // ✅ Renamed from isAdminRoute — hides header on auth pages AND admin pages
+   get hideHeader(): boolean {
+      return this.router.url.startsWith('/admin/') ||
+            this.router.url.startsWith('/login') ||
+            this.router.url.startsWith('/forgot-password') ||
+            this.router.url.startsWith('/reset-password') ||
+            this.router.url.startsWith('/self-register');
+    }
 }

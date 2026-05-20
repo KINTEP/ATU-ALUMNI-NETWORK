@@ -1,13 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule], // ✅ added RouterModule
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss'
 })
@@ -17,16 +17,16 @@ export class LoginComponent implements OnInit {
   rememberMe: boolean = false;
   isLoading: boolean = false;
   errorMessage: string = '';
-  sessionExpiredMessage: string = ''; // ✅ new
+  sessionExpiredMessage: string = '';
   showPassword: boolean = false;
   emailError: string = '';
   passwordError: string = '';
-  private returnUrl: string = '/home'; // ✅ new
+  private returnUrl: string = '/home';
 
   constructor(
     private authService: AuthService,
     private router: Router,
-    private route: ActivatedRoute // ✅ new
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
@@ -35,7 +35,6 @@ export class LoginComponent implements OnInit {
       return;
     }
 
-    // ✅ Read returnUrl and session_expired reason from interceptor redirect
     this.returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') || '/home';
     const reason = this.route.snapshot.queryParamMap.get('reason');
     if (reason === 'session_expired') {
@@ -45,7 +44,7 @@ export class LoginComponent implements OnInit {
 
   onSubmit(): void {
     this.errorMessage = '';
-    this.sessionExpiredMessage = ''; // ✅ clear on new attempt
+    this.sessionExpiredMessage = '';
 
     if (!this.email || !this.password) {
       this.errorMessage = 'Please enter both email and password';
@@ -56,16 +55,15 @@ export class LoginComponent implements OnInit {
 
     this.authService.login({ email: this.email, password: this.password })
       .subscribe({
-        next: (response) => {
+        next: () => {
           const user = this.authService.getCurrentUser();
           if (user?.role === 'admin') {
             this.router.navigate(['/admin/dashboard']);
           } else {
-            this.router.navigate([this.returnUrl]); // ✅ redirect to where they were
+            this.router.navigate([this.returnUrl]);
           }
         },
         error: (error) => {
-          // ✅ backend error is in error.error.error, not error.message
           this.errorMessage = error.error?.error || 'Invalid email or password';
           this.isLoading = false;
         },

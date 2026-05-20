@@ -167,9 +167,6 @@ isTokenExpired(token?: string): boolean {
   }
 }
 
-  /**
-   * ✅ Now checks both existence AND expiry
-   */
   isAuthenticated(): boolean {
     const token = this.getToken();
     if (!token) return false;
@@ -195,5 +192,34 @@ isTokenExpired(token?: string): boolean {
   getCurrentUserId(): number | null {
     const user = this.currentUserSubject.value;
     return user?.id || null;
+  }
+
+  verifyAlumni(data: { 
+    index_number: string; 
+    full_name: string;        // ← replaced first_name + last_name
+    graduation_year: number 
+}): Observable<ApiResponse<{ 
+    verified_token: string; 
+    first_name: string; 
+    last_name: string; 
+    graduation_year: number 
+}>> {
+    return this.http.post<any>(`${this.apiUrl}/verify-alumni`, data);
+}
+
+  selfRegister(data: { 
+      verified_token: string; 
+      email: string; 
+      password: string; 
+      phone_number?: string 
+  }): Observable<AuthResponse> {
+      return this.http.post<AuthResponse>(`${this.apiUrl}/self-register`, data)
+          .pipe(
+              tap(response => {
+                  if (response.success && response.data) {
+                      this.setSession(response.data.token, response.data.user);
+                  }
+              })
+          );
   }
 }

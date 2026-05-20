@@ -1,344 +1,362 @@
-<div class="container mx-auto px-4 py-8">
-  <!-- Header -->
-  <div class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl shadow-lg p-6 mb-8 slide-in relative overflow-hidden">
-    <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-32 translate-x-32"></div>
-    <div class="relative z-10">
-      <h1 class="text-3xl font-bold mb-2">Alumni Networks</h1>
-      <p class="opacity-90">Connect with fellow alumni and build your professional network</p>
-    </div>
-  </div>
+<div class="networks-page min-h-screen bg-gray-50">
+  <div class="max-w-7xl mx-auto px-4 py-6">
 
-  <!-- Search and Filter -->
-  <div class="bg-white rounded-xl shadow-md p-6 mb-8 card-hover">
-    <div class="flex flex-col md:flex-row gap-4 items-center">
-      <div class="flex-1 relative">
-        <input 
-          type="text" 
-          [(ngModel)]="searchQuery"
-          (keyup.enter)="searchUsers()"
-          placeholder="Search by name, skills, or department..." 
-          class="w-full border border-gray-300 rounded-full px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+    <!-- Search Bar (full width, like home) -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-5">
+      <div class="flex gap-3 items-center">
+        <div class="flex-1 relative">
+          <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+          <input
+            type="text"
+            [(ngModel)]="searchQuery"
+            (keyup.enter)="searchUsers()"
+            placeholder="Search alumni by name, skills, or department..."
+            class="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
+        </div>
+        <select
+          [(ngModel)]="selectedDepartment"
+          (change)="searchUsers()"
+          class="border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-600"
         >
-        <button 
+          <option value="">All Departments</option>
+          <option *ngFor="let dept of departments" [value]="dept">{{ dept }}</option>
+        </select>
+        <select
+          [(ngModel)]="selectedYear"
+          (change)="searchUsers()"
+          class="border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-600"
+        >
+          <option value="">All Years</option>
+          <option *ngFor="let year of years" [value]="year">{{ year }}</option>
+        </select>
+        <button
           (click)="searchUsers()"
-          class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-blue-600"
+          class="bg-blue-600 text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
         >
-          <i class="fas fa-search"></i>
+          Search
         </button>
       </div>
-      <select 
-        [(ngModel)]="selectedDepartment"
-        (change)="searchUsers()"
-        class="border border-gray-300 rounded-full px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent"
-      >
-        <option value="">All Departments</option>
-        <option *ngFor="let dept of departments" [value]="dept">{{ dept }}</option>
-      </select>
-      <select 
-        [(ngModel)]="selectedYear"
-        (change)="searchUsers()"
-        class="border border-gray-300 rounded-full px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent"
-      >
-        <option value="">All Years</option>
-        <option *ngFor="let year of years" [value]="year">{{ year }}</option>
-      </select>
-    </div>
-  </div>
-
-  <!-- Pending Requests Section -->
-  <div class="mb-12">
-    <div class="flex items-center justify-between mb-6">
-      <h2 class="text-2xl font-bold text-blue-600">
-        Pending Requests 
-        <span class="text-gray-500 text-lg">({{ connectionStats.pending_requests }} requests)</span>
-      </h2>
-      <button 
-        (click)="loadAllData()"
-        class="text-blue-600 hover:text-indigo-600 transition-colors duration-300"
-      >
-        <i class="fas fa-sync-alt"></i>
-      </button>
-      
     </div>
 
-    <!-- Loading State -->
-    <div *ngIf="isLoadingRequests" class="text-center py-8">
-      <i class="fas fa-spinner fa-spin text-blue-600 text-3xl"></i>
-      <p class="text-gray-500 mt-4">Loading requests...</p>
-    </div>
+    <!-- 3-Column Layout -->
+    <div class="grid grid-cols-12 gap-5">
 
-    <!-- Requests Grid -->
-    <div *ngIf="!isLoadingRequests && pendingRequests.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <div 
-        *ngFor="let request of pendingRequests; let i = index" 
-        class="bg-white rounded-xl shadow-md p-6 card-hover slide-in"
-        [style.animation-delay]="(i * 0.1) + 's'"
-      >
-        <div class="flex items-center justify-between mb-4">
-          <div class="flex items-center space-x-3">
-            <div *ngIf="hasProfilePicture(request.sender_picture); else senderInitials" 
-           class="w-12 h-12 rounded-full overflow-hidden border-2 border-gray-200">
-        <img [src]="getProfilePictureUrl(request.sender_picture)" 
-             [alt]="request.sender_name" 
-             class="w-full h-full object-cover"
-             (error)="$any($event.target).style.display='none'">
-      </div>
-      <ng-template #senderInitials>
-        <div [class]="'w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg ' + getAvatarColorClass(i)">
-          {{ getUserInitials(request.sender_name || '') }}
-        </div>
-      </ng-template>
-            <div>
-              <h3 class="font-bold text-lg">{{ request.sender_name }}</h3>
-              <p class="text-sm text-gray-500">{{ request.sender_program }}, {{ request.sender_graduation_year }}</p>
-            </div>
+      <!-- LEFT SIDEBAR -->
+      <div class="col-span-3 space-y-4">
+
+        <!-- Network Stats Card -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+          <!-- Banner -->
+          <div class="h-16 bg-gradient-to-r from-blue-600 to-indigo-600 relative">
+            <div class="absolute inset-0 opacity-20" style="background-image: url('data:image/svg+xml,%3Csvg width=\'40\' height=\'40\' viewBox=\'0 0 40 40\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'%23fff\' fill-opacity=\'1\' fill-rule=\'evenodd\'%3E%3Ccircle cx=\'20\' cy=\'20\' r=\'2\'/%3E%3C/g%3E%3C/svg%3E');"></div>
           </div>
-          <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-medium">Pending</span>
-        </div>
-        
-        <p class="text-gray-600 text-sm mb-4">
-          {{ request.message || 'Would like to connect with you.' }}
-        </p>
-        
-        <p *ngIf="request.sender_company" class="text-sm text-gray-500 mb-4">
-          <i class="fas fa-building mr-1"></i>
-          {{ request.sender_title }} at {{ request.sender_company }}
-        </p>
-        
-        <div class="flex space-x-2">
-          <button 
-            (click)="acceptRequest(request)"
-            class="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors duration-300 flex items-center justify-center space-x-2"
-          >
-            <i class="fas fa-check"></i>
-            <span>Accept</span>
-          </button>
-          <button 
-            (click)="declineRequest(request)"
-            class="flex-1 border border-red-500 text-red-500 py-2 rounded-lg hover:bg-red-500 hover:text-white transition-colors duration-300 flex items-center justify-center space-x-2"
-          >
-            <i class="fas fa-times"></i>
-            <span>Decline</span>
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Empty State for Requests -->
-    <div *ngIf="!isLoadingRequests && pendingRequests.length === 0" class="text-center py-8 bg-white rounded-xl shadow-md">
-      <i class="fas fa-inbox text-gray-300 text-5xl mb-4"></i>
-      <p class="text-gray-500">No pending connection requests</p>
-    </div>
-  </div>
-
-  <!-- Existing Networks Section -->
-  <div class="mb-12">
-    <div class="flex items-center justify-between mb-6">
-      <h2 class="text-2xl font-bold text-blue-600">
-        Your Network 
-        <span class="text-gray-500 text-lg">({{ connectionStats.total_connections }} connections)</span>
-      </h2>
-      <button 
-        (click)="loadAllData()"
-        class="text-blue-600 hover:text-indigo-600 transition-colors duration-300"
-      >
-        <i class="fas fa-sync-alt mr-2"></i>Refresh
-      </button>
-    </div>
-
-    <!-- Loading State -->
-    <div *ngIf="isLoadingConnections" class="text-center py-8">
-      <i class="fas fa-spinner fa-spin text-blue-600 text-3xl"></i>
-      <p class="text-gray-500 mt-4">Loading connections...</p>
-    </div>
-
-    <!-- Connections Grid -->
-    <div *ngIf="!isLoadingConnections && myConnections.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <div 
-        *ngFor="let connection of myConnections; let i = index" 
-        class="bg-white rounded-xl shadow-md p-6 card-hover slide-in"
-        [style.animation-delay]="(i * 0.1) + 's'"
-      >
-        <div class="flex items-center justify-between mb-4">
-          <div class="flex items-center space-x-3">
-            <div *ngIf="hasProfilePicture(connection.user.profile_picture); else connectionInitials" 
-           class="w-12 h-12 rounded-full overflow-hidden border-2 border-gray-200">
-        <img [src]="getProfilePictureUrl(connection.user.profile_picture)" 
-             [alt]="connection.user.name" 
-             class="w-full h-full object-cover"
-             (error)="$any($event.target).style.display='none'">
-      </div>
-      <ng-template #connectionInitials>
-        <div [class]="'w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg ' + getAvatarColorClass(i)">
-          {{ getUserInitials(connection.user.name) }}
-        </div>
-      </ng-template>
-            <div>
-              <h3 class="font-bold text-lg">{{ connection.user.name }}</h3>
-              <p class="text-sm text-gray-500">{{ connection.user.program_of_study }}, {{ connection.user.graduation_year }}</p>
+          <div class="px-4 pb-4">
+            <!-- Avatar -->
+            <div class="flex justify-center mb-3" style="margin-top: -24px;">
+                  <div *ngIf="currentUser?.profile_picture; else sidebarInitials"
+                    class="w-12 h-12 rounded-full overflow-hidden border-2 border-white shadow flex-shrink-0">
+                    <img [src]="getProfilePictureUrl(currentUser?.profile_picture)"
+                      [alt]="currentUser?.first_name"
+                      class="w-full h-full object-cover object-center">
+                  </div>
+                  <ng-template #sidebarInitials>
+                    <div class="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-lg border-2 border-white shadow flex-shrink-0">
+                      {{ getUserInitials((currentUser?.first_name || '') + ' ' + (currentUser?.last_name || '')) }}
+                    </div>
+                  </ng-template>
+                </div>
+                <div class="text-center mb-4">
+              <h3 class="font-semibold text-gray-800 text-sm">{{currentUser?.first_name + ' ' + currentUser?.last_name }}</h3>
+              <p class="text-xs text-gray-500">{{ currentUser?.program_of_study }}</p>
             </div>
-          </div>
-          <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">Connected</span>
-        </div>
-        
-        <p *ngIf="connection.user.company" class="text-gray-600 text-sm mb-4">
-          <i class="fas fa-building mr-1"></i>
-          {{ connection.user.title }} at {{ connection.user.company }}
-        </p>
-        
-        <div *ngIf="connection.user.skills && connection.user.skills.length > 0" class="flex flex-wrap gap-2 mb-4">
-          <span 
-            *ngFor="let skill of connection.user.skills.slice(0, 3)" 
-            class="bg-blue-50 text-blue-700 px-2 py-1 rounded-full text-xs border border-blue-100"
-          >
-            {{ skill }}
-          </span>
-          <span 
-            *ngIf="connection.user.skills.length > 3" 
-            class="text-xs text-gray-500"
-          >
-            +{{ connection.user.skills.length - 3 }} more
-          </span>
-        </div>
-        
-        <div class="flex space-x-2">
-          <button 
-            (click)="messageUser(connection.user.id)"
-            class="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors duration-300 flex items-center justify-center space-x-2"
-          >
-            <i class="fas fa-comment"></i>
-            <span>Message</span>
-          </button>
-          <button 
-            (click)="viewProfile(connection.user.id)"
-            class="flex-1 border border-blue-600 text-blue-600 py-2 rounded-lg hover:bg-blue-600 hover:text-white transition-colors duration-300 flex items-center justify-center space-x-2"
-          >
-            <i class="fas fa-eye"></i>
-            <span>Profile</span>
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Empty State for Connections -->
-    <div *ngIf="!isLoadingConnections && myConnections.length === 0" class="text-center py-8 bg-white rounded-xl shadow-md">
-      <i class="fas fa-user-friends text-gray-300 text-5xl mb-4"></i>
-      <p class="text-gray-500 mb-4">You don't have any connections yet</p>
-      <p class="text-sm text-gray-400">Start connecting with alumni below!</p>
-    </div>
-  </div>
-
-  <!-- Suggested Networks Section -->
-<!-- Suggested Networks Section -->
-  <div>
-    <div class="flex items-center justify-between mb-6">
-      <h2 class="text-2xl font-bold text-blue-600">People You May Know</h2>
-      <div class="flex space-x-3">
-        <button 
-          (click)="loadSuggestedUsersWithFilter()"
-          class="text-blue-600 hover:text-indigo-600 transition-colors duration-300 flex items-center">
-          <i class="fas fa-redo mr-2"></i>Refresh
-        </button>
-        <button 
-          (click)="viewAllSuggestions()"
-          class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-300 flex items-center">
-          <span>Show More</span>
-          <i class="fas fa-arrow-right ml-2"></i>
-        </button>
-      </div>
-    </div>
-
-    <!-- Loading State for Initial Load -->
-    <div *ngIf="isInitialLoading" class="text-center py-8">
-      <i class="fas fa-spinner fa-spin text-blue-600 text-3xl"></i>
-      <p class="text-gray-500 mt-4">Loading network data...</p>
-    </div>
-
-    <!-- Content after initial load -->
-    <div *ngIf="!isInitialLoading">
-      <!-- Loading State for search/filter -->
-      <div *ngIf="isLoadingSuggestions" class="text-center py-8">
-        <i class="fas fa-spinner fa-spin text-blue-600 text-3xl"></i>
-        <p class="text-gray-500 mt-4">Loading suggestions...</p>
-      </div>
-
-      <!-- Suggestions Grid -->
-      <div *ngIf="!isLoadingSuggestions && suggestedUsers.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div 
-          *ngFor="let user of suggestedUsers; let i = index" 
-          class="bg-white rounded-xl shadow-md p-6 card-hover slide-in"
-          [style.animation-delay]="(i * 0.1) + 's'"
-        >
-          <div class="flex items-center justify-between mb-4">
-            <div class="flex items-center space-x-3">
-              <div *ngIf="hasProfilePicture(user.profile_picture); else userSuggestInitials" 
-           class="w-12 h-12 rounded-full overflow-hidden border-2 border-gray-200">
-        <img [src]="getProfilePictureUrl(user.profile_picture)" 
-             [alt]="user.first_name + ' ' + user.last_name" 
-             class="w-full h-full object-cover"
-             (error)="$any($event.target).style.display='none'">
-      </div>
-      <ng-template #userSuggestInitials>
-        <div [class]="'w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg ' + getAvatarColorClass(i)">
-          {{ getUserInitials(user.first_name + ' ' + user.last_name) }}
-        </div>
-      </ng-template>
-
+            <!-- Stats -->
+            <div class="grid grid-cols-3 gap-2 text-center border-t border-gray-100 pt-3">
               <div>
-                <h3 class="font-bold text-lg">{{ user.first_name }} {{ user.last_name }}</h3>
-                <p class="text-sm text-gray-500">{{ user.program_of_study }}, {{ user.graduation_year }}</p>
+                <p class="text-lg font-bold text-blue-600">{{ connectionStats.total_connections }}</p>
+                <p class="text-xs text-gray-500">Connections</p>
+              </div>
+              <div class="border-x border-gray-100">
+                <p class="text-lg font-bold text-yellow-500">{{ connectionStats.pending_requests }}</p>
+                <p class="text-xs text-gray-500">Pending</p>
+              </div>
+              <div>
+                <p class="text-lg font-bold text-indigo-500">{{ connectionStats.sent_requests }}</p>
+                <p class="text-xs text-gray-500">Sent</p>
               </div>
             </div>
           </div>
-          
-          <p *ngIf="user.bio" class="text-gray-600 text-sm mb-4 line-clamp-2">
-            {{ user.bio }}
-          </p>
-          
-          <p *ngIf="user.current_company" class="text-sm text-gray-500 mb-4">
-            <i class="fas fa-building mr-1"></i>
-            {{ user.job_title }} at {{ user.current_company }}
-          </p>
-          
-          <div *ngIf="user.skills && user.skills.length > 0" class="flex flex-wrap gap-2 mb-4">
-            <span 
-              *ngFor="let skill of user.skills.slice(0, 3)" 
-              class="bg-blue-50 text-blue-700 px-2 py-1 rounded-full text-xs border border-blue-100"
-            >
-              {{ skill }}
-            </span>
-            <span 
-              *ngIf="user.skills.length > 3" 
-              class="text-xs text-gray-500"
-            >
-              +{{ user.skills.length - 3 }} more
-            </span>
-          </div>
-          
-          <div class="flex space-x-2">
-            <button 
-              (click)="sendConnectionRequest(user)"
-              class="flex-1 bg-indigo-50 text-blue-600 py-2 rounded-lg hover:bg-indigo-100 transition-colors duration-300 flex items-center justify-center space-x-2"
-            >
-              <i class="fas fa-user-plus"></i>
-              <span>Connect</span>
+        </div>
+
+        <!-- Quick Links -->
+         <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+          <h3 class="text-sm font-semibold text-gray-700 mb-3">Quick Access</h3>
+          <div class="space-y-1">
+            <button class="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-50 text-gray-600 hover:text-blue-600 transition-colors text-sm text-left">
+              <i class="fas fa-user-friends w-4 text-center"></i>
+              My Connections
+              <span class="ml-auto bg-blue-100 text-blue-600 text-xs px-2 py-0.5 rounded-full">{{ connectionStats.total_connections }}</span>
             </button>
-            <button 
-              (click)="viewProfile(user.id)"
-              class="flex-1 border border-blue-600 text-blue-600 py-2 rounded-lg hover:bg-blue-600 hover:text-white transition-colors duration-300 flex items-center justify-center space-x-2"
-            >
-              <i class="fas fa-eye"></i>
-              <span>Profile</span>
+            <button class="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-yellow-50 text-gray-600 hover:text-yellow-600 transition-colors text-sm text-left">
+              <i class="fas fa-clock w-4 text-center"></i>
+              Pending Requests
+              <span class="ml-auto bg-yellow-100 text-yellow-600 text-xs px-2 py-0.5 rounded-full">{{ connectionStats.pending_requests }}</span>
+            </button>
+            <button (click)="viewAllSuggestions()" class="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-indigo-50 text-gray-600 hover:text-indigo-600 transition-colors text-sm text-left">
+              <i class="fas fa-users w-4 text-center"></i>
+              All Alumni
+            </button>
+            <button class="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-green-50 text-gray-600 hover:text-green-600 transition-colors text-sm text-left">
+              <i class="fas fa-comment w-4 text-center"></i>
+              Messages
             </button>
           </div>
         </div>
+
       </div>
 
-      <!-- Empty State -->
-      <div *ngIf="!isLoadingSuggestions && suggestedUsers.length === 0" class="text-center py-8 bg-white rounded-xl shadow-md">
-        <i class="fas fa-users text-gray-300 text-5xl mb-4"></i>
-        <p class="text-gray-500 mb-4">No suggestions available</p>
-        <p class="text-sm text-gray-400">Try adjusting your search filters</p>
+      <!-- MAIN CONTENT -->
+      <div class="col-span-6 space-y-5">
+
+        <!-- Pending Requests -->
+        <div *ngIf="pendingRequests.length > 0 || isLoadingRequests" class="bg-white rounded-xl shadow-sm border border-gray-100">
+          <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-yellow-400"></span>
+              <h2 class="font-semibold text-gray-800 text-sm">Pending Requests</h2>
+              <span class="bg-yellow-100 text-yellow-700 text-xs px-2 py-0.5 rounded-full font-medium">{{ connectionStats.pending_requests }}</span>
+            </div>
+            <button (click)="loadAllData()" class="text-gray-400 hover:text-blue-600 transition-colors text-sm">
+              <i class="fas fa-sync-alt"></i>
+            </button>
+          </div>
+
+          <div *ngIf="isLoadingRequests" class="py-8 text-center">
+            <i class="fas fa-spinner fa-spin text-blue-500 text-xl"></i>
+          </div>
+
+          <div *ngIf="!isLoadingRequests" class="divide-y divide-gray-50">
+            <div *ngFor="let request of pendingRequests; let i = index" class="flex items-center gap-4 px-5 py-4 hover:bg-gray-50 transition-colors">
+              <!-- Avatar -->
+              <div *ngIf="hasProfilePicture(request.sender_picture); else reqInitials" class="w-11 h-11 rounded-full overflow-hidden flex-shrink-0">
+                <img [src]="getProfilePictureUrl(request.sender_picture)" [alt]="request.sender_name" class="w-full h-full object-cover">
+              </div>
+              <ng-template #reqInitials>
+                <div [class]="'w-11 h-11 rounded-full flex items-center justify-center text-white font-semibold text-sm flex-shrink-0 ' + getAvatarColorClass(i)">
+                  {{ getUserInitials(request.sender_name || '') }}
+                </div>
+              </ng-template>
+              <!-- Info -->
+              <div class="flex-1 min-w-0">
+                <p class="font-semibold text-gray-800 text-sm">{{ request.sender_name }}</p>
+                <p class="text-xs text-gray-500 truncate">{{ request.sender_program }}, {{ request.sender_graduation_year }}</p>
+                <p *ngIf="request.sender_company" class="text-xs text-gray-400 mt-0.5">
+                  <i class="fas fa-building mr-1"></i>{{ request.sender_title }} at {{ request.sender_company }}
+                </p>
+              </div>
+              <!-- Actions -->
+              <div class="flex gap-2 flex-shrink-0">
+                <button (click)="acceptRequest(request)" class="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-blue-700 transition-colors">
+                  Accept
+                </button>
+                <button (click)="declineRequest(request)" class="border border-gray-200 text-gray-500 px-3 py-1.5 rounded-lg text-xs font-medium hover:border-red-300 hover:text-red-500 transition-colors">
+                  Decline
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- My Connections -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+          <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-green-400"></span>
+              <h2 class="font-semibold text-gray-800 text-sm">Your Network</h2>
+              <span class="bg-green-100 text-green-700 text-xs px-2 py-0.5 rounded-full font-medium">{{ connectionStats.total_connections }}</span>
+            </div>
+            <button (click)="loadAllData()" class="text-gray-400 hover:text-blue-600 transition-colors text-xs flex items-center gap-1">
+              <i class="fas fa-sync-alt"></i> Refresh
+            </button>
+          </div>
+
+          <div *ngIf="isLoadingConnections" class="py-8 text-center">
+            <i class="fas fa-spinner fa-spin text-blue-500 text-xl"></i>
+          </div>
+
+          <div *ngIf="!isLoadingConnections && myConnections.length === 0" class="py-10 text-center">
+            <i class="fas fa-user-friends text-gray-200 text-4xl mb-3"></i>
+            <p class="text-gray-400 text-sm">No connections yet</p>
+            <p class="text-gray-300 text-xs mt-1">Start connecting with alumni below</p>
+          </div>
+
+          <div *ngIf="!isLoadingConnections && myConnections.length > 0" class="divide-y divide-gray-50">
+            <div *ngFor="let connection of myConnections; let i = index" class="flex items-center gap-4 px-5 py-4 hover:bg-gray-50 transition-colors">
+              <!-- Avatar -->
+              <div *ngIf="hasProfilePicture(connection.user.profile_picture); else connInitials" class="w-11 h-11 rounded-full overflow-hidden flex-shrink-0">
+                <img [src]="getProfilePictureUrl(connection.user.profile_picture)" [alt]="connection.user.name" class="w-full h-full object-cover">
+              </div>
+              <ng-template #connInitials>
+                <div [class]="'w-11 h-11 rounded-full flex items-center justify-center text-white font-semibold text-sm flex-shrink-0 ' + getAvatarColorClass(i)">
+                  {{ getUserInitials(connection.user.name) }}
+                </div>
+              </ng-template>
+              <!-- Info -->
+              <div class="flex-1 min-w-0">
+                <p class="font-semibold text-gray-800 text-sm">{{ connection.user.name }}</p>
+                <p class="text-xs text-gray-500 truncate">{{ connection.user.program_of_study }}, {{ connection.user.graduation_year }}</p>
+                <p *ngIf="connection.user.company" class="text-xs text-gray-400 mt-0.5">
+                  <i class="fas fa-building mr-1"></i>{{ connection.user.title }} at {{ connection.user.company }}
+                </p>
+                <!-- Skills -->
+                <div *ngIf="connection.user.skills && connection.user.skills.length > 0" class="flex flex-wrap gap-1 mt-1.5">
+                  <span *ngFor="let skill of connection.user.skills.slice(0, 2)" class="bg-blue-50 text-blue-600 text-xs px-2 py-0.5 rounded-full">{{ skill }}</span>
+                  <span *ngIf="connection.user.skills.length > 2" class="text-xs text-gray-400">+{{ connection.user.skills.length - 2 }}</span>
+                </div>
+              </div>
+              <!-- Actions -->
+              <div class="flex gap-2 flex-shrink-0">
+                <button (click)="messageUser(connection.user.id)" class="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-blue-700 transition-colors flex items-center gap-1">
+                  <i class="fas fa-comment text-xs"></i> Message
+                </button>
+                <button (click)="viewProfile(connection.user.id)" class="border border-gray-200 text-gray-600 px-3 py-1.5 rounded-lg text-xs font-medium hover:border-blue-300 hover:text-blue-600 transition-colors">
+                  Profile
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- People You May Know -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+          <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-indigo-400"></span>
+              <h2 class="font-semibold text-gray-800 text-sm">People You May Know</h2>
+            </div>
+            <div class="flex items-center gap-3">
+              <button (click)="loadSuggestedUsersWithFilter()" class="text-gray-400 hover:text-blue-600 transition-colors text-xs flex items-center gap-1">
+                <i class="fas fa-redo"></i> Refresh
+              </button>
+              <button (click)="viewAllSuggestions()" class="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-blue-700 transition-colors flex items-center gap-1">
+                Show More <i class="fas fa-arrow-right text-xs"></i>
+              </button>
+            </div>
+          </div>
+
+          <div *ngIf="isInitialLoading || isLoadingSuggestions" class="py-8 text-center">
+            <i class="fas fa-spinner fa-spin text-blue-500 text-xl"></i>
+          </div>
+
+          <div *ngIf="!isInitialLoading && !isLoadingSuggestions && suggestedUsers.length === 0" class="py-10 text-center">
+            <i class="fas fa-users text-gray-200 text-4xl mb-3"></i>
+            <p class="text-gray-400 text-sm">No suggestions available</p>
+            <p class="text-gray-300 text-xs mt-1">Try adjusting your search filters</p>
+          </div>
+
+          <div *ngIf="!isInitialLoading && !isLoadingSuggestions && suggestedUsers.length > 0" class="divide-y divide-gray-50">
+            <div *ngFor="let user of suggestedUsers; let i = index" class="flex items-center gap-4 px-5 py-4 hover:bg-gray-50 transition-colors">
+              <!-- Avatar -->
+              <div *ngIf="hasProfilePicture(user.profile_picture); else suggestInitials" class="w-11 h-11 rounded-full overflow-hidden flex-shrink-0">
+                <img [src]="getProfilePictureUrl(user.profile_picture)" [alt]="user.first_name + ' ' + user.last_name" class="w-full h-full object-cover">
+              </div>
+              <ng-template #suggestInitials>
+                <div [class]="'w-11 h-11 rounded-full flex items-center justify-center text-white font-semibold text-sm flex-shrink-0 ' + getAvatarColorClass(i)">
+                  {{ getUserInitials(user.first_name + ' ' + user.last_name) }}
+                </div>
+              </ng-template>
+              <!-- Info -->
+              <div class="flex-1 min-w-0">
+                <p class="font-semibold text-gray-800 text-sm">{{ user.first_name }} {{ user.last_name }}</p>
+                <p class="text-xs text-gray-500 truncate">{{ user.program_of_study }}, {{ user.graduation_year }}</p>
+                <p *ngIf="user.current_company" class="text-xs text-gray-400 mt-0.5">
+                  <i class="fas fa-building mr-1"></i>{{ user.job_title }} at {{ user.current_company }}
+                </p>
+                <!-- Skills -->
+                <div *ngIf="user.skills && user.skills.length > 0" class="flex flex-wrap gap-1 mt-1.5">
+                  <span *ngFor="let skill of user.skills.slice(0, 2)" class="bg-indigo-50 text-indigo-600 text-xs px-2 py-0.5 rounded-full">{{ skill }}</span>
+                  <span *ngIf="user.skills.length > 2" class="text-xs text-gray-400">+{{ user.skills.length - 2 }}</span>
+                </div>
+              </div>
+              <!-- Actions -->
+              <div class="flex gap-2 flex-shrink-0">
+                <button (click)="sendConnectionRequest(user)" class="bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-indigo-100 transition-colors flex items-center gap-1">
+                  <i class="fas fa-user-plus text-xs"></i> Connect
+                </button>
+                <button (click)="viewProfile(user.id)" class="border border-gray-200 text-gray-600 px-3 py-1.5 rounded-lg text-xs font-medium hover:border-blue-300 hover:text-blue-600 transition-colors">
+                  Profile
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT SIDEBAR -->
+      <div class="col-span-3 space-y-4">
+
+        <!-- Network Growth -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+          <h3 class="text-sm font-semibold text-gray-700 mb-3">Network Overview</h3>
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
+                  <i class="fas fa-user-friends text-blue-600 text-xs"></i>
+                </div>
+                <span class="text-xs text-gray-600">Connections</span>
+              </div>
+              <span class="font-bold text-gray-800 text-sm">{{ connectionStats.total_connections }}</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-lg bg-yellow-50 flex items-center justify-center">
+                  <i class="fas fa-clock text-yellow-500 text-xs"></i>
+                </div>
+                <span class="text-xs text-gray-600">Pending</span>
+              </div>
+              <span class="font-bold text-gray-800 text-sm">{{ connectionStats.pending_requests }}</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center">
+                  <i class="fas fa-paper-plane text-indigo-500 text-xs"></i>
+                </div>
+                <span class="text-xs text-gray-600">Sent Requests</span>
+              </div>
+              <span class="font-bold text-gray-800 text-sm">{{ connectionStats.sent_requests }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Departments in Network -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+          <h3 class="text-sm font-semibold text-gray-700 mb-3">Browse by Department</h3>
+          <div class="space-y-1.5 max-h-64 overflow-y-auto pr-1">
+            <button
+              *ngFor="let dept of departments.slice(0, 8)"
+              (click)="selectedDepartment = dept; searchUsers()"
+              class="w-full text-left px-3 py-2 rounded-lg text-xs text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors truncate"
+            >
+              <i class="fas fa-graduation-cap mr-2 text-gray-300"></i>{{ dept }}
+            </button>
+            <p *ngIf="departments.length === 0" class="text-xs text-gray-400 text-center py-2">Loading departments...</p>
+          </div>
+          <button *ngIf="departments.length > 8" class="w-full text-center text-xs text-blue-600 hover:text-blue-700 mt-2 pt-2 border-t border-gray-100">
+            See all {{ departments.length }} departments
+          </button>
+        </div>
+
+        <!-- Tips -->
+        <div class="bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl p-4 text-white">
+          <div class="flex items-center gap-2 mb-2">
+            <i class="fas fa-lightbulb text-yellow-300 text-sm"></i>
+            <h3 class="text-sm font-semibold">Networking Tip</h3>
+          </div>
+          <p class="text-xs text-blue-100 leading-relaxed">Complete your profile with skills and work experience to get better connection suggestions from fellow alumni.</p>
+        </div>
+
       </div>
     </div>
   </div>

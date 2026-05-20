@@ -1,207 +1,193 @@
-<div class="container mx-auto px-4 py-8">
-  <!-- Header -->
-  <div class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl shadow-lg p-6 mb-8 slide-in relative overflow-hidden">
-    <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-32 translate-x-32"></div>
-    <div class="relative z-10">
-      <h1 class="text-3xl font-bold mb-2">ATU Alumni News</h1>
-      <p class="opacity-90">Stay updated with the latest news, announcements, and stories from our alumni community</p>
+<!-- news.component.html -->
+<div class="min-h-screen bg-gray-50">
+  <div class="max-w-7xl mx-auto px-4 py-6">
+
+    <!-- Page Title -->
+    <div class="mb-5">
+      <h1 class="text-2xl font-bold text-gray-900">ATU Alumni News</h1>
+      <p class="text-sm text-gray-500 mt-0.5">Stay updated with the latest news, announcements, and stories from our alumni community</p>
     </div>
-  </div>
 
-  <!-- Search and Filter Section -->
-  <div class="bg-white rounded-xl shadow-sm p-6 mb-8 border border-gray-100">
-    <div class="flex flex-col md:flex-row gap-4">
-      <!-- Search Bar -->
-      <div class="flex-1">
-        <input 
-          type="text" 
-          [(ngModel)]="searchQuery"
-          (keyup.enter)="searchArticles()"
-          placeholder="Search news articles..." 
-          class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent text-sm"
-        >
-      </div>
-      
-      <!-- Category Filter -->
-      <div class="relative">
-        <select 
-          [(ngModel)]="selectedCategory"
-          (change)="filterByCategory()"
-          class="w-full md:w-48 pl-4 pr-10 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent appearance-none bg-white text-sm"
-        >
-          <option value="">All Categories</option>
-          <option *ngFor="let category of categories" [value]="category">{{ category }}</option>
-        </select>
-        <i class="fas fa-chevron-down absolute right-4 top-3.5 text-gray-400 pointer-events-none"></i>
-      </div>
-
-      <!-- Action Buttons -->
-      <div class="flex gap-2">
-        <button 
-          (click)="resetFilters()"
-          class="px-4 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors duration-300 text-sm"
-        >
-          Reset
-        </button>
-        <button 
-          (click)="searchArticles()"
-          class="bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 transition-colors duration-300 text-sm font-medium"
-        >
-          <i class="fas fa-search mr-2"></i>Search
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Error Message -->
-  <div *ngIf="errorMessage" class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-6">
-    <i class="fas fa-exclamation-circle mr-2"></i>
-    {{ errorMessage }}
-  </div>
-
-  <!-- Featured News -->
-  <div *ngIf="!isLoadingFeatured && featuredArticle" class="bg-white rounded-2xl shadow-md overflow-hidden mb-8 slide-in border border-gray-100 cursor-pointer hover:shadow-lg transition-shadow duration-300" (click)="viewArticle(featuredArticle.id)">
-    <div class="md:flex">
-      <div class="md:w-1/2 h-80 md:h-auto overflow-hidden">
-        <img 
-          [src]="featuredArticle.featured_image || 'https://images.unsplash.com/photo-1585829365295-ab7cd400d7e9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'" 
-          [alt]="featuredArticle.title" 
-          class="w-full h-full object-cover"
-        >
-      </div>
-      <div class="md:w-1/2 p-6">
-        <div class="flex items-center mb-4">
-          <span class="bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-medium">Featured</span>
-          <span class="text-gray-500 text-sm ml-4">{{ formatDate(featuredArticle.published_at) }}</span>
+    <!-- Search & Filter -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-5">
+      <div class="flex flex-col md:flex-row gap-3">
+        <div class="flex-1 relative">
+          <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+          <input
+            type="text"
+            [(ngModel)]="searchQuery"
+            (keyup.enter)="searchArticles()"
+            placeholder="Search news articles..."
+            class="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
         </div>
-        <h2 class="text-2xl font-bold text-gray-800 mb-4">{{ featuredArticle.title }}</h2>
-        <p class="text-gray-600 mb-4">{{ featuredArticle.excerpt }}</p>
-        <div class="flex items-center justify-between">
-          <div class="flex items-center space-x-4">
-            <div class="flex items-center text-gray-500 text-sm">
-              <i class="fas fa-eye mr-1"></i>
-              <span>{{ formatViewCount(featuredArticle.views_count) }} views</span>
+        <div class="relative">
+          <select
+            [(ngModel)]="selectedCategory"
+            (change)="filterByCategory()"
+            class="w-full md:w-48 pl-3 pr-8 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none bg-white text-gray-600">
+            <option value="">All Categories</option>
+            <option *ngFor="let category of categories" [value]="category">{{ category }}</option>
+          </select>
+          <i class="fas fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-xs"></i>
+        </div>
+        <div class="flex gap-2">
+          <button (click)="resetFilters()"
+            class="px-4 py-2.5 border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-colors">
+            Reset
+          </button>
+          <button (click)="searchArticles()"
+            class="bg-blue-600 text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors flex items-center gap-2">
+            <i class="fas fa-search text-xs"></i> Search
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Error -->
+    <div *ngIf="errorMessage" class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-5 text-sm">
+      <i class="fas fa-exclamation-circle mr-2"></i>{{ errorMessage }}
+    </div>
+
+    <!-- Featured Article -->
+    <div *ngIf="!isLoadingFeatured && featuredArticle"
+      class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-6 cursor-pointer hover:shadow-md transition-shadow"
+      (click)="viewArticle(featuredArticle.id)">
+      <div class="md:flex">
+        <div class="md:w-1/2 h-64 md:h-auto overflow-hidden">
+          <img
+            [src]="featuredArticle.featured_image || 'https://images.unsplash.com/photo-1585829365295-ab7cd400d7e9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'"
+            [alt]="featuredArticle.title"
+            class="w-full h-full object-cover hover:scale-105 transition-transform duration-300">
+        </div>
+        <div class="md:w-1/2 p-6 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center gap-3 mb-3">
+              <span class="bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-medium">Featured</span>
+              <span class="text-gray-400 text-xs">{{ formatDate(featuredArticle.published_at) }}</span>
             </div>
-            <div class="flex items-center text-gray-500 text-sm">
-              <i class="fas fa-comment mr-1"></i>
-              <span>{{ featuredArticle.comments_count }} comments</span>
+            <h2 class="text-xl font-bold text-gray-800 mb-3 leading-snug">{{ featuredArticle.title }}</h2>
+            <p class="text-gray-500 text-sm leading-relaxed line-clamp-3">{{ featuredArticle.excerpt }}</p>
+          </div>
+          <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
+            <div class="flex items-center gap-4 text-xs text-gray-400">
+              <span class="flex items-center gap-1">
+                <i class="fas fa-eye"></i> {{ formatViewCount(featuredArticle.views_count) }}
+              </span>
+              <span class="flex items-center gap-1">
+                <i class="fas fa-comment"></i> {{ featuredArticle.comments_count }}
+              </span>
+              <button
+                (click)="likeArticle(featuredArticle, $event)"
+                class="flex items-center gap-1 transition-colors"
+                [class.text-blue-600]="featuredArticle.user_has_liked"
+                [class.text-gray-400]="!featuredArticle.user_has_liked">
+                <i [class]="featuredArticle.user_has_liked ? 'fas fa-heart' : 'far fa-heart'"></i>
+                {{ featuredArticle.likes_count }}
+              </button>
             </div>
-            <button 
-              (click)="likeArticle(featuredArticle, $event)"
-              [class]="featuredArticle.user_has_liked ? 'flex items-center text-blue-600 text-sm' : 'flex items-center text-gray-500 hover:text-blue-600 text-sm'"
-            >
-              <i [class]="featuredArticle.user_has_liked ? 'fas fa-heart mr-1' : 'far fa-heart mr-1'"></i>
-              <span>{{ featuredArticle.likes_count }}</span>
+            <button class="bg-blue-600 text-white px-4 py-2 rounded-lg text-xs font-medium hover:bg-blue-700 transition-colors">
+              Read More
             </button>
           </div>
-          <button class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-300 font-medium">
-            Read More
-          </button>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- Featured Loading -->
-  <div *ngIf="isLoadingFeatured" class="bg-white rounded-2xl shadow-md overflow-hidden mb-8 p-8 text-center">
-    <i class="fas fa-spinner fa-spin text-blue-600 text-3xl"></i>
-    <p class="text-gray-500 mt-4">Loading featured article...</p>
-  </div>
+    <!-- Featured Loading -->
+    <div *ngIf="isLoadingFeatured" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center mb-6">
+      <div class="animate-spin rounded-full h-7 w-7 border-2 border-gray-200 border-t-blue-600 mx-auto"></div>
+      <p class="text-gray-400 text-sm mt-3">Loading featured article...</p>
+    </div>
 
-  <!-- Loading State -->
-  <div *ngIf="isLoading" class="text-center py-12">
-    <i class="fas fa-spinner fa-spin text-blue-600 text-4xl"></i>
-    <p class="text-gray-500 mt-4">Loading news articles...</p>
-  </div>
+    <!-- Loading -->
+    <div *ngIf="isLoading" class="text-center py-16">
+      <div class="animate-spin rounded-full h-8 w-8 border-2 border-gray-200 border-t-blue-600 mx-auto"></div>
+      <p class="text-gray-400 text-sm mt-4">Loading news articles...</p>
+    </div>
 
-  <!-- News Grid -->
-  <div *ngIf="!isLoading && newsArticles.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-    <div 
-      *ngFor="let article of newsArticles; let i = index" 
-      (click)="viewArticle(article.id)"
-      class="bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 p-5 cursor-pointer card-hover slide-in border border-gray-100"
-      [style.animation-delay]="(i * 0.1) + 's'"
-    >
-      <div class="h-48 overflow-hidden rounded-xl mb-4">
-        <img 
-          [src]="article.featured_image || 'https://images.unsplash.com/photo-1523580494863-6f3031224c94?auto=format&fit=crop&w=600&q=80'" 
-          [alt]="article.title" 
-          class="w-full h-full object-cover"
-        >
-      </div>
-      <div class="flex items-center mb-3">
-        <span [class]="'px-2 py-1 rounded-full text-xs font-medium ' + getCategoryBadgeClass(article.category)">
-          {{ article.category }}
-        </span>
-        <span class="text-gray-500 text-sm ml-3">{{ formatDate(article.published_at) }}</span>
-      </div>
-      <h3 class="text-xl font-bold text-gray-800 mb-3">{{ article.title }}</h3>
-      <p class="text-gray-600 text-sm mb-4 line-clamp-3">{{ article.excerpt }}</p>
-      <div class="flex items-center justify-between pt-3 border-t border-gray-100">
-        <div class="flex items-center space-x-4 text-sm text-gray-500">
-          <div class="flex items-center">
-            <i class="fas fa-eye mr-1"></i>
-            <span>{{ formatViewCount(article.views_count) }}</span>
-          </div>
-          <div class="flex items-center">
-            <i class="fas fa-comment mr-1"></i>
-            <span>{{ article.comments_count }}</span>
-          </div>
-          <button 
-            (click)="likeArticle(article, $event)"
-            [class]="article.user_has_liked ? 'flex items-center text-blue-600' : 'flex items-center text-gray-500 hover:text-blue-600'"
-          >
-            <i [class]="article.user_has_liked ? 'fas fa-heart mr-1' : 'far fa-heart mr-1'"></i>
-            <span>{{ article.likes_count }}</span>
-          </button>
+    <!-- News Grid -->
+    <div *ngIf="!isLoading && newsArticles.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-6">
+      <div
+        *ngFor="let article of newsArticles; let i = index"
+        (click)="viewArticle(article.id)"
+        class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
+        [style.animation-delay]="(i * 0.1) + 's'"
+      >
+        <!-- Image -->
+        <div class="h-44 overflow-hidden">
+          <img
+            [src]="article.featured_image || 'https://images.unsplash.com/photo-1523580494863-6f3031224c94?auto=format&fit=crop&w=600&q=80'"
+            [alt]="article.title"
+            class="w-full h-full object-cover hover:scale-105 transition-transform duration-300">
         </div>
-        <button class="text-blue-600 hover:text-blue-800 text-sm font-medium">
-          Read More
-        </button>
+
+        <!-- Content -->
+        <div class="p-4">
+          <div class="flex items-center gap-2 mb-2">
+            <span [class]="'px-2 py-0.5 rounded-full text-xs font-medium ' + getCategoryBadgeClass(article.category)">
+              {{ article.category }}
+            </span>
+            <span class="text-gray-400 text-xs">{{ formatDate(article.published_at) }}</span>
+          </div>
+          <h3 class="font-bold text-gray-800 text-sm mb-2 line-clamp-2 leading-snug">{{ article.title }}</h3>
+          <p class="text-gray-500 text-xs mb-3 line-clamp-3 leading-relaxed">{{ article.excerpt }}</p>
+
+          <div class="flex items-center justify-between pt-3 border-t border-gray-100">
+            <div class="flex items-center gap-3 text-xs text-gray-400">
+              <span class="flex items-center gap-1">
+                <i class="fas fa-eye"></i> {{ formatViewCount(article.views_count) }}
+              </span>
+              <span class="flex items-center gap-1">
+                <i class="fas fa-comment"></i> {{ article.comments_count }}
+              </span>
+              <button
+                (click)="likeArticle(article, $event)"
+                class="flex items-center gap-1 transition-colors"
+                [class.text-blue-600]="article.user_has_liked"
+                [class.text-gray-400]="!article.user_has_liked">
+                <i [class]="article.user_has_liked ? 'fas fa-heart' : 'far fa-heart'"></i>
+                {{ article.likes_count }}
+              </button>
+            </div>
+            <button class="text-blue-600 text-xs font-medium hover:text-blue-700 transition-colors">
+              Read More
+            </button>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- Empty State -->
-  <div *ngIf="!isLoading && newsArticles.length === 0" class="text-center py-12">
-    <i class="fas fa-newspaper text-gray-300 text-6xl mb-4"></i>
-    <h3 class="text-xl font-bold text-gray-700 mb-2">No news articles found</h3>
-    <p class="text-gray-500 mb-4">Try adjusting your search or filters.</p>
-    <button 
-      (click)="resetFilters()"
-      class="bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 transition-colors duration-300 font-medium"
-    >
-      Reset Filters
-    </button>
-  </div>
+    <!-- Empty State -->
+    <div *ngIf="!isLoading && newsArticles.length === 0" class="text-center py-16">
+      <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <i class="fas fa-newspaper text-gray-300 text-2xl"></i>
+      </div>
+      <h3 class="text-base font-semibold text-gray-700 mb-1">No news articles found</h3>
+      <p class="text-gray-400 text-sm mb-4">Try adjusting your search or filters.</p>
+      <button (click)="resetFilters()"
+        class="bg-blue-600 text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
+        Reset Filters
+      </button>
+    </div>
 
-  <!-- Pagination -->
-  <div *ngIf="!isLoading && totalPages > 1" class="flex justify-center items-center mt-8 space-x-4">
-    <button 
-      (click)="previousPage()"
-      [disabled]="currentPage === 1"
-      class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-    >
-      <i class="fas fa-chevron-left"></i> Previous
-    </button>
-    
-    <span class="text-sm text-gray-600">
-      Page {{ currentPage }} of {{ totalPages }}
-    </span>
-    
-    <button 
-      (click)="nextPage()"
-      [disabled]="currentPage === totalPages"
-      class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-    >
-      Next <i class="fas fa-chevron-right"></i>
-    </button>
-  </div>
+    <!-- Pagination -->
+    <div *ngIf="!isLoading && totalPages > 1" class="flex justify-center items-center mt-6 gap-3">
+      <button (click)="previousPage()" [disabled]="currentPage === 1"
+        class="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+        <i class="fas fa-chevron-left text-xs"></i> Previous
+      </button>
+      <span class="text-sm text-gray-500 px-2">Page {{ currentPage }} of {{ totalPages }}</span>
+      <button (click)="nextPage()" [disabled]="currentPage === totalPages"
+        class="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+        Next <i class="fas fa-chevron-right text-xs"></i>
+      </button>
+    </div>
 
-  <!-- Results Count -->
-  <div *ngIf="!isLoading && newsArticles.length > 0" class="text-center mt-4">
-    <p class="text-sm text-gray-500">
-      Showing {{ newsArticles.length }} of {{ totalArticles }} articles
-    </p>
+    <!-- Results Count -->
+    <div *ngIf="!isLoading && newsArticles.length > 0" class="text-center mt-4">
+      <p class="text-xs text-gray-400">Showing {{ newsArticles.length }} of {{ totalArticles }} articles</p>
+    </div>
+
   </div>
 </div>
