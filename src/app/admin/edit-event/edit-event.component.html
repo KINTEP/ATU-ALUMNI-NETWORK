@@ -1,4 +1,4 @@
-<!-- src/app/admin/create-event/create-event.component.html -->
+<!-- src/app/admin/edit-event/edit-event.component.html -->
 <div class="min-h-screen bg-gray-50">
   <app-sidebar></app-sidebar>
 
@@ -8,40 +8,43 @@
       <!-- Page Header -->
       <div class="flex items-center justify-between mb-6">
         <div>
-          <h1 class="text-2xl font-bold text-gray-900">Create New Event</h1>
-          <p class="text-sm text-gray-500 mt-0.5">Add a new event to the alumni network</p>
+          <h1 class="text-2xl font-bold text-gray-900">Edit Event</h1>
+          <p class="text-sm text-gray-500 mt-0.5">Update event details and settings</p>
         </div>
-        <button (click)="navigateBackToAdminEvents()" type="button"
+        <button (click)="navigateBackToAdminEvents()"
           class="flex items-center gap-2 border border-gray-200 text-gray-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors">
-          <i class="fas fa-arrow-left text-xs"></i> Back
+          <i class="fas fa-arrow-left text-xs"></i> Back to Events
         </button>
       </div>
 
-      <!-- Progress Steps -->
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 mb-5">
-        <div class="flex items-center justify-between max-w-sm mx-auto">
-          <div class="flex flex-col items-center">
-            <div class="w-9 h-9 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm">1</div>
-            <span class="text-xs mt-1.5 font-medium text-blue-600">Basic Info</span>
-          </div>
-          <div class="h-0.5 flex-1 bg-blue-600 mx-2"></div>
-          <div class="flex flex-col items-center">
-            <div class="w-9 h-9 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm">2</div>
-            <span class="text-xs mt-1.5 font-medium text-blue-600">Details</span>
-          </div>
-          <div class="h-0.5 flex-1 bg-gray-200 mx-2"></div>
-          <div class="flex flex-col items-center">
-            <div class="w-9 h-9 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center font-bold text-sm">3</div>
-            <span class="text-xs mt-1.5 font-medium text-gray-400">Publish</span>
-          </div>
-        </div>
+      <!-- Loading -->
+      <div *ngIf="isLoading" class="bg-white rounded-xl shadow-sm border border-gray-100 p-16 text-center">
+        <div class="animate-spin rounded-full h-8 w-8 border-2 border-gray-200 border-t-blue-600 mx-auto mb-4"></div>
+        <p class="text-gray-400 text-sm">Loading event details...</p>
       </div>
 
-      <!-- Form Card -->
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-5">
-        <h2 class="font-semibold text-gray-800 mb-5 text-sm">Event Information</h2>
+      <!-- Load error -->
+      <div *ngIf="!isLoading && errorMessage && !event"
+        class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-5 text-sm flex items-center gap-2">
+        <i class="fas fa-exclamation-circle"></i> {{ errorMessage }}
+      </div>
 
-        <form [formGroup]="eventForm" (ngSubmit)="onSubmit()">
+      <!-- Form -->
+      <div *ngIf="!isLoading && event">
+
+        <!-- Success -->
+        <div *ngIf="successMessage"
+          class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl mb-5 text-sm flex items-center gap-2">
+          <i class="fas fa-check-circle"></i> {{ successMessage }}
+        </div>
+        <!-- Error -->
+        <div *ngIf="errorMessage"
+          class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-5 text-sm flex items-center gap-2">
+          <i class="fas fa-exclamation-circle"></i> {{ errorMessage }}
+        </div>
+
+        <form [formGroup]="eventForm" (ngSubmit)="onSubmit()" class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-5">
+          <h2 class="font-semibold text-gray-800 mb-5 text-sm">Event Information</h2>
 
           <!-- Title & Type -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
@@ -49,8 +52,7 @@
               <label class="block text-xs font-medium text-gray-600 mb-1.5">Event Title *</label>
               <input type="text" formControlName="title" placeholder="Enter event title"
                 class="w-full px-3 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                [class.border-red-400]="hasError('title')"
-                [class.border-gray-200]="!hasError('title')">
+                [class.border-red-400]="hasError('title')" [class.border-gray-200]="!hasError('title')">
               <p *ngIf="hasError('title', 'required')" class="text-red-500 text-xs mt-1">Title is required</p>
               <p *ngIf="hasError('title', 'minlength')" class="text-red-500 text-xs mt-1">Min 5 characters</p>
             </div>
@@ -58,8 +60,7 @@
               <label class="block text-xs font-medium text-gray-600 mb-1.5">Event Type *</label>
               <select formControlName="event_type"
                 class="w-full px-3 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none bg-white text-gray-700"
-                [class.border-red-400]="hasError('event_type')"
-                [class.border-gray-200]="!hasError('event_type')">
+                [class.border-red-400]="hasError('event_type')" [class.border-gray-200]="!hasError('event_type')">
                 <option value="">Select event type</option>
                 <option *ngFor="let type of eventTypes" [value]="type">{{ type }}</option>
               </select>
@@ -69,32 +70,29 @@
 
           <!-- Description -->
           <div class="mb-5">
-            <label class="block text-xs font-medium text-gray-600 mb-1.5">Event Description *</label>
-            <textarea rows="4" formControlName="description"
+            <label class="block text-xs font-medium text-gray-600 mb-1.5">Description *</label>
+            <textarea formControlName="description" rows="5"
               placeholder="Describe the event, agenda, and what attendees can expect..."
               class="w-full px-3 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-              [class.border-red-400]="hasError('description')"
-              [class.border-gray-200]="!hasError('description')"></textarea>
+              [class.border-red-400]="hasError('description')" [class.border-gray-200]="!hasError('description')"></textarea>
             <p *ngIf="hasError('description', 'required')" class="text-red-500 text-xs mt-1">Description is required</p>
             <p *ngIf="hasError('description', 'minlength')" class="text-red-500 text-xs mt-1">Min 20 characters</p>
           </div>
 
-          <!-- Date & Time -->
+          <!-- Dates -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
             <div>
               <label class="block text-xs font-medium text-gray-600 mb-1.5">Start Date & Time *</label>
               <input type="datetime-local" formControlName="start_date"
                 class="w-full px-3 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                [class.border-red-400]="hasError('start_date')"
-                [class.border-gray-200]="!hasError('start_date')">
+                [class.border-red-400]="hasError('start_date')" [class.border-gray-200]="!hasError('start_date')">
               <p *ngIf="hasError('start_date')" class="text-red-500 text-xs mt-1">Start date is required</p>
             </div>
             <div>
               <label class="block text-xs font-medium text-gray-600 mb-1.5">End Date & Time *</label>
               <input type="datetime-local" formControlName="end_date"
                 class="w-full px-3 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                [class.border-red-400]="hasError('end_date')"
-                [class.border-gray-200]="!hasError('end_date')">
+                [class.border-red-400]="hasError('end_date')" [class.border-gray-200]="!hasError('end_date')">
               <p *ngIf="hasError('end_date')" class="text-red-500 text-xs mt-1">End date is required</p>
             </div>
           </div>
@@ -105,20 +103,32 @@
               <label class="block text-xs font-medium text-gray-600 mb-1.5">Location *</label>
               <input type="text" formControlName="location" placeholder="Enter venue or address"
                 class="w-full px-3 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                [class.border-red-400]="hasError('location')"
-                [class.border-gray-200]="!hasError('location')">
+                [class.border-red-400]="hasError('location')" [class.border-gray-200]="!hasError('location')">
               <p *ngIf="hasError('location')" class="text-red-500 text-xs mt-1">Location is required</p>
             </div>
             <div>
               <label class="block text-xs font-medium text-gray-600 mb-1.5">Location Type *</label>
               <select formControlName="location_type"
                 class="w-full px-3 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none bg-white text-gray-700"
-                [class.border-red-400]="hasError('location_type')"
-                [class.border-gray-200]="!hasError('location_type')">
+                [class.border-red-400]="hasError('location_type')" [class.border-gray-200]="!hasError('location_type')">
                 <option value="">Select location type</option>
                 <option *ngFor="let locType of locationTypes" [value]="locType.value">{{ locType.label }}</option>
               </select>
               <p *ngIf="hasError('location_type')" class="text-red-500 text-xs mt-1">Location type is required</p>
+            </div>
+          </div>
+
+          <!-- Venue & Meeting Link -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+            <div>
+              <label class="block text-xs font-medium text-gray-600 mb-1.5">Venue Name</label>
+              <input type="text" formControlName="venue_name" placeholder="e.g., ATU Main Hall"
+                class="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-gray-600 mb-1.5">Meeting Link</label>
+              <input type="url" formControlName="meeting_link" placeholder="https://zoom.us/..."
+                class="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
             </div>
           </div>
 
@@ -149,29 +159,68 @@
             </div>
           </div>
 
-          <!-- Image Upload -->
+          <!-- Organizer -->
+          <div class="mb-5">
+            <h3 class="text-xs font-semibold text-gray-700 mb-3">Organizer Information</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label class="block text-xs font-medium text-gray-600 mb-1.5">Organizer Name</label>
+                <input type="text" formControlName="organizer_name" placeholder="Name"
+                  class="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-gray-600 mb-1.5">Organizer Email</label>
+                <input type="email" formControlName="organizer_email" placeholder="email@example.com"
+                  class="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-gray-600 mb-1.5">Organizer Phone</label>
+                <input type="tel" formControlName="organizer_phone" placeholder="+233..."
+                  class="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+              </div>
+            </div>
+          </div>
+
+          <!-- Registration Deadline & Tags -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+            <div>
+              <label class="block text-xs font-medium text-gray-600 mb-1.5">Registration Deadline</label>
+              <input type="date" formControlName="registration_deadline"
+                class="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-gray-600 mb-1.5">Tags</label>
+              <input type="text" formControlName="tags" placeholder="networking, career, alumni (comma separated)"
+                class="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+            </div>
+          </div>
+
+          <!-- Event Image -->
           <div class="mb-5">
             <label class="block text-xs font-medium text-gray-600 mb-1.5">Event Image</label>
             <div class="border-2 border-dashed border-gray-200 rounded-xl p-6 text-center hover:border-blue-400 transition-colors">
               <div *ngIf="!imagePreview" class="flex flex-col items-center">
                 <i class="fas fa-cloud-upload-alt text-3xl text-gray-300 mb-3"></i>
-                <p class="text-sm text-gray-500 mb-1">Drag & drop your image here</p>
-                <p class="text-xs text-gray-400 mb-3">or</p>
+                <p class="text-sm text-gray-500 mb-1">Drag & drop or click to upload</p>
                 <button type="button" (click)="triggerFileInput()"
-                  class="bg-blue-600 text-white px-4 py-2 rounded-lg text-xs font-medium hover:bg-blue-700 transition-colors">
+                  class="bg-blue-600 text-white px-4 py-2 rounded-lg text-xs font-medium hover:bg-blue-700 transition-colors mt-2">
                   Browse Files
                 </button>
-                <p class="text-xs text-gray-400 mt-2">PNG, JPG, GIF up to 5MB</p>
+                <p class="text-xs text-gray-400 mt-2">PNG, JPG up to 10MB</p>
               </div>
               <div *ngIf="imagePreview" class="relative">
-                <img [src]="imagePreview" alt="Preview" class="max-h-56 mx-auto rounded-lg">
+                <img [src]="imagePreview" alt="Preview" class="max-h-56 mx-auto rounded-lg object-cover">
                 <button type="button" (click)="removeImage()"
                   class="absolute top-2 right-2 bg-red-500 text-white rounded-full w-7 h-7 flex items-center justify-center hover:bg-red-600 transition-colors">
                   <i class="fas fa-times text-xs"></i>
                 </button>
+                <p class="text-xs text-blue-600 mt-2 font-medium">Click × to remove or upload a new image</p>
               </div>
             </div>
             <input type="file" id="imageUpload" (change)="onImageSelected($event)" accept="image/*" class="hidden">
+            <div *ngIf="isUploadingImage" class="mt-2 text-xs text-blue-600 flex items-center gap-2">
+              <i class="fas fa-spinner fa-spin"></i> Uploading image...
+            </div>
           </div>
 
           <!-- Settings -->
@@ -181,7 +230,7 @@
               <div class="flex items-center justify-between py-2 border-b border-gray-100">
                 <div>
                   <p class="text-sm font-medium text-gray-700">Allow Comments</p>
-                  <p class="text-xs text-gray-400">Users can comment on this event</p>
+                  <p class="text-xs text-gray-400 mt-0.5">Users can comment on this event</p>
                 </div>
                 <label class="relative inline-flex items-center cursor-pointer">
                   <input type="checkbox" formControlName="allow_comments" class="sr-only peer">
@@ -191,20 +240,30 @@
               <div class="flex items-center justify-between py-2 border-b border-gray-100">
                 <div>
                   <p class="text-sm font-medium text-gray-700">Require RSVP Approval</p>
-                  <p class="text-xs text-gray-400">Manually approve attendees</p>
+                  <p class="text-xs text-gray-400 mt-0.5">Manually approve attendees</p>
                 </div>
                 <label class="relative inline-flex items-center cursor-pointer">
                   <input type="checkbox" formControlName="require_approval" class="sr-only peer">
                   <div class="w-10 h-5 bg-gray-200 rounded-full peer peer-checked:bg-blue-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border after:border-gray-300 after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-5 peer-checked:after:border-white"></div>
                 </label>
               </div>
-              <div class="flex items-center justify-between py-2">
+              <div class="flex items-center justify-between py-2 border-b border-gray-100">
                 <div>
-                  <p class="text-sm font-medium text-gray-700">Send Notification</p>
-                  <p class="text-xs text-gray-400">Notify alumni about this event</p>
+                  <p class="text-sm font-medium text-gray-700">Featured Event</p>
+                  <p class="text-xs text-gray-400 mt-0.5">Highlight this event on the homepage</p>
                 </div>
                 <label class="relative inline-flex items-center cursor-pointer">
-                  <input type="checkbox" formControlName="send_notification" class="sr-only peer">
+                  <input type="checkbox" formControlName="is_featured" class="sr-only peer">
+                  <div class="w-10 h-5 bg-gray-200 rounded-full peer peer-checked:bg-blue-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border after:border-gray-300 after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-5 peer-checked:after:border-white"></div>
+                </label>
+              </div>
+              <div class="flex items-center justify-between py-2">
+                <div>
+                  <p class="text-sm font-medium text-gray-700">Published</p>
+                  <p class="text-xs text-gray-400 mt-0.5">Make this event visible to alumni</p>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                  <input type="checkbox" formControlName="is_published" class="sr-only peer">
                   <div class="w-10 h-5 bg-gray-200 rounded-full peer peer-checked:bg-blue-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border after:border-gray-300 after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-5 peer-checked:after:border-white"></div>
                 </label>
               </div>
@@ -218,36 +277,19 @@
             </p>
             <div class="flex gap-3">
               <button type="button" (click)="saveAsDraft()" [disabled]="isSubmitting"
-                class="px-5 py-2.5 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-50">
-                Save as Draft
+                class="px-5 py-2.5 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-50 flex items-center gap-2">
+                <i class="fas fa-save text-xs"></i> Save as Draft
               </button>
               <button type="submit" [disabled]="isSubmitting"
                 class="bg-blue-600 text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
-                <i class="fas fa-rocket text-xs"></i>
-                {{ isSubmitting ? 'Publishing...' : 'Publish Event' }}
+                <i *ngIf="!isSubmitting" class="fas fa-check text-xs"></i>
+                <i *ngIf="isSubmitting" class="fas fa-spinner fa-spin text-xs"></i>
+                {{ isSubmitting ? 'Saving...' : 'Update Event' }}
               </button>
             </div>
           </div>
 
         </form>
-      </div>
-
-      <!-- Tips -->
-      <div class="bg-blue-50 border border-blue-100 rounded-xl p-5">
-        <h3 class="text-sm font-semibold text-blue-800 mb-3 flex items-center gap-2">
-          <i class="fas fa-lightbulb text-blue-500"></i> Event Creation Tips
-        </h3>
-        <ul class="space-y-2">
-          <li *ngFor="let tip of [
-            'Use clear, descriptive titles that alumni will recognize',
-            'Include all relevant details in the description (agenda, speakers, etc.)',
-            'Set realistic capacity limits based on venue size',
-            'Upload high-quality images to attract more attendees'
-          ]" class="flex items-start gap-2 text-xs text-blue-700">
-            <i class="fas fa-check-circle text-blue-400 mt-0.5 flex-shrink-0"></i>
-            {{ tip }}
-          </li>
-        </ul>
       </div>
 
     </div>

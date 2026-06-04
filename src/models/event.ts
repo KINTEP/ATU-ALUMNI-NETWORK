@@ -1,3 +1,5 @@
+// src/app/models/event.ts
+
 export interface AlumniEvent {
   user_rsvp_status: import("./user").User | null;
   id: number;
@@ -21,6 +23,13 @@ export interface AlumniEvent {
   currency?: string;
   organizer_name?: string;
   organizer_email?: string;
+  organizer_phone?: string;       // ← added
+  tags?: string | string[];       // ← added (API may return either)
+  requirements?: string;          // ← added
+  agenda?: string;                // ← added
+  speakers?: string;              // ← added
+  allow_comments?: boolean;       // ← added
+  require_approval?: boolean;     // ← added
   rsvp_count: number;
   views_count: number;
   status: 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
@@ -28,7 +37,6 @@ export interface AlumniEvent {
   is_published: boolean;
   created_at: string;
 }
-
 
 export interface EventComment {
   id: number;
@@ -39,12 +47,12 @@ export interface EventComment {
   likes_count: number;
   is_deleted: boolean;
   created_at: string;
-  
+
   // User info
   first_name?: string;
   last_name?: string;
   profile_picture?: string;
-  
+
   // Additional info
   reply_count?: number;
   user_has_liked?: boolean;

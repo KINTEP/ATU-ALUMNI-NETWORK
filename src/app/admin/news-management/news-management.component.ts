@@ -230,9 +230,10 @@ export class NewsManagementComponent implements OnInit {
   /**
    * Edit article
    */
-  editArticle(articleId: number): void {
-    this.router.navigate(['/admin/edit-article', articleId]);
-  }
+  
+  editArticle(id: number): void {
+  this.router.navigate(['/admin/news/edit', id]);
+}
 
   /**
    * View article

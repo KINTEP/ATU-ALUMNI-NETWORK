@@ -2,88 +2,75 @@
 <div class="min-h-screen bg-gray-50">
   <div class="max-w-7xl mx-auto px-4 py-6">
 
-    <!-- Page Title -->
-    <div class="mb-5">
+    <!-- Page Title — hidden on mobile when chat is open -->
+    <div class="mb-5" [class.hidden]="selectedConversation && isMobileView">
       <h1 class="text-2xl font-bold text-gray-900">Messages</h1>
       <p class="text-sm text-gray-500 mt-0.5">Connect and chat with fellow alumni</p>
     </div>
 
     <!-- Main Chat Layout -->
-    <div class="flex gap-5 h-[calc(100vh-180px)]">
+    <div class="flex gap-5" style="height: calc(100vh - 180px); min-height: 500px;">
 
       <!-- LEFT: Conversations Sidebar -->
-      <div class="w-80 flex-shrink-0 bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col overflow-hidden">
+      <!-- On mobile: full width, hidden when a conversation is selected -->
+      <!-- On desktop: fixed 320px width, always visible -->
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col overflow-hidden transition-all"
+        [class.hidden]="selectedConversation && isMobileView"
+        [class.w-full]="!selectedConversation || !isMobileView"
+        [class.lg:w-80]="true"
+        [class.lg:flex-shrink-0]="true"
+        style="width: 100%;"
+        [style.width]="isMobileView ? '100%' : ''">
 
         <!-- Sidebar Header -->
         <div class="px-4 py-4 border-b border-gray-100">
           <h2 class="font-semibold text-gray-800 text-sm mb-3">Conversations</h2>
           <div class="relative">
             <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
-            <input
-              type="text"
-              [(ngModel)]="searchQuery"
-              placeholder="Search conversations..."
-              class="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
+            <input type="text" [(ngModel)]="searchQuery" placeholder="Search conversations..."
+              class="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
           </div>
         </div>
 
         <!-- Conversation List -->
         <div class="flex-1 overflow-y-auto">
-
-          <!-- Loading -->
           <div *ngIf="isLoadingConversations" class="flex justify-center items-center py-12">
             <div class="animate-spin rounded-full h-6 w-6 border-2 border-gray-200 border-t-blue-600"></div>
           </div>
-
-          <!-- Empty -->
-          <div *ngIf="!isLoadingConversations && getFilteredConversations().length === 0"
-            class="text-center py-12 px-4">
+          <div *ngIf="!isLoadingConversations && getFilteredConversations().length === 0" class="text-center py-12 px-4">
             <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
               <i class="fas fa-inbox text-gray-300 text-xl"></i>
             </div>
             <p class="text-gray-500 text-sm">No conversations yet</p>
             <p class="text-gray-400 text-xs mt-1">Start connecting with alumni!</p>
           </div>
-
-          <!-- Conversation Items -->
-          <div
-            *ngFor="let conversation of getFilteredConversations()"
+          <div *ngFor="let conversation of getFilteredConversations()"
             (click)="selectConversation(conversation)"
             class="flex items-center gap-3 px-4 py-3 border-b border-gray-50 hover:bg-gray-50 transition-colors cursor-pointer"
             [class.bg-blue-50]="selectedConversation?.conversation_id === conversation.conversation_id"
             [class.border-l-2]="selectedConversation?.conversation_id === conversation.conversation_id"
             [class.border-l-blue-600]="selectedConversation?.conversation_id === conversation.conversation_id">
-
-            <!-- Avatar -->
             <div class="relative flex-shrink-0">
               <div *ngIf="hasProfilePicture(conversation.other_user_picture); else convInitials"
                 class="w-11 h-11 rounded-full overflow-hidden border border-gray-200">
                 <img [src]="getProfilePictureUrl(conversation.other_user_picture)"
-                  [alt]="conversation.other_user_name" class="w-full h-full object-cover"
-                  onerror="this.style.display='none'">
+                  [alt]="conversation.other_user_name" class="w-full h-full object-cover" onerror="this.style.display='none'">
               </div>
               <ng-template #convInitials>
-                <div
-                  class="w-11 h-11 rounded-full bg-blue-600 flex items-center justify-center text-white font-semibold text-sm">
+                <div class="w-11 h-11 rounded-full bg-blue-600 flex items-center justify-center text-white font-semibold text-sm">
                   {{ getUserInitials(conversation.other_user_name) }}
                 </div>
               </ng-template>
-              <!-- Online dot -->
               <div *ngIf="conversation.is_online"
                 class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
             </div>
-
-            <!-- Info -->
             <div class="flex-1 min-w-0">
               <div class="flex items-center justify-between">
                 <h3 class="font-semibold text-gray-800 text-sm truncate">{{ conversation.other_user_name }}</h3>
                 <span class="text-xs text-gray-400 flex-shrink-0 ml-2">{{ formatTime(conversation.last_message_at) }}</span>
               </div>
               <div class="flex items-center justify-between mt-0.5">
-                <p class="text-xs text-gray-500 truncate flex-1">
-                  {{ conversation.last_message_preview || 'No messages yet' }}
-                </p>
+                <p class="text-xs text-gray-500 truncate flex-1">{{ conversation.last_message_preview || 'No messages yet' }}</p>
                 <span *ngIf="conversation.unread_count > 0"
                   class="ml-2 bg-blue-600 text-white text-xs rounded-full h-5 min-w-[20px] px-1.5 flex items-center justify-center flex-shrink-0 font-medium">
                   {{ conversation.unread_count }}
@@ -95,9 +82,12 @@
       </div>
 
       <!-- RIGHT: Chat Area -->
-      <div class="flex-1 bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col overflow-hidden">
+      <!-- On mobile: full width, only shown when conversation selected -->
+      <!-- On desktop: flex-1, always shown -->
+      <div class="flex-1 bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col overflow-hidden"
+        [class.hidden]="!selectedConversation && isMobileView">
 
-        <!-- No conversation selected -->
+        <!-- No conversation selected (desktop only) -->
         <div *ngIf="!selectedConversation" class="flex-1 flex items-center justify-center">
           <div class="text-center">
             <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -112,18 +102,21 @@
         <ng-container *ngIf="selectedConversation">
 
           <!-- Chat Header -->
-          <div class="px-5 py-3.5 border-b border-gray-100 flex items-center justify-between flex-shrink-0">
+          <div class="px-4 py-3.5 border-b border-gray-100 flex items-center justify-between flex-shrink-0">
             <div class="flex items-center gap-3">
+              <!-- Back button — mobile only -->
+              <button class="lg:hidden w-8 h-8 flex items-center justify-center text-gray-500 hover:text-gray-700 mr-1"
+                (click)="goBackToList()">
+                <i class="fas fa-arrow-left"></i>
+              </button>
               <div class="relative">
                 <div *ngIf="hasProfilePicture(selectedConversation.other_user_picture); else headerInitials"
                   class="w-10 h-10 rounded-full overflow-hidden border border-gray-200">
                   <img [src]="getProfilePictureUrl(selectedConversation.other_user_picture)"
-                    [alt]="selectedConversation.other_user_name" class="w-full h-full object-cover"
-                    onerror="this.style.display='none'">
+                    [alt]="selectedConversation.other_user_name" class="w-full h-full object-cover" onerror="this.style.display='none'">
                 </div>
                 <ng-template #headerInitials>
-                  <div
-                    class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-semibold text-sm">
+                  <div class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-semibold text-sm">
                     {{ getUserInitials(selectedConversation.other_user_name) }}
                   </div>
                 </ng-template>
@@ -132,62 +125,49 @@
               </div>
               <div>
                 <h3 class="font-semibold text-gray-800 text-sm">{{ selectedConversation.other_user_name }}</h3>
-                <p class="text-xs" [class.text-green-500]="selectedConversation.is_online"
+                <p class="text-xs"
+                  [class.text-green-500]="selectedConversation.is_online"
                   [class.text-gray-400]="!selectedConversation.is_online">
                   {{ selectedConversation.is_online ? 'Online' : 'Offline' }}
                 </p>
               </div>
             </div>
-            <!-- Header Actions -->
             <div class="flex items-center gap-1">
-              <button
-                class="w-9 h-9 rounded-lg hover:bg-gray-100 transition-colors flex items-center justify-center text-gray-500 hover:text-gray-700">
+              <button class="w-9 h-9 rounded-lg hover:bg-gray-100 transition-colors flex items-center justify-center text-gray-500">
                 <i class="fas fa-phone text-sm"></i>
               </button>
-              <button
-                class="w-9 h-9 rounded-lg hover:bg-gray-100 transition-colors flex items-center justify-center text-gray-500 hover:text-gray-700">
+              <button class="w-9 h-9 rounded-lg hover:bg-gray-100 transition-colors flex items-center justify-center text-gray-500">
                 <i class="fas fa-video text-sm"></i>
               </button>
-              <button
-                class="w-9 h-9 rounded-lg hover:bg-gray-100 transition-colors flex items-center justify-center text-gray-500 hover:text-gray-700">
+              <button class="w-9 h-9 rounded-lg hover:bg-gray-100 transition-colors flex items-center justify-center text-gray-500">
                 <i class="fas fa-ellipsis-v text-sm"></i>
               </button>
             </div>
           </div>
 
           <!-- Messages Area -->
-          <div #messagesContainer class="flex-1 overflow-y-auto px-5 py-4 bg-gray-50 space-y-1">
-
-            <!-- Loading -->
+          <div #messagesContainer class="flex-1 overflow-y-auto px-4 py-4 bg-gray-50 space-y-1">
             <div *ngIf="isLoadingMessages" class="flex justify-center items-center py-12">
               <div class="animate-spin rounded-full h-6 w-6 border-2 border-gray-200 border-t-blue-600"></div>
             </div>
-
             <ng-container *ngIf="!isLoadingMessages">
-
-              <!-- Date label -->
               <div class="flex justify-center my-4">
                 <span class="bg-white border border-gray-200 text-gray-400 text-xs px-3 py-1 rounded-full">Today</span>
               </div>
-
-              <!-- Messages -->
               <div *ngFor="let message of messages">
-
                 <!-- Received -->
                 <div *ngIf="!isMyMessage(message)" class="flex items-end gap-2 mb-3">
                   <div *ngIf="hasProfilePicture(selectedConversation.other_user_picture); else rcvInitials"
                     class="w-7 h-7 rounded-full overflow-hidden flex-shrink-0 border border-gray-200">
                     <img [src]="getProfilePictureUrl(selectedConversation.other_user_picture)"
-                      [alt]="selectedConversation.other_user_name" class="w-full h-full object-cover"
-                      onerror="this.style.display='none'">
+                      [alt]="selectedConversation.other_user_name" class="w-full h-full object-cover" onerror="this.style.display='none'">
                   </div>
                   <ng-template #rcvInitials>
-                    <div
-                      class="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">
+                    <div class="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">
                       {{ getUserInitials(selectedConversation.other_user_name) }}
                     </div>
                   </ng-template>
-                  <div class="max-w-[65%]">
+                  <div class="max-w-[75%] sm:max-w-[65%]">
                     <div class="bg-white border border-gray-200 rounded-2xl rounded-bl-md px-4 py-2.5 shadow-sm">
                       <p class="text-gray-800 text-sm leading-relaxed">{{ message.message_text }}</p>
                       <span *ngIf="message.is_edited" class="text-xs text-gray-400 italic">(edited)</span>
@@ -195,10 +175,9 @@
                     <span class="text-xs text-gray-400 mt-1 block ml-1">{{ formatMessageTime(message.created_at) }}</span>
                   </div>
                 </div>
-
                 <!-- Sent -->
                 <div *ngIf="isMyMessage(message)" class="flex items-end gap-2 mb-3 justify-end">
-                  <div class="max-w-[65%]">
+                  <div class="max-w-[75%] sm:max-w-[65%]">
                     <div class="bg-blue-600 text-white rounded-2xl rounded-br-md px-4 py-2.5 shadow-sm">
                       <p class="text-sm leading-relaxed">{{ message.message_text }}</p>
                       <span *ngIf="message.is_edited" class="text-xs opacity-70 italic">(edited)</span>
@@ -215,26 +194,21 @@
                       class="w-full h-full object-cover" onerror="this.style.display='none'">
                   </div>
                   <ng-template #myInitials>
-                    <div
-                      class="w-7 h-7 rounded-full bg-indigo-600 flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">
+                    <div class="w-7 h-7 rounded-full bg-indigo-600 flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">
                       {{ getUserInitials((currentUser?.first_name || '') + ' ' + (currentUser?.last_name || '')) }}
                     </div>
                   </ng-template>
                 </div>
-
               </div>
-
-              <!-- Typing Indicator -->
+              <!-- Typing -->
               <div *ngIf="isOtherUserTyping" class="flex items-end gap-2 mb-3">
                 <div *ngIf="hasProfilePicture(selectedConversation.other_user_picture); else typingInitials"
                   class="w-7 h-7 rounded-full overflow-hidden flex-shrink-0 border border-gray-200">
                   <img [src]="getProfilePictureUrl(selectedConversation.other_user_picture)"
-                    [alt]="selectedConversation.other_user_name" class="w-full h-full object-cover"
-                    onerror="this.style.display='none'">
+                    [alt]="selectedConversation.other_user_name" class="w-full h-full object-cover" onerror="this.style.display='none'">
                 </div>
                 <ng-template #typingInitials>
-                  <div
-                    class="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">
+                  <div class="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">
                     {{ getUserInitials(selectedConversation.other_user_name) }}
                   </div>
                 </ng-template>
@@ -246,7 +220,6 @@
                   </div>
                 </div>
               </div>
-
             </ng-container>
           </div>
 
@@ -258,21 +231,13 @@
                 <i class="fas fa-paperclip text-sm"></i>
               </button>
               <button type="button"
-                class="w-9 h-9 rounded-lg hover:bg-gray-100 transition-colors flex items-center justify-center text-gray-400 hover:text-gray-600 flex-shrink-0">
+                class="hidden sm:flex w-9 h-9 rounded-lg hover:bg-gray-100 transition-colors items-center justify-center text-gray-400 hover:text-gray-600 flex-shrink-0">
                 <i class="fas fa-image text-sm"></i>
               </button>
-              <input
-                type="text"
-                [(ngModel)]="newMessage"
-                (input)="onTyping()"
-                name="message"
-                placeholder="Type a message..."
-                [disabled]="isSendingMessage"
-                class="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
-              >
-              <button
-                type="submit"
-                [disabled]="isSendingMessage || !newMessage.trim()"
+              <input type="text" [(ngModel)]="newMessage" (input)="onTyping()" name="message"
+                placeholder="Type a message..." [disabled]="isSendingMessage"
+                class="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100">
+              <button type="submit" [disabled]="isSendingMessage || !newMessage.trim()"
                 class="w-10 h-10 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors flex items-center justify-center flex-shrink-0 disabled:opacity-40 disabled:cursor-not-allowed">
                 <i *ngIf="!isSendingMessage" class="fas fa-paper-plane text-sm"></i>
                 <i *ngIf="isSendingMessage" class="fas fa-spinner fa-spin text-sm"></i>

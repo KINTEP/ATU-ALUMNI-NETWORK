@@ -21,12 +21,14 @@ export interface Department {
 }
 
 export interface Program {
-  id: number;
-  name: string;
-  code: string;
-  department_id: number;
+  id:              number;
+  name:            string;
+  code?:           string;
+  department_id:   number;
   department_name?: string;
-  faculty_name?: string;
+  faculty_id?:     number;
+  faculty_name?:   string;
+  level_name?:     string;   // ← add this — e.g. "Higher National Diploma", "Degree"
 }
 
 export interface ProgramLevel {

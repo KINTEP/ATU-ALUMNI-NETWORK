@@ -174,7 +174,7 @@ export class UsersComponent implements OnInit {
    * Navigate to add user page
    */
   navigateToAddUser(): void {
-    this.router.navigate(['/addUser']);
+    this.router.navigate(['admin/add-user']);
   }
 
   /**

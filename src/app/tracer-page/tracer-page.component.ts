@@ -7,6 +7,7 @@ import { AuthService } from '../../services/auth.service';
 import { TracerStudyResponse } from '../../models/tracer-study';
 import { TracerStudyService } from '../../services/tracer-study.service';
 import { ApiResponse } from '../../models/api-response';
+import { PROGRAMMES } from '../open-register/programme-data';
 
 @Component({
   selector: 'app-tracer-page',
@@ -22,10 +23,9 @@ export class TracerPageComponent implements OnInit {
   isLoading = false;
   isSubmitting = false;
 
-  // Form data with all fields
   formData: any = {
     user_id: 0,
-    
+
     // Section 1: Personal Information
     full_name: '',
     index_number: '',
@@ -37,10 +37,10 @@ export class TracerPageComponent implements OnInit {
     current_country: '',
     email: '',
     phone_number: '',
-    
+
     // Section 2: Current Status
     current_status: '',
-    
+
     // Employment fields
     employment_type: '',
     time_to_first_job: '',
@@ -52,7 +52,7 @@ export class TracerPageComponent implements OnInit {
     monthly_income_range: '',
     how_found_job: '',
     job_level: '',
-    
+
     // Self-Employment fields
     business_time_dedication: '',
     time_to_start_business: '',
@@ -62,13 +62,13 @@ export class TracerPageComponent implements OnInit {
     business_monthly_income: '',
     how_started_business: '',
     number_of_employees: '',
-    
+
     // Unemployment fields
     unemployment_duration: '',
     main_challenge: '',
     currently_status: '',
     support_needed: [],
-    
+
     // Further Studies fields
     further_study_type: '',
     further_study_field: '',
@@ -78,11 +78,11 @@ export class TracerPageComponent implements OnInit {
     study_job_title: '',
     study_job_related: '',
     study_job_sector: '',
-    
+
     // Section 3: Experience During Studies
     worked_during_studies: '',
     work_related_to_field: '',
-    
+
     // Section 4: Skills Assessment
     skills_relevance_rating: null,
     competency_technical: null,
@@ -94,7 +94,7 @@ export class TracerPageComponent implements OnInit {
     competency_entrepreneurship: null,
     skills_to_strengthen: '',
     current_situation_satisfaction: null,
-    
+
     // Section 5: Feedback on ATU
     programme_quality_rating: '',
     teaching_quality: '',
@@ -107,38 +107,28 @@ export class TracerPageComponent implements OnInit {
     would_recommend_atu: '',
     atu_did_well: '',
     atu_should_improve: '',
-    
+
     // Section 6: Alumni Engagement
     is_alumni_member: null,
     willing_to_mentor: null,
     preferred_contact_method: '',
     willing_to_collaborate: null,
-    
+
     // Section 7: Survey Feedback
     how_heard_about_survey: '',
-    
+
     is_completed: false
   };
 
-  // Dropdown options
-  programmes = [
-    'Computer Science',
-    'Information Technology',
-    'Business Administration',
-    'Accounting',
-    'Marketing',
-    'Electrical Engineering',
-    'Mechanical Engineering',
-    'Civil Engineering',
-    'Architecture',
-    'Building Technology',
-    'Other'
-  ];
+  // ── Dropdown options ───────────────────────────────────────────────────────
+
+  // Full ATU programme list from shared data source
+  programmes: string[] = PROGRAMMES.map(p => p.name);
 
   graduationYears: number[] = [];
-  
+
   genders = ['Male', 'Female', 'Prefer not to say'];
-  
+
   ageRanges = [
     'Under 25',
     '25-29',
@@ -152,9 +142,8 @@ export class TracerPageComponent implements OnInit {
     private tracerStudyService: TracerStudyService,
     private authService: AuthService
   ) {
-    // Generate graduation years (last 10 years)
     const currentYear = new Date().getFullYear();
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 15; i++) {
       this.graduationYears.push(currentYear - i);
     }
   }
@@ -163,9 +152,17 @@ export class TracerPageComponent implements OnInit {
     this.authService.currentUser$.subscribe(user => {
       this.currentUser = user;
       if (user) {
-        this.formData.user_id = user.id;
-        this.formData.full_name = `${user.first_name} ${user.last_name}`;
-        this.formData.email = user.email;
+        // Auto-populate all available fields from the user profile
+        this.formData.user_id            = user.id;
+        this.formData.full_name          = `${user.first_name} ${user.last_name}`.trim();
+        this.formData.email              = user.email          || '';
+        this.formData.phone_number       = (user as any).phone_number      || '';
+        this.formData.index_number       = (user as any).student_id        || '';
+        this.formData.programme_of_study = (user as any).program_of_study  || '';
+        this.formData.year_of_graduation = (user as any).graduation_year
+          ? String((user as any).graduation_year)
+          : '';
+
         this.checkSubmissionStatus();
       }
     });
@@ -208,38 +205,18 @@ export class TracerPageComponent implements OnInit {
   }
 
   showSection(sectionNumber: number): void {
-    // Validate current section before moving forward
     if (sectionNumber > this.currentSection && !this.validateSection(this.currentSection)) {
       this.showAlert('error', 'Please fill in all required fields before proceeding.');
       return;
     }
 
-    // Hide all sections
-    for (let i = 1; i <= 7; i++) {
-      const section = document.getElementById(`section${i}`);
-      if (section) section.style.display = 'none';
-    }
-    
-    // Show requested section
-    const current = document.getElementById(`section${sectionNumber}`);
-    if (current) current.style.display = 'block';
     this.currentSection = sectionNumber;
-
-    // Update progress bar
-    const progress = (this.currentSection / 7) * 100;
-    const progressBar = document.getElementById('progressBar');
-    if (progressBar) progressBar.style.width = `${progress}%`;
-    
-    const progressText = document.getElementById('progressText');
-    if (progressText) progressText.textContent = `Step ${this.currentSection} of 7`;
-
-    // Scroll to top
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   validateSection(sectionNumber: number): boolean {
     switch (sectionNumber) {
-      case 1: // Personal Information
+      case 1:
         return !!(
           this.formData.full_name &&
           this.formData.index_number &&
@@ -251,18 +228,19 @@ export class TracerPageComponent implements OnInit {
           this.formData.email &&
           this.formData.phone_number
         );
-      case 2: // Current Status
+      case 2:
         return !!this.formData.current_status;
-      case 3: // Experience During Studies
+      case 3:
         return !!this.formData.worked_during_studies;
-      case 5: // Feedback - Programme Quality required
+      case 5:
         return !!this.formData.programme_quality_rating && !!this.formData.would_recommend_atu;
       default:
         return true;
     }
   }
 
-  // Conditional logic helpers
+  // ── Conditional logic helpers ──────────────────────────────────────────────
+
   shouldShowEmployedQuestions(): boolean {
     return this.formData.current_status === 'Employed';
   }
@@ -284,27 +262,19 @@ export class TracerPageComponent implements OnInit {
   }
 
   getNextSection(currentSection: number): number {
-    // Section 3 → 4 (Skills) if applicable, else skip to 5 (Feedback)
     if (currentSection === 3) {
       return this.shouldShowSkillsSection() ? 4 : 5;
     }
-    
-    // Default sequential navigation
     return currentSection + 1;
   }
 
   getPreviousSection(currentSection: number): number {
-    // Section 5 (Feedback) → 4 (Skills) if it was shown, else 3 (Experience)
     if (currentSection === 5) {
       return this.shouldShowSkillsSection() ? 4 : 3;
     }
-    
-    // Section 4 (Skills) → always 3 (Experience)
     if (currentSection === 4) {
       return 3;
     }
-    
-    // Default sequential navigation
     return currentSection - 1;
   }
 
@@ -314,7 +284,6 @@ export class TracerPageComponent implements OnInit {
       return;
     }
 
-    // Validate critical sections
     if (!this.validateSection(1) || !this.validateSection(2) || !this.validateSection(3) || !this.validateSection(5)) {
       this.showAlert('error', 'Please fill in all required fields before submitting.');
       return;
@@ -332,12 +301,6 @@ export class TracerPageComponent implements OnInit {
       next: (response: ApiResponse<TracerStudyResponse>) => {
         if (response.success) {
           this.showAlert('success', 'Your tracer study response has been successfully submitted! Thank you for your feedback.');
-          
-          const form = document.getElementById('tracerForm');
-          const thankYouMessage = document.getElementById('thankYouMessage');
-          if (form) form.style.display = 'none';
-          if (thankYouMessage) thankYouMessage.classList.remove('hidden');
-
           this.hasSubmitted = true;
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }
@@ -350,17 +313,11 @@ export class TracerPageComponent implements OnInit {
         const errorMessage = error.message || error.error?.error || 'Failed to submit form. Please try again.';
 
         if (error.status === 409 || errorMessage.includes('already submitted')) {
-          this.showAlert('error', 'You have already submitted a response to this tracer study. Each user can only submit once.');
+          this.showAlert('error', 'You have already submitted a response to this tracer study.');
           this.hasSubmitted = true;
-          
-          const form = document.getElementById('tracerForm');
-          if (form) form.style.display = 'none';
-          
           window.scrollTo({ top: 0, behavior: 'smooth' });
-        } else if (error.status === 400) {
-          this.showAlert('error', errorMessage);
         } else if (error.status === 401 || error.status === 403) {
-          this.showAlert('error', 'You must be logged in to submit the form. Please log in and try again.');
+          this.showAlert('error', 'You must be logged in to submit the form.');
         } else {
           this.showAlert('error', errorMessage);
         }
@@ -370,12 +327,10 @@ export class TracerPageComponent implements OnInit {
 
   showAlert(type: 'success' | 'error', message: string): void {
     const alertDiv = document.createElement('div');
-    alertDiv.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg max-w-md animate-slide-in ${
-      type === 'success' 
-        ? 'bg-green-500 text-white' 
-        : 'bg-red-500 text-white'
+    alertDiv.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg max-w-md ${
+      type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
     }`;
-    
+
     alertDiv.innerHTML = `
       <div class="flex items-center space-x-3">
         <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'} text-2xl"></i>
@@ -388,13 +343,8 @@ export class TracerPageComponent implements OnInit {
         </button>
       </div>
     `;
-    
+
     document.body.appendChild(alertDiv);
-    
-    setTimeout(() => {
-      if (alertDiv.parentElement) {
-        alertDiv.remove();
-      }
-    }, 5000);
+    setTimeout(() => { if (alertDiv.parentElement) alertDiv.remove(); }, 5000);
   }
 }

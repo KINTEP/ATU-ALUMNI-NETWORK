@@ -1,131 +1,158 @@
-<div class="min-h-screen bg-gray-50" *ngIf="!loading; else loadingTemplate">
+<div class="min-h-screen bg-slate-50" *ngIf="!loading; else loadingTemplate">
 
   <!-- Error State -->
-  <div *ngIf="error" class="max-w-6xl mx-auto px-4 pt-6">
-    <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl">{{ error }}</div>
+  <div *ngIf="error" class="max-w-5xl mx-auto px-4 pt-6">
+    <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm">
+      <i class="fas fa-exclamation-circle mr-2"></i>{{ error }}
+    </div>
   </div>
 
-  <div *ngIf="user" class="max-w-6xl mx-auto px-4 py-6">
+  <div *ngIf="user" class="max-w-5xl mx-auto px-4 py-6">
 
-    <!-- Top Action Bar -->
-    <div class="flex items-center justify-between mb-5">
-      <button *ngIf="!isOwnProfile" (click)="goBack()"
-        class="flex items-center gap-2 text-gray-500 hover:text-gray-800 text-sm font-medium transition-colors">
-        <i class="fas fa-arrow-left"></i> Back
-      </button>
-      <div *ngIf="isOwnProfile"></div>
-      <div class="flex gap-2">
-        <button *ngIf="isOwnProfile" (click)="toggleEdit()"
-          class="flex items-center gap-2 border border-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors">
-          <i class="fas fa-edit"></i>
-          {{ isEditing ? 'Cancel Editing' : 'Edit Profile' }}
-        </button>
-        <button *ngIf="!isOwnProfile && !isConnected && !hasPendingRequest" (click)="sendConnectionRequest()"
-          class="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
-          <i class="fas fa-user-plus"></i> Connect
-        </button>
-        <button *ngIf="!isOwnProfile && hasPendingRequest" disabled
-          class="flex items-center gap-2 bg-gray-100 text-gray-400 px-4 py-2 rounded-lg text-sm font-medium cursor-not-allowed">
-          <i class="fas fa-clock"></i> Pending
-        </button>
-        <button *ngIf="!isOwnProfile && isConnected" (click)="messageUser()"
-          class="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
-          <i class="fas fa-comment"></i> Message
-        </button>
-      </div>
-    </div>
-
-    <!-- Profile Card (Cover + Avatar) -->
+    <!-- ── PROFILE HERO CARD ─────────────────────────────────────────────── -->
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 mb-5 overflow-hidden">
-      <!-- Cover -->
-      <div class="h-32 bg-blue-600 relative">
+
+      <!-- Cover Photo -->
+      <div class="relative h-44 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 overflow-hidden">
+        <!-- Pattern overlay -->
         <div class="absolute inset-0 opacity-10"
-          style="background-image: repeating-linear-gradient(45deg, #fff 0, #fff 1px, transparent 0, transparent 50%); background-size: 20px 20px;">
+          style="background-image: radial-gradient(circle at 20% 50%, white 1px, transparent 1px),
+                 radial-gradient(circle at 80% 20%, white 1px, transparent 1px);
+                 background-size: 40px 40px;">
         </div>
+
+        <!-- Cover photo if set -->
+        <img *ngIf="user.cover_photo"
+          [src]="getCoverPhotoUrl()"
+          alt="Cover"
+          class="absolute inset-0 w-full h-full object-cover">
+
+        <!-- Cover upload button (edit mode own profile) -->
+        <label *ngIf="isOwnProfile && isEditing"
+          class="absolute bottom-3 right-3 flex items-center gap-1.5 bg-black/40 hover:bg-black/60 text-white text-xs px-3 py-1.5 rounded-lg cursor-pointer backdrop-blur-sm transition-colors">
+          <i class="fas fa-camera text-xs"></i> Change Cover
+          <input type="file" accept="image/*" (change)="onCoverPhotoSelected($event)" class="hidden">
+        </label>
+
+        <!-- Cover upload button (view mode own profile) -->
+        <label *ngIf="isOwnProfile && !isEditing && !user.cover_photo"
+          class="absolute bottom-3 right-3 flex items-center gap-1.5 bg-black/30 hover:bg-black/50 text-white text-xs px-3 py-1.5 rounded-lg cursor-pointer backdrop-blur-sm transition-colors">
+          <i class="fas fa-image text-xs"></i> Add Cover Photo
+          <input type="file" accept="image/*" (change)="onCoverPhotoSelected($event)" class="hidden">
+        </label>
       </div>
 
       <div class="px-6 pb-6">
-        <!-- Avatar row -->
-        <div class="flex items-end justify-between -mt-12 mb-4">
-          <div class="relative">
-            <div *ngIf="user.profile_picture || profilePicturePreview; else noProfilePic"
-              class="w-24 h-24 rounded-2xl overflow-hidden ring-4 ring-white shadow-md">
-              <img [src]="getProfilePictureUrl(user.profile_picture)" alt="Profile"
+        <!-- Avatar + Actions row -->
+        <div class="flex items-end justify-between -mt-14 mb-4">
+          <!-- Avatar -->
+          <div class="relative flex-shrink-0">
+            <div class="w-28 h-28 rounded-2xl ring-4 ring-white shadow-lg overflow-hidden bg-blue-600 flex items-center justify-center">
+              <img *ngIf="user.profile_picture || profilePicturePreview"
+                [src]="getProfilePictureUrl(user.profile_picture)"
+                alt="Profile"
                 class="w-full h-full object-cover">
+              <span *ngIf="!user.profile_picture && !profilePicturePreview"
+                class="text-white font-bold text-3xl">{{ getInitials() }}</span>
             </div>
-            <ng-template #noProfilePic>
-              <div
-                class="w-24 h-24 rounded-2xl bg-blue-600 flex items-center justify-center text-white font-bold text-2xl ring-4 ring-white shadow-md">
-                {{ getInitials() }}
-              </div>
-            </ng-template>
-            <!-- Camera button in edit mode -->
-            <button *ngIf="isOwnProfile && isEditing"
-              class="absolute -bottom-1 -right-1 bg-white border border-gray-200 text-gray-600 rounded-lg p-1.5 shadow hover:bg-gray-50 transition">
-              <i class="fas fa-camera text-xs"></i>
-              <input type="file" accept="image/*" (change)="onProfilePictureSelected($event)"
-                class="absolute inset-0 opacity-0 cursor-pointer">
+            <!-- Camera overlay (edit mode) -->
+            <label *ngIf="isOwnProfile && isEditing"
+              class="absolute inset-0 rounded-2xl bg-black/40 flex items-center justify-center cursor-pointer opacity-0 hover:opacity-100 transition-opacity">
+              <i class="fas fa-camera text-white text-lg"></i>
+              <input type="file" accept="image/*" (change)="onProfilePictureSelected($event)" class="hidden">
+            </label>
+            <!-- Upload button when file selected -->
+            <button *ngIf="profilePictureFile" type="button" (click)="uploadProfilePicture()"
+              [disabled]="uploadingProfilePicture"
+              class="absolute -bottom-2 left-1/2 -translate-x-1/2 whitespace-nowrap bg-blue-600 text-white text-xs px-3 py-1 rounded-full shadow-md disabled:opacity-50">
+              {{ uploadingProfilePicture ? 'Uploading...' : 'Save Photo' }}
             </button>
           </div>
 
-          <!-- Stats -->
-          <div class="flex gap-8 text-center pb-1">
-            <div>
-              <p class="text-xl font-bold text-gray-800">—</p>
-              <p class="text-xs text-gray-400 mt-0.5">Connections</p>
-            </div>
-            <div>
-              <p class="text-xl font-bold text-gray-800">—</p>
-              <p class="text-xs text-gray-400 mt-0.5">Events</p>
-            </div>
-            <div>
-              <p class="text-xl font-bold text-gray-800">—</p>
-              <p class="text-xs text-gray-400 mt-0.5">Forums</p>
-            </div>
+          <!-- Action buttons -->
+          <div class="flex items-center gap-2 pb-1">
+            <button *ngIf="!isOwnProfile && !isConnected && !hasPendingRequest"
+              (click)="sendConnectionRequest()"
+              class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors">
+              <i class="fas fa-user-plus text-xs"></i> Connect
+            </button>
+            <button *ngIf="!isOwnProfile && hasPendingRequest" disabled
+              class="flex items-center gap-2 bg-gray-100 text-gray-400 px-4 py-2 rounded-xl text-sm font-medium cursor-not-allowed">
+              <i class="fas fa-clock text-xs"></i> Pending
+            </button>
+            <button *ngIf="!isOwnProfile && isConnected" (click)="messageUser()"
+              class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors">
+              <i class="fas fa-comment text-xs"></i> Message
+            </button>
+            <button *ngIf="isOwnProfile" (click)="toggleEdit()"
+              class="flex items-center gap-2 border border-gray-200 text-gray-600 hover:bg-gray-50 px-4 py-2 rounded-xl text-sm font-medium transition-colors">
+              <i class="fas fa-edit text-xs"></i>
+              {{ isEditing ? 'Cancel' : 'Edit Profile' }}
+            </button>
+            <button *ngIf="!isOwnProfile" (click)="goBack()"
+              class="flex items-center gap-2 border border-gray-200 text-gray-500 hover:bg-gray-50 px-3 py-2 rounded-xl text-sm transition-colors">
+              <i class="fas fa-arrow-left text-xs"></i> Back
+            </button>
           </div>
         </div>
 
-        <!-- Name & Info -->
+        <!-- Name, role, meta -->
         <div class="flex items-start justify-between">
-          <div>
-            <h1 class="text-2xl font-bold text-gray-900">{{ user.first_name }} {{ user.last_name }}</h1>
-            <p class="text-gray-500 text-sm mt-0.5">{{ user.job_title || 'Alumni' }}
-              <span *ngIf="user.current_company"> · {{ user.current_company }}</span>
+          <div class="flex-1">
+            <h1 class="text-2xl font-bold text-gray-900">
+              {{ user.first_name }} {{ user.other_name ? user.other_name + ' ' : '' }}{{ user.last_name }}
+            </h1>
+            <p class="text-gray-500 text-sm mt-0.5">
+              {{ user.job_title || 'Alumni' }}
+              <span *ngIf="user.current_company" class="text-gray-400"> · {{ user.current_company }}</span>
             </p>
-            <div class="flex flex-wrap items-center gap-3 mt-2">
-              <span *ngIf="user.program_of_study" class="flex items-center gap-1 text-xs text-gray-400">
-                <i class="fas fa-graduation-cap"></i>
-                {{ user.program_of_study }}{{ user.graduation_year ? ', ' + user.graduation_year : '' }}
+
+            <!-- Meta chips -->
+            <div class="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-3">
+              <span *ngIf="safeProgram(user.program_of_study) || user.graduation_year"
+                class="flex items-center gap-1.5 text-xs text-gray-500">
+                <i class="fas fa-graduation-cap text-blue-400"></i>
+                <span>
+                  {{ safeProgram(user.program_of_study) || 'ATU' }}
+                  <span *ngIf="user.graduation_year"> · Class of {{ user.graduation_year }}</span>
+                </span>
+              </span>
+              <span *ngIf="user.faculty" class="flex items-center gap-1.5 text-xs text-gray-500">
+                <i class="fas fa-university text-blue-400"></i>
+                {{ user.faculty }}
               </span>
               <span *ngIf="user.current_city || user.current_country"
-                class="flex items-center gap-1 text-xs text-gray-400">
-                <i class="fas fa-map-marker-alt"></i>
-                {{ user.current_city }}{{ user.current_city && user.current_country ? ', ' : '' }}{{ user.current_country }}
+                class="flex items-center gap-1.5 text-xs text-gray-500">
+                <i class="fas fa-map-marker-alt text-blue-400"></i>
+                {{ (user.current_city && user.current_country) ? user.current_city + ', ' + user.current_country : (user.current_city || user.current_country) }}
               </span>
-              <span *ngIf="user.show_email && user.email" class="flex items-center gap-1 text-xs text-gray-400">
-                <i class="fas fa-envelope"></i>{{ user.email }}
-              </span>
+              <a *ngIf="user.show_email && user.email"
+                href="mailto:{{ user.email }}"
+                class="flex items-center gap-1.5 text-xs text-gray-500 hover:text-blue-600 transition-colors">
+                <i class="fas fa-envelope text-blue-400"></i>{{ user.email }}
+              </a>
               <span *ngIf="user.show_phone && user.phone_number"
-                class="flex items-center gap-1 text-xs text-gray-400">
-                <i class="fas fa-phone"></i>{{ user.phone_number }}
+                class="flex items-center gap-1.5 text-xs text-gray-500">
+                <i class="fas fa-phone text-blue-400"></i>{{ user.phone_number }}
               </span>
             </div>
-            <!-- Social Links -->
-            <div class="flex gap-3 mt-3">
+
+            <!-- Social links -->
+            <div class="flex items-center gap-3 mt-3">
               <a *ngIf="user.linkedin_url" [href]="user.linkedin_url" target="_blank"
-                class="text-gray-400 hover:text-blue-600 transition-colors text-sm">
+                class="w-7 h-7 flex items-center justify-center rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors text-xs">
                 <i class="fab fa-linkedin"></i>
               </a>
               <a *ngIf="user.twitter_url" [href]="user.twitter_url" target="_blank"
-                class="text-gray-400 hover:text-sky-500 transition-colors text-sm">
+                class="w-7 h-7 flex items-center justify-center rounded-lg bg-sky-50 text-sky-500 hover:bg-sky-100 transition-colors text-xs">
                 <i class="fab fa-twitter"></i>
               </a>
               <a *ngIf="user.facebook_url" [href]="user.facebook_url" target="_blank"
-                class="text-gray-400 hover:text-blue-700 transition-colors text-sm">
+                class="w-7 h-7 flex items-center justify-center rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors text-xs">
                 <i class="fab fa-facebook"></i>
               </a>
               <a *ngIf="user.website_url" [href]="user.website_url" target="_blank"
-                class="text-gray-400 hover:text-gray-700 transition-colors text-sm">
+                class="w-7 h-7 flex items-center justify-center rounded-lg bg-gray-50 text-gray-500 hover:bg-gray-100 transition-colors text-xs">
                 <i class="fas fa-globe"></i>
               </a>
             </div>
@@ -134,67 +161,77 @@
       </div>
     </div>
 
-    <!-- VIEW MODE -->
+    <!-- ── VIEW MODE ──────────────────────────────────────────────────────── -->
     <div *ngIf="!isEditing" class="grid grid-cols-12 gap-5">
 
-      <!-- Main -->
+      <!-- Main column -->
       <div class="col-span-8 space-y-5">
 
         <!-- About -->
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-          <h3 class="text-base font-semibold text-gray-800 mb-3">About</h3>
-          <p *ngIf="user.bio; else noBio" class="text-gray-600 text-sm leading-relaxed">{{ user.bio }}</p>
-          <ng-template #noBio>
-            <p class="text-gray-400 text-sm italic">No bio added yet.</p>
-          </ng-template>
+          <h3 class="text-sm font-semibold text-gray-800 uppercase tracking-wider mb-3">About</h3>
+          <p *ngIf="user.bio" class="text-gray-600 text-sm leading-relaxed">{{ user.bio }}</p>
+          <p *ngIf="!user.bio" class="text-gray-400 text-sm italic">
+            {{ isOwnProfile ? 'Add a bio to tell fellow alumni about yourself.' : 'No bio added yet.' }}
+          </p>
         </div>
 
         <!-- Education & Experience -->
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
           <div class="grid grid-cols-2 gap-8">
+
             <!-- Education -->
             <div>
-              <h3 class="text-base font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                <i class="fas fa-graduation-cap text-blue-500 text-sm"></i> Education
+              <h3 class="text-sm font-semibold text-gray-800 uppercase tracking-wider mb-4 flex items-center gap-2">
+                <i class="fas fa-graduation-cap text-blue-500 text-xs"></i> Education
               </h3>
-              <div *ngIf="user.program_of_study || user.graduation_year; else noEdu"
+              <div *ngIf="safeProgram(user.program_of_study) || user.graduation_year || user.faculty; else noEdu"
                 class="flex items-start gap-3">
-                <div class="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center flex-shrink-0">
+                <div class="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5">
                   <i class="fas fa-university text-blue-600 text-sm"></i>
                 </div>
                 <div>
-                  <p class="font-semibold text-gray-800 text-sm">{{ user.faculty || 'Accra Technical University' }}</p>
-                  <p class="text-xs text-gray-500 mt-0.5">{{ user.program_of_study }}
-                    <span *ngIf="user.major">, {{ user.major }}</span>
-                    <span *ngIf="user.graduation_year"> ({{ user.graduation_year }})</span>
+                  <p class="font-semibold text-gray-800 text-sm">
+                    {{ user.faculty || 'Accra Technical University' }}
                   </p>
-                  <p class="text-xs text-gray-400 mt-0.5" *ngIf="user.department">{{ user.department }}</p>
+                  <p class="text-xs text-gray-500 mt-0.5">
+                    {{ safeProgram(user.program_of_study) || 'Programme not specified' }}
+                    <span *ngIf="user.major"> · {{ user.major }}</span>
+                  </p>
+                  <p class="text-xs text-gray-400 mt-0.5">
+                    <span *ngIf="user.department">{{ user.department }}</span>
+                    <span *ngIf="user.department && user.graduation_year"> · </span>
+                    <span *ngIf="user.graduation_year">Class of {{ user.graduation_year }}</span>
+                  </p>
                 </div>
               </div>
               <ng-template #noEdu>
-                <p class="text-gray-400 text-sm">No education info added</p>
+                <p class="text-gray-400 text-sm italic">No education info added</p>
               </ng-template>
             </div>
 
             <!-- Experience -->
             <div>
-              <h3 class="text-base font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                <i class="fas fa-briefcase text-blue-500 text-sm"></i> Experience
+              <h3 class="text-sm font-semibold text-gray-800 uppercase tracking-wider mb-4 flex items-center gap-2">
+                <i class="fas fa-briefcase text-blue-500 text-xs"></i> Experience
               </h3>
-              <div *ngIf="user.current_company || user.job_title; else noExp" class="flex items-start gap-3">
-                <div class="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center flex-shrink-0">
+              <div *ngIf="user.current_company || user.job_title; else noExp"
+                class="flex items-start gap-3">
+                <div class="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5">
                   <i class="fas fa-building text-blue-600 text-sm"></i>
                 </div>
                 <div>
-                  <p class="font-semibold text-gray-800 text-sm">{{ user.current_company }}</p>
-                  <p class="text-xs text-gray-500 mt-0.5">{{ user.job_title }}
-                    <span *ngIf="user.years_of_experience"> · {{ user.years_of_experience }} yrs</span>
+                  <p class="font-semibold text-gray-800 text-sm">{{ user.current_company || 'Company not specified' }}</p>
+                  <p class="text-xs text-gray-500 mt-0.5">{{ user.job_title }}</p>
+                  <p class="text-xs text-gray-400 mt-0.5">
+                    <span *ngIf="user.industry">{{ user.industry }}</span>
+                    <span *ngIf="user.industry && user.years_of_experience"> · </span>
+                    <span *ngIf="user.years_of_experience">{{ user.years_of_experience }} yrs exp.</span>
                   </p>
-                  <p class="text-xs text-gray-400 mt-0.5" *ngIf="user.industry">{{ user.industry }}</p>
                 </div>
               </div>
               <ng-template #noExp>
-                <p class="text-gray-400 text-sm">No experience added</p>
+                <p class="text-gray-400 text-sm italic">No experience added</p>
               </ng-template>
             </div>
           </div>
@@ -203,8 +240,8 @@
         <!-- Skills -->
         <div *ngIf="user.skills && user.skills.length > 0"
           class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-          <h3 class="text-base font-semibold text-gray-800 mb-4 flex items-center gap-2">
-            <i class="fas fa-star text-blue-500 text-sm"></i> Skills & Expertise
+          <h3 class="text-sm font-semibold text-gray-800 uppercase tracking-wider mb-4 flex items-center gap-2">
+            <i class="fas fa-star text-blue-500 text-xs"></i> Skills & Expertise
           </h3>
           <div class="flex flex-wrap gap-2">
             <span *ngFor="let skill of user.skills"
@@ -214,58 +251,107 @@
           </div>
         </div>
 
+        <!-- Interests -->
+        <div *ngIf="user.interests && user.interests.length > 0"
+          class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+          <h3 class="text-sm font-semibold text-gray-800 uppercase tracking-wider mb-4 flex items-center gap-2">
+            <i class="fas fa-heart text-blue-500 text-xs"></i> Interests
+          </h3>
+          <div class="flex flex-wrap gap-2">
+            <span *ngFor="let interest of user.interests"
+              class="bg-indigo-50 text-indigo-700 border border-indigo-100 px-3 py-1.5 rounded-lg text-xs font-medium">
+              {{ interest }}
+            </span>
+          </div>
+        </div>
+
       </div>
 
-      <!-- Right Sidebar -->
+      <!-- Right sidebar -->
       <div class="col-span-4 space-y-4">
 
-        <!-- Actions (for other profile) -->
+        <!-- CTA card for other profiles -->
         <div *ngIf="!isOwnProfile" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 space-y-2">
           <button *ngIf="!isConnected && !hasPendingRequest" (click)="sendConnectionRequest()"
-            class="w-full bg-blue-600 text-white py-2.5 rounded-xl text-sm font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-2">
-            <i class="fas fa-user-plus"></i> Send Connection Request
+            class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-xl text-sm font-medium transition-colors flex items-center justify-center gap-2">
+            <i class="fas fa-user-plus text-xs"></i> Send Connection Request
           </button>
           <button *ngIf="hasPendingRequest" disabled
             class="w-full bg-gray-100 text-gray-400 py-2.5 rounded-xl text-sm font-medium cursor-not-allowed flex items-center justify-center gap-2">
-            <i class="fas fa-clock"></i> Request Pending
+            <i class="fas fa-clock text-xs"></i> Request Pending
           </button>
           <button *ngIf="isConnected" (click)="messageUser()"
-            class="w-full bg-blue-600 text-white py-2.5 rounded-xl text-sm font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-2">
-            <i class="fas fa-comment"></i> Send Message
+            class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-xl text-sm font-medium transition-colors flex items-center justify-center gap-2">
+            <i class="fas fa-comment text-xs"></i> Send Message
           </button>
         </div>
 
         <!-- Share (own profile) -->
         <div *ngIf="isOwnProfile" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
           <button
-            class="w-full border border-gray-200 text-gray-600 py-2.5 rounded-xl text-sm font-medium hover:bg-gray-50 transition-colors flex items-center justify-center gap-2">
-            <i class="fas fa-share-alt"></i> Share Profile
+            class="w-full border border-gray-200 text-gray-600 hover:bg-gray-50 py-2.5 rounded-xl text-sm font-medium transition-colors flex items-center justify-center gap-2">
+            <i class="fas fa-share-alt text-xs"></i> Share Profile
           </button>
         </div>
 
-        <!-- Profile Details -->
+        <!-- Profile details -->
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
-          <h3 class="text-sm font-semibold text-gray-700 mb-3">Details</h3>
+          <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Details</h3>
           <div class="space-y-2.5">
             <div *ngIf="user.student_id" class="flex items-center gap-3">
-              <i class="fas fa-id-card text-gray-300 w-4 text-center text-xs"></i>
+              <div class="w-6 flex justify-center flex-shrink-0">
+                <i class="fas fa-id-card text-gray-300 text-xs"></i>
+              </div>
               <span class="text-xs text-gray-600">{{ user.student_id }}</span>
             </div>
+            <div *ngIf="user.graduation_year" class="flex items-center gap-3">
+              <div class="w-6 flex justify-center flex-shrink-0">
+                <i class="fas fa-calendar text-gray-300 text-xs"></i>
+              </div>
+              <span class="text-xs text-gray-600">Class of {{ user.graduation_year }}</span>
+            </div>
             <div *ngIf="user.faculty" class="flex items-center gap-3">
-              <i class="fas fa-university text-gray-300 w-4 text-center text-xs"></i>
+              <div class="w-6 flex justify-center flex-shrink-0">
+                <i class="fas fa-university text-gray-300 text-xs"></i>
+              </div>
               <span class="text-xs text-gray-600">{{ user.faculty }}</span>
             </div>
             <div *ngIf="user.department" class="flex items-center gap-3">
-              <i class="fas fa-sitemap text-gray-300 w-4 text-center text-xs"></i>
+              <div class="w-6 flex justify-center flex-shrink-0">
+                <i class="fas fa-sitemap text-gray-300 text-xs"></i>
+              </div>
               <span class="text-xs text-gray-600">{{ user.department }}</span>
             </div>
             <div *ngIf="user.industry" class="flex items-center gap-3">
-              <i class="fas fa-industry text-gray-300 w-4 text-center text-xs"></i>
+              <div class="w-6 flex justify-center flex-shrink-0">
+                <i class="fas fa-industry text-gray-300 text-xs"></i>
+              </div>
               <span class="text-xs text-gray-600">{{ user.industry }}</span>
             </div>
             <div *ngIf="user.hometown" class="flex items-center gap-3">
-              <i class="fas fa-home text-gray-300 w-4 text-center text-xs"></i>
+              <div class="w-6 flex justify-center flex-shrink-0">
+                <i class="fas fa-home text-gray-300 text-xs"></i>
+              </div>
               <span class="text-xs text-gray-600">From {{ user.hometown }}</span>
+            </div>
+            <!-- Empty state -->
+            <p *ngIf="!user.student_id && !user.graduation_year && !user.faculty && !user.department && !user.industry && !user.hometown"
+              class="text-gray-400 text-xs italic">No details added yet.</p>
+          </div>
+        </div>
+
+        <!-- Member since -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
+          <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Member Since</h3>
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center flex-shrink-0">
+              <i class="fas fa-user-check text-blue-600 text-xs"></i>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-gray-700">
+                {{ user.created_at | date:'MMMM yyyy' }}
+              </p>
+              <p class="text-xs text-gray-400">ATU Alumni Network</p>
             </div>
           </div>
         </div>
@@ -273,80 +359,88 @@
       </div>
     </div>
 
-    <!-- EDIT MODE -->
-    <div *ngIf="isEditing" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-      <h3 class="text-lg font-semibold text-gray-800 mb-6 pb-4 border-b border-gray-100">Edit Profile</h3>
+    <!-- ── EDIT MODE ──────────────────────────────────────────────────────── -->
+    <div *ngIf="isEditing" class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
 
-      <form (ngSubmit)="saveProfile()" #profileForm="ngForm" class="space-y-8">
+      <!-- Edit header -->
+      <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+        <h3 class="text-base font-semibold text-gray-800">Edit Profile</h3>
+        <div class="flex gap-2">
+          <button type="button" (click)="cancelEdit()"
+            class="border border-gray-200 text-gray-600 px-4 py-2 rounded-xl text-sm font-medium hover:bg-gray-50 transition-colors">
+            Cancel
+          </button>
+          <button type="button" (click)="saveProfile()"
+            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors flex items-center gap-2">
+            <i class="fas fa-save text-xs"></i> Save Changes
+          </button>
+        </div>
+      </div>
 
-        <!-- Profile Picture -->
-        <div>
-          <h4 class="text-sm font-semibold text-gray-700 mb-3">Profile Picture</h4>
+      <form (ngSubmit)="saveProfile()" #profileForm="ngForm" class="divide-y divide-gray-50">
+
+        <!-- Profile Picture section -->
+        <div class="px-6 py-5">
+          <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">Profile Photo</h4>
           <div class="flex items-center gap-4">
-            <div class="w-16 h-16 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0 flex items-center justify-center">
+            <div class="w-16 h-16 rounded-xl overflow-hidden bg-blue-600 flex-shrink-0 flex items-center justify-center shadow-sm">
               <img *ngIf="profilePicturePreview || user.profile_picture"
-                [src]="getProfilePictureUrl(user.profile_picture)" alt="Profile"
-                class="w-full h-full object-cover">
-              <i *ngIf="!profilePicturePreview && !user.profile_picture"
-                class="fas fa-user text-gray-300 text-xl"></i>
+                [src]="getProfilePictureUrl(user.profile_picture)"
+                alt="Profile" class="w-full h-full object-cover">
+              <span *ngIf="!profilePicturePreview && !user.profile_picture"
+                class="text-white font-bold text-xl">{{ getInitials() }}</span>
             </div>
-            <div class="flex items-center gap-2">
-              <input type="file" accept="image/*" (change)="onProfilePictureSelected($event)" #profilePicInput
-                class="hidden">
-              <button type="button" (click)="profilePicInput.click()"
-                class="border border-gray-200 text-gray-600 px-3 py-2 rounded-lg text-xs font-medium hover:bg-gray-50 transition">
-                <i class="fas fa-upload mr-1"></i>Choose
-              </button>
+            <div class="flex items-center gap-2 flex-wrap">
+              <label class="flex items-center gap-1.5 border border-gray-200 text-gray-600 px-3 py-2 rounded-lg text-xs font-medium hover:bg-gray-50 transition cursor-pointer">
+                <i class="fas fa-upload"></i> Choose Photo
+                <input type="file" accept="image/*" (change)="onProfilePictureSelected($event)" class="hidden">
+              </label>
               <button *ngIf="profilePictureFile" type="button" (click)="uploadProfilePicture()"
                 [disabled]="uploadingProfilePicture"
                 class="bg-blue-600 text-white px-3 py-2 rounded-lg text-xs font-medium hover:bg-blue-700 transition disabled:opacity-50">
                 {{ uploadingProfilePicture ? 'Uploading...' : 'Upload' }}
               </button>
               <button *ngIf="profilePicturePreview" type="button" (click)="removeProfilePicturePreview()"
-                class="text-red-500 text-xs hover:text-red-600">
-                <i class="fas fa-times mr-1"></i>Remove
+                class="text-red-500 hover:text-red-600 text-xs px-2 py-2 rounded-lg hover:bg-red-50 transition">
+                <i class="fas fa-times"></i> Remove
               </button>
             </div>
           </div>
         </div>
 
         <!-- Personal Info -->
-        <div>
-          <h4 class="text-sm font-semibold text-gray-700 mb-4">Personal Information</h4>
+        <div class="px-6 py-5">
+          <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">Personal Information</h4>
           <div class="grid grid-cols-2 gap-4">
             <div>
               <label class="block text-xs font-medium text-gray-600 mb-1.5">First Name *</label>
-              <input type="text" [(ngModel)]="editForm.first_name" name="first_name"
-                placeholder="First Name"
-                class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+              <input type="text" [(ngModel)]="editForm.first_name" name="first_name" required
+                class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
             </div>
             <div>
               <label class="block text-xs font-medium text-gray-600 mb-1.5">Last Name *</label>
-              <input type="text" [(ngModel)]="editForm.last_name" name="last_name"
-                placeholder="Last Name"
-                class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+              <input type="text" [(ngModel)]="editForm.last_name" name="last_name" required
+                class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
             </div>
             <div>
               <label class="block text-xs font-medium text-gray-600 mb-1.5">Other Name</label>
-              <input type="text" [(ngModel)]="editForm.other_name" name="other_name"
-                placeholder="Middle Name"
-                class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <input type="text" [(ngModel)]="editForm.other_name" name="other_name" placeholder="Middle name"
+                class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
             </div>
             <div>
               <label class="block text-xs font-medium text-gray-600 mb-1.5">Phone Number</label>
-              <input type="text" [(ngModel)]="editForm.phone_number" name="phone_number"
-                placeholder="+233 XX XXX XXXX"
-                class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <input type="text" [(ngModel)]="editForm.phone_number" name="phone_number" placeholder="+233 XX XXX XXXX"
+                class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
             </div>
             <div>
               <label class="block text-xs font-medium text-gray-600 mb-1.5">Date of Birth</label>
               <input type="date" [(ngModel)]="editForm.date_of_birth" name="date_of_birth"
-                class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
             </div>
             <div>
               <label class="block text-xs font-medium text-gray-600 mb-1.5">Gender</label>
               <select [(ngModel)]="editForm.gender" name="gender"
-                class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
                 <option value="">Select Gender</option>
                 <option value="male">Male</option>
                 <option value="female">Female</option>
@@ -355,171 +449,242 @@
               </select>
             </div>
           </div>
+          <!-- Bio -->
+          <div class="mt-4">
+            <label class="block text-xs font-medium text-gray-600 mb-1.5">Bio</label>
+            <textarea [(ngModel)]="editForm.bio" name="bio" rows="3"
+              placeholder="Tell fellow alumni about yourself..."
+              class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"></textarea>
+          </div>
         </div>
 
         <!-- Academic Info -->
-        <div>
-          <h4 class="text-sm font-semibold text-gray-700 mb-4">Academic Information</h4>
+        <div class="px-6 py-5">
+          <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">Academic Information</h4>
           <div class="grid grid-cols-2 gap-4">
+
+            <!-- Student ID -->
             <div>
-              <label class="block text-xs font-medium text-gray-600 mb-1.5">Student ID</label>
-              <input type="text" [(ngModel)]="editForm.student_id" name="student_id"
-                placeholder="Student ID"
-                class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <label class="block text-xs font-medium text-gray-600 mb-1.5">Student ID / Index No.</label>
+              <input type="text" [(ngModel)]="editForm.student_id" name="student_id" placeholder="ATU/2020/001"
+                class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
             </div>
+
+            <!-- Graduation Year -->
             <div>
               <label class="block text-xs font-medium text-gray-600 mb-1.5">Graduation Year</label>
-              <input type="number" [(ngModel)]="editForm.graduation_year" name="graduation_year"
-                placeholder="2020"
-                class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <input type="number" [(ngModel)]="editForm.graduation_year" name="graduation_year" placeholder="2020"
+                class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
             </div>
+
+            <!-- Level of Study -->
             <div>
-              <label class="block text-xs font-medium text-gray-600 mb-1.5">Program of Study</label>
-              <input type="text" [(ngModel)]="editForm.program_of_study" name="program_of_study"
-                placeholder="Computer Science"
-                class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <label class="block text-xs font-medium text-gray-600 mb-1.5">Level of Study</label>
+              <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <i class="fas fa-layer-group text-gray-300 text-xs"></i>
+                </div>
+                <select name="edit_level" [ngModel]="editLevel" (ngModelChange)="onEditLevelChange($event)"
+                  class="w-full pl-9 pr-8 border border-gray-200 rounded-xl py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white appearance-none">
+                  <option value="">Select level</option>
+                  <option *ngFor="let l of programLevels" [value]="l.code">{{ l.label }}</option>
+                </select>
+                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                  <i class="fas fa-chevron-down text-gray-300 text-xs"></i>
+                </div>
+              </div>
             </div>
+
+            <!-- Programme of Study -->
             <div>
-              <label class="block text-xs font-medium text-gray-600 mb-1.5">Major</label>
-              <input type="text" [(ngModel)]="editForm.major" name="major"
-                placeholder="Software Engineering"
-                class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <label class="block text-xs font-medium text-gray-600 mb-1.5">Programme of Study</label>
+              <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <i class="fas fa-book-open text-gray-300 text-xs"></i>
+                </div>
+                <select [ngModel]="editForm.program_of_study" name="program_of_study"
+                  (ngModelChange)="onEditProgrammeChange($event)"
+                  class="w-full pl-9 pr-8 border border-gray-200 rounded-xl py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white appearance-none">
+                  <option value="">{{ editLevel ? 'Select programme' : 'Select a level first' }}</option>
+                  <option *ngFor="let p of editFilteredPrograms" [value]="p.name">{{ p.name }}</option>
+                </select>
+                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                  <i class="fas fa-chevron-down text-gray-300 text-xs"></i>
+                </div>
+              </div>
             </div>
+
+            <!-- Faculty -->
             <div>
               <label class="block text-xs font-medium text-gray-600 mb-1.5">Faculty</label>
-              <input type="text" [(ngModel)]="editForm.faculty" name="faculty"
-                placeholder="Faculty of Computing"
-                class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <i class="fas fa-university text-gray-300 text-xs"></i>
+                </div>
+                <select [ngModel]="editForm.faculty" (ngModelChange)="onEditFacultyChange($event)"
+                  name="faculty"
+                  class="w-full pl-9 pr-8 border border-gray-200 rounded-xl py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white appearance-none">
+                  <option value="">Select faculty</option>
+                  <option *ngFor="let fac of faculties" [value]="fac.name">{{ fac.name }}</option>
+                </select>
+                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                  <i class="fas fa-chevron-down text-gray-300 text-xs"></i>
+                </div>
+              </div>
             </div>
+
+            <!-- Department -->
             <div>
               <label class="block text-xs font-medium text-gray-600 mb-1.5">Department</label>
-              <input type="text" [(ngModel)]="editForm.department" name="department"
-                placeholder="Computer Science Dept."
-                class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <i class="fas fa-sitemap text-gray-300 text-xs"></i>
+                </div>
+                <select [(ngModel)]="editForm.department" name="department"
+                  class="w-full pl-9 pr-8 border border-gray-200 rounded-xl py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white appearance-none">
+                  <option value="">{{ editForm.faculty ? 'Select department' : 'Select a faculty first' }}</option>
+                  <option *ngFor="let dept of editFilteredDepartments" [value]="dept.name">{{ dept.name }}</option>
+                </select>
+                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                  <i class="fas fa-chevron-down text-gray-300 text-xs"></i>
+                </div>
+              </div>
             </div>
+
+            <!-- Major -->
+            <div class="col-span-2">
+              <label class="block text-xs font-medium text-gray-600 mb-1.5">Major / Specialisation</label>
+              <input type="text" [(ngModel)]="editForm.major" name="major" placeholder="e.g. Software Engineering"
+                class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+
           </div>
         </div>
 
         <!-- Professional Info -->
-        <div>
-          <h4 class="text-sm font-semibold text-gray-700 mb-4">Professional Information</h4>
+        <div class="px-6 py-5">
+          <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">Professional Information</h4>
           <div class="grid grid-cols-2 gap-4">
             <div>
               <label class="block text-xs font-medium text-gray-600 mb-1.5">Current Company</label>
-              <input type="text" [(ngModel)]="editForm.current_company" name="current_company"
-                placeholder="Company Name"
-                class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <input type="text" [(ngModel)]="editForm.current_company" name="current_company" placeholder="Company Name"
+                class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
             </div>
             <div>
               <label class="block text-xs font-medium text-gray-600 mb-1.5">Job Title</label>
-              <input type="text" [(ngModel)]="editForm.job_title" name="job_title"
-                placeholder="Software Engineer"
-                class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <input type="text" [(ngModel)]="editForm.job_title" name="job_title" placeholder="e.g. Software Engineer"
+                class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
             </div>
             <div>
               <label class="block text-xs font-medium text-gray-600 mb-1.5">Industry</label>
-              <input type="text" [(ngModel)]="editForm.industry" name="industry"
-                placeholder="Technology"
-                class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <input type="text" [(ngModel)]="editForm.industry" name="industry" placeholder="e.g. Technology"
+                class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
             </div>
             <div>
               <label class="block text-xs font-medium text-gray-600 mb-1.5">Years of Experience</label>
-              <input type="number" [(ngModel)]="editForm.years_of_experience" name="years_of_experience"
-                placeholder="5"
-                class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <input type="number" [(ngModel)]="editForm.years_of_experience" name="years_of_experience" placeholder="5"
+                class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
             </div>
           </div>
         </div>
 
         <!-- Location -->
-        <div>
-          <h4 class="text-sm font-semibold text-gray-700 mb-4">Location</h4>
+        <div class="px-6 py-5">
+          <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">Location</h4>
           <div class="grid grid-cols-2 gap-4">
             <div>
               <label class="block text-xs font-medium text-gray-600 mb-1.5">Current City</label>
               <input type="text" [(ngModel)]="editForm.current_city" name="current_city" placeholder="Accra"
-                class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
             </div>
             <div>
               <label class="block text-xs font-medium text-gray-600 mb-1.5">Current Country</label>
-              <input type="text" [(ngModel)]="editForm.current_country" name="current_country"
-                placeholder="Ghana"
-                class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <input type="text" [(ngModel)]="editForm.current_country" name="current_country" placeholder="Ghana"
+                class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
             </div>
             <div class="col-span-2">
               <label class="block text-xs font-medium text-gray-600 mb-1.5">Hometown</label>
-              <input type="text" [(ngModel)]="editForm.hometown" name="hometown" placeholder="Kumasi"
-                class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <input type="text" [(ngModel)]="editForm.hometown" name="hometown" placeholder="e.g. Kumasi"
+                class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
             </div>
           </div>
-        </div>
-
-        <!-- Bio -->
-        <div>
-          <h4 class="text-sm font-semibold text-gray-700 mb-4">Bio</h4>
-          <textarea [(ngModel)]="editForm.bio" name="bio" rows="4"
-            placeholder="Tell fellow alumni about yourself..."
-            class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"></textarea>
         </div>
 
         <!-- Social Links -->
-        <div>
-          <h4 class="text-sm font-semibold text-gray-700 mb-4">Social Links</h4>
+        <div class="px-6 py-5">
+          <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">Social Links</h4>
           <div class="space-y-3">
             <div class="flex items-center gap-3">
-              <i class="fab fa-linkedin text-blue-600 w-5 text-center"></i>
+              <div class="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center flex-shrink-0">
+                <i class="fab fa-linkedin text-blue-600 text-sm"></i>
+              </div>
               <input type="url" [(ngModel)]="editForm.linkedin_url" name="linkedin_url"
                 placeholder="https://linkedin.com/in/yourprofile"
-                class="flex-1 border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                class="flex-1 border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
             </div>
             <div class="flex items-center gap-3">
-              <i class="fab fa-twitter text-sky-500 w-5 text-center"></i>
+              <div class="w-8 h-8 bg-sky-50 rounded-lg flex items-center justify-center flex-shrink-0">
+                <i class="fab fa-twitter text-sky-500 text-sm"></i>
+              </div>
               <input type="url" [(ngModel)]="editForm.twitter_url" name="twitter_url"
                 placeholder="https://twitter.com/yourhandle"
-                class="flex-1 border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                class="flex-1 border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
             </div>
             <div class="flex items-center gap-3">
-              <i class="fab fa-facebook text-blue-700 w-5 text-center"></i>
+              <div class="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center flex-shrink-0">
+                <i class="fab fa-facebook text-blue-700 text-sm"></i>
+              </div>
               <input type="url" [(ngModel)]="editForm.facebook_url" name="facebook_url"
                 placeholder="https://facebook.com/yourprofile"
-                class="flex-1 border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                class="flex-1 border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
             </div>
             <div class="flex items-center gap-3">
-              <i class="fas fa-globe text-gray-400 w-5 text-center"></i>
+              <div class="w-8 h-8 bg-gray-50 rounded-lg flex items-center justify-center flex-shrink-0">
+                <i class="fas fa-globe text-gray-400 text-sm"></i>
+              </div>
               <input type="url" [(ngModel)]="editForm.website_url" name="website_url"
                 placeholder="https://yourwebsite.com"
-                class="flex-1 border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                class="flex-1 border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
             </div>
           </div>
         </div>
 
-        <!-- Privacy -->
-        <div>
-          <h4 class="text-sm font-semibold text-gray-700 mb-4">Privacy Settings</h4>
+        <!-- Privacy Settings -->
+        <div class="px-6 py-5">
+          <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">Privacy Settings</h4>
           <div class="space-y-3">
-            <label class="flex items-center gap-3 cursor-pointer">
-              <input type="checkbox" [(ngModel)]="editForm.show_email" name="show_email"
-                class="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-              <span class="text-sm text-gray-600">Show email on profile</span>
+            <label class="flex items-center gap-3 cursor-pointer group">
+              <div class="relative">
+                <input type="checkbox" [(ngModel)]="editForm.show_email" name="show_email"
+                  class="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+              </div>
+              <span class="text-sm text-gray-600 group-hover:text-gray-800 transition-colors">
+                Show email address on profile
+              </span>
             </label>
-            <label class="flex items-center gap-3 cursor-pointer">
+            <label class="flex items-center gap-3 cursor-pointer group">
               <input type="checkbox" [(ngModel)]="editForm.show_phone" name="show_phone"
                 class="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-              <span class="text-sm text-gray-600">Show phone number on profile</span>
+              <span class="text-sm text-gray-600 group-hover:text-gray-800 transition-colors">
+                Show phone number on profile
+              </span>
             </label>
           </div>
         </div>
 
-        <!-- Actions -->
-        <div class="flex gap-3 pt-4 border-t border-gray-100">
-          <button type="submit"
-            class="bg-blue-600 text-white px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-blue-700 transition-colors flex items-center gap-2">
-            <i class="fas fa-save"></i> Save Changes
-          </button>
-          <button type="button" (click)="cancelEdit()"
-            class="border border-gray-200 text-gray-600 px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-gray-50 transition-colors flex items-center gap-2">
-            <i class="fas fa-times"></i> Cancel
-          </button>
+        <!-- Bottom save bar -->
+        <div class="px-6 py-4 bg-gray-50 flex items-center justify-between">
+          <p class="text-xs text-gray-400">All changes are saved to your profile immediately.</p>
+          <div class="flex gap-2">
+            <button type="button" (click)="cancelEdit()"
+              class="border border-gray-200 text-gray-600 px-4 py-2 rounded-xl text-sm font-medium hover:bg-white transition-colors">
+              Cancel
+            </button>
+            <button type="submit"
+              class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-xl text-sm font-medium transition-colors flex items-center gap-2">
+              <i class="fas fa-save text-xs"></i> Save Changes
+            </button>
+          </div>
         </div>
 
       </form>
@@ -530,7 +695,10 @@
 
 <!-- Loading -->
 <ng-template #loadingTemplate>
-  <div class="flex justify-center items-center py-24">
-    <div class="animate-spin rounded-full h-10 w-10 border-2 border-gray-200 border-t-blue-600"></div>
+  <div class="flex justify-center items-center py-32">
+    <div class="flex flex-col items-center gap-3">
+      <div class="animate-spin rounded-full h-10 w-10 border-2 border-gray-200 border-t-blue-600"></div>
+      <p class="text-sm text-gray-400">Loading profile...</p>
+    </div>
   </div>
 </ng-template>

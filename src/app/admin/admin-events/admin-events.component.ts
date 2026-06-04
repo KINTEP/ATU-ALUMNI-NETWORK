@@ -21,22 +21,22 @@ export class AdminEventsComponent implements OnInit {
   events: AlumniEvent[] = [];
   filteredEvents: AlumniEvent[] = [];
   selectedEvents: number[] = [];
-  
+
   // Filters
   searchQuery = '';
   selectedType = 'all';
   selectedStatus = 'all';
   currentTab = 'all';
-  
+
   // Pagination
   currentPage = 1;
   pageSize = 10;
   totalEvents = 0;
   totalPages = 0;
-  
+
   // Loading states
   isLoading = false;
-  
+
   // Statistics
   stats = {
     total: 0,
@@ -47,8 +47,7 @@ export class AdminEventsComponent implements OnInit {
     avgAttendance: 0
   };
 
-    Math = Math;
-
+  Math = Math;
 
   constructor(
     private router: Router,
@@ -57,7 +56,6 @@ export class AdminEventsComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // Get current user
     this.authService.currentUser$.subscribe(user => {
       this.currentUser = user;
       if (user) {
@@ -68,8 +66,25 @@ export class AdminEventsComponent implements OnInit {
   }
 
   /**
-   * Load events
+   * Compute the real status from event dates, ignoring the DB status field.
    */
+  getComputedStatus(event: AlumniEvent): string {
+    if (event.status === 'cancelled') return 'cancelled';
+
+    const now = new Date();
+
+    const start = event.start_date ? new Date(event.start_date) : null;
+    // Use end_date if available and valid, otherwise fall back to start_date
+    const endRaw = event.end_date || event.start_date;
+    const end = endRaw ? new Date(endRaw) : null;
+
+    if (!start || !end) return event.status || 'upcoming';
+
+    if (now > end) return 'completed';
+    if (now >= start && now <= end) return 'ongoing';
+    return 'upcoming';
+  }
+
   loadEvents(): void {
     this.isLoading = true;
 
@@ -80,14 +95,23 @@ export class AdminEventsComponent implements OnInit {
 
     if (this.searchQuery) params.search = this.searchQuery;
     if (this.selectedType !== 'all') params.event_type = this.selectedType;
-    if (this.selectedStatus !== 'all') params.status = this.selectedStatus;
+    // Don't pass status to API — we compute it client-side
 
     this.eventsService.getAllEvents(params).subscribe({
       next: (response: ApiResponse<AlumniEvent[]>) => {
         if (response.success && response.data) {
           this.events = response.data;
+          // DEBUG: remove after confirming dates are correct
+          console.log('Sample event dates:', this.events.slice(0, 3).map(e => ({
+            title: e.title,
+            start_date: e.start_date,
+            end_date: e.end_date,
+            status: e.status,
+            computed: this.getComputedStatus(e)
+          })));
           this.totalEvents = response.total || 0;
           this.totalPages = Math.ceil(this.totalEvents / this.pageSize);
+          this.computeStats();
           this.filterEventsByTab();
         }
         this.isLoading = false;
@@ -100,21 +124,30 @@ export class AdminEventsComponent implements OnInit {
   }
 
   /**
-   * Load statistics
+   * Compute stats client-side from actual dates
    */
+  computeStats(): void {
+    const statuses = this.events.map(e => this.getComputedStatus(e));
+    this.stats.total = this.events.length;
+    this.stats.upcoming = statuses.filter(s => s === 'upcoming').length;
+    this.stats.ongoing = statuses.filter(s => s === 'ongoing').length;
+    this.stats.past = statuses.filter(s => s === 'completed').length;
+    this.stats.totalAttendees = this.events.reduce((sum, e) => sum + (e.rsvp_count || 0), 0);
+    this.stats.avgAttendance = this.events.reduce((sum, e) => {
+      return sum + (e.capacity ? Math.round((e.rsvp_count / e.capacity) * 100) : 0);
+    }, 0) / (this.events.length || 1);
+  }
+
   loadStatistics(): void {
+    // Stats are now computed client-side in computeStats().
+    // Keep this call if the API provides additional data (e.g. totalAttendees across all pages).
     this.eventsService.getEventStats().subscribe({
       next: (response: any) => {
         if (response.success && response.data) {
           const data = response.data;
-          this.stats = {
-            total: data.total_events || 0,
-            upcoming: data.upcoming_events || 0,
-            ongoing: data.by_status?.find((s: any) => s.status === 'ongoing')?.count || 0,
-            past: data.by_status?.find((s: any) => s.status === 'completed')?.count || 0,
-            totalAttendees: data.total_rsvps || 0,
-            avgAttendance: parseFloat(data.avg_attendance_rate || 0)
-          };
+          // Only override totalAttendees from the API (it covers all pages)
+          this.stats.totalAttendees = data.total_rsvps || this.stats.totalAttendees;
+          this.stats.avgAttendance = parseFloat(data.avg_attendance_rate || this.stats.avgAttendance);
         }
       },
       error: (error) => {
@@ -124,58 +157,55 @@ export class AdminEventsComponent implements OnInit {
   }
 
   /**
-   * Filter events by tab
+   * Filter by tab using computed status
    */
   filterEventsByTab(): void {
-    if (this.currentTab === 'all') {
-      this.filteredEvents = this.events;
-    } else if (this.currentTab === 'upcoming') {
-      this.filteredEvents = this.events.filter(e => e.status === 'upcoming');
-    } else if (this.currentTab === 'ongoing') {
-      this.filteredEvents = this.events.filter(e => e.status === 'ongoing');
-    } else if (this.currentTab === 'past') {
-      this.filteredEvents = this.events.filter(e => e.status === 'completed');
+    let filtered = this.events;
+
+    // Apply tab filter
+    if (this.currentTab !== 'all') {
+      const tabMap: { [key: string]: string } = {
+        'upcoming': 'upcoming',
+        'ongoing': 'ongoing',
+        'past': 'completed'
+      };
+      const targetStatus = tabMap[this.currentTab];
+      if (targetStatus) {
+        filtered = filtered.filter(e => this.getComputedStatus(e) === targetStatus);
+      }
     }
+
+    // Apply status dropdown filter
+    if (this.selectedStatus !== 'all') {
+      filtered = filtered.filter(e => this.getComputedStatus(e) === this.selectedStatus);
+    }
+
+    this.filteredEvents = filtered;
   }
 
-  /**
-   * Change tab
-   */
   changeTab(tab: string): void {
     this.currentTab = tab;
     this.currentPage = 1;
     this.filterEventsByTab();
   }
 
-  /**
-   * Search events
-   */
   searchEvents(): void {
     this.currentPage = 1;
     this.loadEvents();
   }
 
-  /**
-   * Filter by type
-   */
   filterByType(type: string): void {
     this.selectedType = type;
     this.currentPage = 1;
     this.loadEvents();
   }
 
-  /**
-   * Filter by status
-   */
   filterByStatus(status: string): void {
     this.selectedStatus = status;
     this.currentPage = 1;
-    this.loadEvents();
+    this.filterEventsByTab(); // filter client-side, no API call needed
   }
 
-  /**
-   * Change page
-   */
   changePage(page: number): void {
     if (page >= 1 && page <= this.totalPages) {
       this.currentPage = page;
@@ -184,9 +214,6 @@ export class AdminEventsComponent implements OnInit {
     }
   }
 
-  /**
-   * Toggle event selection
-   */
   toggleEventSelection(eventId: number, event: Event): void {
     event.stopPropagation();
     const index = this.selectedEvents.indexOf(eventId);
@@ -197,9 +224,6 @@ export class AdminEventsComponent implements OnInit {
     }
   }
 
-  /**
-   * Toggle select all
-   */
   toggleSelectAll(event: Event): void {
     event.stopPropagation();
     if (this.selectedEvents.length === this.filteredEvents.length) {
@@ -209,44 +233,26 @@ export class AdminEventsComponent implements OnInit {
     }
   }
 
-  /**
-   * Check if event is selected
-   */
   isEventSelected(eventId: number): boolean {
     return this.selectedEvents.includes(eventId);
   }
 
-  /**
-   * Navigate to create event
-   */
   navigateToCreateEvent(): void {
     this.router.navigate(['/admin/create-event']);
   }
 
-  /**
-   * Edit event
-   */
   editEvent(eventId: number): void {
     this.router.navigate(['/admin/edit-event', eventId]);
   }
 
-  /**
-   * View event
-   */
   viewEvent(eventId: number): void {
     this.router.navigate(['/events', eventId]);
   }
 
-  /**
-   * Manage attendees
-   */
   manageAttendees(eventId: number): void {
     this.router.navigate(['/admin/event-attendees', eventId]);
   }
 
-  /**
-   * Delete event
-   */
   deleteEvent(event: AlumniEvent): void {
     if (!confirm(`Are you sure you want to delete "${event.title}"?`)) return;
 
@@ -266,21 +272,19 @@ export class AdminEventsComponent implements OnInit {
   }
 
   /**
-   * Get event status badge class
+   * Use computed status for badge class — not the DB field
    */
-  getStatusClass(status: string): string {
+  getStatusClass(event: AlumniEvent): string {
+    const status = this.getComputedStatus(event);
     const classes: { [key: string]: string } = {
-      'upcoming': 'bg-green-100 text-green-800',
-      'ongoing': 'bg-yellow-100 text-yellow-800',
-      'completed': 'bg-gray-100 text-gray-800',
-      'cancelled': 'bg-red-100 text-red-800'
+      'upcoming': 'bg-green-100 text-green-700',
+      'ongoing': 'bg-yellow-100 text-yellow-700',
+      'completed': 'bg-gray-100 text-gray-600',
+      'cancelled': 'bg-red-100 text-red-700'
     };
-    return classes[status] || 'bg-gray-100 text-gray-800';
+    return classes[status] || 'bg-gray-100 text-gray-600';
   }
 
-  /**
-   * Get event icon
-   */
   getEventIcon(eventType: string): string {
     const icons: { [key: string]: string } = {
       'Networking': 'fa-users',
@@ -297,9 +301,6 @@ export class AdminEventsComponent implements OnInit {
     return icons[eventType] || 'fa-calendar';
   }
 
-  /**
-   * Format date
-   */
   formatDate(date: string): string {
     return new Date(date).toLocaleDateString('en-US', {
       month: 'short',
@@ -308,9 +309,6 @@ export class AdminEventsComponent implements OnInit {
     });
   }
 
-  /**
-   * Format time
-   */
   formatTime(date: string): string {
     return new Date(date).toLocaleTimeString('en-US', {
       hour: 'numeric',
@@ -319,23 +317,16 @@ export class AdminEventsComponent implements OnInit {
     });
   }
 
-  /**
-   * Get attendance percentage
-   */
   getAttendancePercentage(event: AlumniEvent): number {
     if (!event.capacity) return 0;
     return Math.round((event.rsvp_count / event.capacity) * 100);
   }
 
-  /**
-   * Show alert
-   */
   showAlert(type: 'success' | 'error', message: string): void {
     const alertDiv = document.createElement('div');
-    alertDiv.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg max-w-md animate-slide-in ${
+    alertDiv.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg max-w-md ${
       type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
     }`;
-    
     alertDiv.innerHTML = `
       <div class="flex items-center space-x-3">
         <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'} text-2xl"></i>
@@ -345,7 +336,6 @@ export class AdminEventsComponent implements OnInit {
         </button>
       </div>
     `;
-    
     document.body.appendChild(alertDiv);
     setTimeout(() => alertDiv.remove(), 5000);
   }

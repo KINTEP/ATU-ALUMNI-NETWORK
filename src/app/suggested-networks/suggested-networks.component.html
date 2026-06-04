@@ -1,209 +1,189 @@
-<div class="container mx-auto px-4 py-8">
-  <!-- Header -->
-  <div class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl shadow-lg p-6 mb-8 slide-in relative overflow-hidden">
-    <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-32 translate-x-32"></div>
-    <div class="relative z-10 flex items-center justify-between">
+<!-- suggested-networks.component.html -->
+<div class="min-h-screen bg-gray-50">
+  <div class="max-w-7xl mx-auto px-4 py-6">
+
+    <!-- Page Title -->
+    <div class="flex items-center justify-between mb-5">
       <div>
-        <h1 class="text-3xl font-bold mb-2">Discover Alumni</h1>
-        <p class="opacity-90">Connect with fellow alumni and build your professional network</p>
+        <h1 class="text-2xl font-bold text-gray-900">Discover Alumni</h1>
+        <p class="text-sm text-gray-500 mt-0.5">Connect with fellow alumni and build your professional network</p>
       </div>
-      <button 
-        (click)="goBack()"
-        class="bg-white/20 text-white px-4 py-2.5 rounded-xl hover:bg-white/30 transition-all duration-300 font-medium text-sm border border-white/30 flex items-center">
-        <i class="fas fa-arrow-left mr-2"></i>Back
+      <button (click)="goBack()"
+        class="flex items-center gap-2 border border-gray-200 text-gray-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors">
+        <i class="fas fa-arrow-left text-xs"></i> Back
       </button>
     </div>
-  </div>
 
-  <!-- Search and Filters -->
-  <div class="bg-white rounded-xl shadow-md p-6 mb-8">
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-      <!-- Search -->
-      <div class="lg:col-span-2">
-        <label class="block text-sm font-medium text-gray-700 mb-2">Search Alumni</label>
-        <div class="relative">
-          <input 
-            type="text" 
-            [(ngModel)]="searchQuery"
-            (keyup.enter)="searchUsers()"
-            placeholder="Search by name, skills, or company..." 
-            class="w-full border border-gray-300 rounded-lg px-4 py-3 pl-10 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent">
-          <i class="fas fa-search absolute left-3 top-4 text-gray-400"></i>
+    <!-- Search & Filters -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 mb-5">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Search -->
+        <div class="lg:col-span-2">
+          <label class="block text-xs font-medium text-gray-600 mb-1.5">Search Alumni</label>
+          <div class="relative">
+            <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+            <input type="text" [(ngModel)]="searchQuery" (keyup.enter)="searchUsers()"
+              placeholder="Search by name, skills, or company..."
+              class="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+          </div>
+        </div>
+        <!-- Department -->
+        <div>
+          <label class="block text-xs font-medium text-gray-600 mb-1.5">Department</label>
+          <select [(ngModel)]="selectedDepartment" (change)="searchUsers()"
+            class="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none bg-white text-gray-600">
+            <option value="">All Departments</option>
+            <option *ngFor="let dept of departments" [value]="dept">{{ dept }}</option>
+          </select>
+        </div>
+        <!-- Year -->
+        <div>
+          <label class="block text-xs font-medium text-gray-600 mb-1.5">Graduation Year</label>
+          <select [(ngModel)]="selectedYear" (change)="searchUsers()"
+            class="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none bg-white text-gray-600">
+            <option value="">All Years</option>
+            <option *ngFor="let year of graduationYears" [value]="year">{{ year }}</option>
+          </select>
         </div>
       </div>
 
-      <!-- Department Filter -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">Department</label>
-        <select 
-          [(ngModel)]="selectedDepartment"
-          (change)="searchUsers()"
-          class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent">
-          <option value="">All Departments</option>
-          <option *ngFor="let dept of departments" [value]="dept">{{ dept }}</option>
-        </select>
-      </div>
-
-      <!-- Graduation Year Filter -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">Graduation Year</label>
-        <select 
-          [(ngModel)]="selectedYear"
-          (change)="searchUsers()"
-          class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent">
-          <option value="">All Years</option>
-          <option *ngFor="let year of graduationYears" [value]="year">{{ year }}</option>
-        </select>
+      <!-- Filter Actions -->
+      <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
+        <p class="text-xs text-gray-500">
+          <span class="font-semibold text-gray-700">{{ totalUsers }}</span> alumni found
+        </p>
+        <div class="flex gap-2">
+          <button (click)="resetFilters()"
+            class="px-4 py-2 border border-gray-200 text-gray-600 rounded-lg text-xs font-medium hover:bg-gray-50 transition-colors flex items-center gap-1.5">
+            <i class="fas fa-redo text-xs"></i> Reset
+          </button>
+          <button (click)="searchUsers()" [disabled]="isLoading"
+            class="px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-medium hover:bg-blue-700 transition-colors flex items-center gap-1.5 disabled:opacity-50">
+            <i class="fas fa-search text-xs"></i> Search
+          </button>
+        </div>
       </div>
     </div>
 
-    <!-- Filter Actions -->
-    <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-200">
-      <p class="text-sm text-gray-600">
-        <span class="font-semibold">{{ totalUsers }}</span> alumni found
-      </p>
-      <div class="flex space-x-2">
-        <button 
-          (click)="resetFilters()"
-          class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-300 text-sm">
-          <i class="fas fa-redo mr-2"></i>Reset Filters
-        </button>
-        <button 
-          (click)="searchUsers()"
-          [disabled]="isLoading"
-          class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-300 text-sm disabled:opacity-50">
-          <i class="fas fa-search mr-2"></i>Search
+    <!-- Loading -->
+    <div *ngIf="isLoading" class="text-center py-16">
+      <div class="animate-spin rounded-full h-8 w-8 border-2 border-gray-200 border-t-blue-600 mx-auto"></div>
+      <p class="text-gray-400 text-sm mt-4">Loading alumni...</p>
+    </div>
+
+    <div *ngIf="!isLoading">
+
+      <!-- Empty State -->
+      <div *ngIf="suggestedUsers.length === 0"
+        class="text-center py-16 bg-white rounded-xl shadow-sm border border-gray-100">
+        <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <i class="fas fa-users text-gray-300 text-2xl"></i>
+        </div>
+        <h3 class="font-semibold text-gray-700 mb-1">No Alumni Found</h3>
+        <p class="text-gray-400 text-sm mb-4">Try adjusting your search filters</p>
+        <button (click)="resetFilters()"
+          class="bg-blue-600 text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
+          Reset Filters
         </button>
       </div>
-    </div>
-  </div>
 
-  <!-- Loading State -->
-  <div *ngIf="isLoading" class="text-center py-12">
-    <i class="fas fa-spinner fa-spin text-blue-600 text-4xl mb-4"></i>
-    <p class="text-gray-600">Loading alumni...</p>
-  </div>
+      <!-- Alumni Grid -->
+      <div *ngIf="suggestedUsers.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div *ngFor="let user of suggestedUsers; let i = index"
+          class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 hover:shadow-md transition-shadow"
+          [style.animation-delay]="(i * 0.05) + 's'">
 
-  <!-- Results -->
-  <div *ngIf="!isLoading">
-    <!-- No Results -->
-    <div *ngIf="suggestedUsers.length === 0" class="text-center py-12 bg-white rounded-xl shadow-md">
-      <i class="fas fa-users text-gray-300 text-6xl mb-4"></i>
-      <h3 class="text-xl font-bold text-gray-700 mb-2">No Alumni Found</h3>
-      <p class="text-gray-500 mb-4">Try adjusting your search filters</p>
-      <button 
-        (click)="resetFilters()"
-        class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-300">
-        Reset Filters
-      </button>
-    </div>
-
-    <!-- Alumni Grid -->
-    <div *ngIf="suggestedUsers.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <div 
-        *ngFor="let user of suggestedUsers; let i = index" 
-        class="bg-white rounded-xl shadow-md p-6 card-hover slide-in"
-        [style.animation-delay]="(i * 0.05) + 's'">
-        
-        <!-- User Header -->
-        <div class="flex items-center space-x-3 mb-4">
-          <div 
-            *ngIf="user.profile_picture; else userInitials"
-            class="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
-            <img [src]="user.profile_picture" [alt]="user.first_name + ' ' + user.last_name" class="w-full h-full object-cover">
-          </div>
-          <ng-template #userInitials>
-            <div [class]="'w-12 h-12 rounded-full flex-shrink-0 flex items-center justify-center text-white font-bold text-lg ' + getAvatarColorClass(i)">
-              {{ getUserInitials(user) }}
+          <!-- User Header -->
+          <div class="flex items-center gap-3 mb-4">
+            <div *ngIf="user.profile_picture; else userInitials"
+              class="w-11 h-11 rounded-full overflow-hidden flex-shrink-0 border border-gray-200">
+              <img [src]="user.profile_picture" [alt]="user.first_name + ' ' + user.last_name"
+                class="w-full h-full object-cover">
             </div>
-          </ng-template>
-          
-          <div class="min-w-0 flex-1">
-            <h3 class="font-bold text-lg truncate text-gray-800">{{ user.first_name }} {{ user.last_name }}</h3>
-            <p class="text-sm text-gray-500 truncate">{{ user.program_of_study }}<span *ngIf="user.graduation_year">, {{ user.graduation_year }}</span></p>
+            <ng-template #userInitials>
+              <div [class]="'w-11 h-11 rounded-full flex-shrink-0 flex items-center justify-center text-white font-bold text-sm ' + getAvatarColorClass(i)">
+                {{ getUserInitials(user) }}
+              </div>
+            </ng-template>
+            <div class="min-w-0 flex-1">
+              <h3 class="font-bold text-gray-800 text-sm truncate">{{ user.first_name }} {{ user.last_name }}</h3>
+              <p class="text-xs text-gray-400 truncate">
+                {{ user.program_of_study }}<span *ngIf="user.graduation_year">, {{ user.graduation_year }}</span>
+              </p>
+            </div>
+          </div>
+
+          <!-- Bio -->
+          <p *ngIf="user.bio" class="text-gray-500 text-xs mb-3 line-clamp-2 leading-relaxed">{{ user.bio }}</p>
+          <p *ngIf="!user.bio" class="text-gray-300 text-xs mb-3 italic">No bio available</p>
+
+          <!-- Position -->
+          <p *ngIf="user.job_title || user.current_company" class="text-xs text-gray-500 mb-2 flex items-center gap-1.5">
+            <i class="fas fa-briefcase text-blue-400 flex-shrink-0"></i>
+            <span class="truncate">
+              <span *ngIf="user.job_title">{{ user.job_title }}</span>
+              <span *ngIf="user.job_title && user.current_company"> at </span>
+              <span *ngIf="user.current_company">{{ user.current_company }}</span>
+            </span>
+          </p>
+
+          <!-- Location -->
+          <p *ngIf="user.current_city || user.current_country" class="text-xs text-gray-500 mb-3 flex items-center gap-1.5">
+            <i class="fas fa-map-marker-alt text-blue-400 flex-shrink-0"></i>
+            <span class="truncate">
+              {{ user.current_city }}<span *ngIf="user.current_city && user.current_country">, </span>{{ user.current_country }}
+            </span>
+          </p>
+
+          <!-- Skills -->
+          <div *ngIf="user.skills && user.skills.length > 0" class="flex flex-wrap gap-1.5 mb-4">
+            <span *ngFor="let skill of user.skills.slice(0, 3)"
+              class="bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full text-xs border border-blue-100">
+              {{ skill }}
+            </span>
+            <span *ngIf="user.skills.length > 3" class="text-xs text-gray-400 px-1 py-0.5">
+              +{{ user.skills.length - 3 }} more
+            </span>
+          </div>
+
+          <!-- Actions -->
+          <div class="flex gap-2">
+            <button (click)="sendConnectionRequest(user)" [disabled]="loadingConnectionId === user.id"
+              class="flex-1 bg-blue-600 text-white py-2 rounded-lg text-xs font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed">
+              <i *ngIf="loadingConnectionId !== user.id" class="fas fa-user-plus"></i>
+              <i *ngIf="loadingConnectionId === user.id" class="fas fa-spinner fa-spin"></i>
+              {{ loadingConnectionId === user.id ? 'Sending...' : 'Connect' }}
+            </button>
+            <button (click)="viewProfile(user.id)"
+              class="flex-1 border border-gray-200 text-gray-600 py-2 rounded-lg text-xs font-medium hover:border-blue-300 hover:text-blue-600 transition-colors flex items-center justify-center gap-1.5">
+              <i class="fas fa-eye"></i> Profile
+            </button>
           </div>
         </div>
-        
-        <!-- User Bio -->
-        <p *ngIf="user.bio" class="text-gray-600 text-sm mb-4 line-clamp-3">{{ user.bio }}</p>
-        <p *ngIf="!user.bio" class="text-gray-400 text-sm mb-4 italic">No bio available</p>
-        
-        <!-- Current Position -->
-        <p *ngIf="user.job_title || user.current_company" class="text-sm text-gray-600 mb-3 flex items-center">
-          <i class="fas fa-briefcase mr-2 text-blue-600"></i>
-          <span class="truncate">
-            <span *ngIf="user.job_title">{{ user.job_title }}</span>
-            <span *ngIf="user.job_title && user.current_company"> at </span>
-            <span *ngIf="user.current_company">{{ user.current_company }}</span>
-          </span>
-        </p>
-
-        <!-- Location -->
-        <p *ngIf="user.current_city || user.current_country" class="text-sm text-gray-600 mb-3 flex items-center">
-          <i class="fas fa-map-marker-alt mr-2 text-blue-600"></i>
-          <span class="truncate">
-            {{ user.current_city }}<span *ngIf="user.current_city && user.current_country">, </span>{{ user.current_country }}
-          </span>
-        </p>
-        
-        <!-- Skills -->
-        <div *ngIf="user.skills && user.skills.length > 0" class="flex flex-wrap gap-2 mb-4">
-          <span 
-            *ngFor="let skill of user.skills.slice(0, 3)" 
-            class="bg-blue-50 text-blue-700 px-2 py-1 rounded-full text-xs border border-blue-100">
-            {{ skill }}
-          </span>
-          <span 
-            *ngIf="user.skills.length > 3" 
-            class="text-xs text-gray-500 px-2 py-1">
-            +{{ user.skills.length - 3 }} more
-          </span>
-        </div>
-        
-        <!-- Action Buttons -->
-        <div class="flex space-x-2">
-          <button 
-            (click)="sendConnectionRequest(user)"
-            [disabled]="loadingConnectionId === user.id"
-            class="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors duration-300 flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed">
-            <i *ngIf="loadingConnectionId !== user.id" class="fas fa-user-plus"></i>
-            <i *ngIf="loadingConnectionId === user.id" class="fas fa-spinner fa-spin"></i>
-            <span>{{ loadingConnectionId === user.id ? 'Sending...' : 'Connect' }}</span>
-          </button>
-          <button 
-            (click)="viewProfile(user.id)"
-            class="flex-1 border border-blue-600 text-blue-600 py-2 rounded-lg hover:bg-blue-600 hover:text-white transition-colors duration-300 flex items-center justify-center space-x-2">
-            <i class="fas fa-eye"></i>
-            <span>Profile</span>
-          </button>
-        </div>
       </div>
-    </div>
 
-    <!-- Pagination -->
-    <div *ngIf="totalPages > 1" class="mt-8 flex items-center justify-center space-x-2">
-      <button 
-        (click)="changePage(currentPage - 1)"
-        [disabled]="currentPage === 1"
-        class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed">
-        <i class="fas fa-chevron-left"></i>
-      </button>
+      <!-- Pagination -->
+      <div *ngIf="totalPages > 1" class="mt-6 flex items-center justify-center gap-2">
+        <button (click)="changePage(currentPage - 1)" [disabled]="currentPage === 1"
+          class="w-9 h-9 flex items-center justify-center border border-gray-200 text-gray-500 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+          <i class="fas fa-chevron-left text-xs"></i>
+        </button>
+        <button *ngFor="let page of getPageNumbers()" (click)="changePage(page)"
+          class="w-9 h-9 flex items-center justify-center rounded-lg text-sm font-medium transition-colors"
+          [class.bg-blue-600]="page === currentPage"
+          [class.text-white]="page === currentPage"
+          [class.border]="page !== currentPage"
+          [class.border-gray-200]="page !== currentPage"
+          [class.text-gray-600]="page !== currentPage"
+          [class.hover:bg-gray-50]="page !== currentPage">
+          {{ page }}
+        </button>
+        <button (click)="changePage(currentPage + 1)" [disabled]="currentPage === totalPages"
+          class="w-9 h-9 flex items-center justify-center border border-gray-200 text-gray-500 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+          <i class="fas fa-chevron-right text-xs"></i>
+        </button>
+      </div>
 
-      <button 
-        *ngFor="let page of getPageNumbers()"
-        (click)="changePage(page)"
-        [class]="page === currentPage 
-          ? 'px-4 py-2 bg-blue-600 text-white rounded-lg font-medium' 
-          : 'px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-300'">
-        {{ page }}
-      </button>
-
-      <button 
-        (click)="changePage(currentPage + 1)"
-        [disabled]="currentPage === totalPages"
-        class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed">
-        <i class="fas fa-chevron-right"></i>
-      </button>
     </div>
   </div>
 </div>

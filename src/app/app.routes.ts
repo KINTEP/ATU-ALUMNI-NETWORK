@@ -40,6 +40,10 @@ import { ProjectDetailsComponent } from './project-details/project-details.compo
 import { ForgotPasswordComponent } from './forgot-password/forgot-password.component';
 import { ResetPasswordComponent } from './reset-password/reset-password.component';
 import { SelfRegisterComponent } from './self-register/self-register.component';
+import { EditJobComponent } from './admin/edit-job/edit-job.component';
+import { EditEventComponent } from './admin/edit-event/edit-event.component';
+import { EditProjectComponent } from './admin/edit-project/edit-project.component';
+import { OpenRegisterComponent } from './open-register/open-register.component';
 
 export const routes: Routes = [
   // Root redirect
@@ -54,6 +58,8 @@ export const routes: Routes = [
   { path: 'self-register', 
     component: SelfRegisterComponent 
   },
+  { path: 'open-register', 
+    component: OpenRegisterComponent },
   {
     path: 'forgot-password',
     component: ForgotPasswordComponent,
@@ -191,6 +197,9 @@ export const routes: Routes = [
     component: CreateEventComponent,
     canActivate: [adminGuard],
   },
+  { path: 'admin/edit-event/:id', 
+    component: EditEventComponent, 
+    canActivate: [adminGuard] },
   {
     path: 'admin/jobs',
     component: JobManagementComponent,
@@ -200,6 +209,10 @@ export const routes: Routes = [
     path: 'admin/post-job',
     component: PostJobComponent,
     canActivate: [adminGuard],
+  },
+  { path: 'admin/edit-job/:id', 
+    component: EditJobComponent, 
+    canActivate: [adminGuard] 
   },
   {
     path: 'admin/forum',
@@ -216,6 +229,10 @@ export const routes: Routes = [
     component: NewsFormComponent,
     canActivate: [adminGuard],
   },
+  { path: 'admin/news/edit/:id', 
+    component: NewsFormComponent, 
+    canActivate: [adminGuard] 
+  },
   {
     path: 'admin/create-project',
     component: CreateProjectComponent,
@@ -225,6 +242,10 @@ export const routes: Routes = [
     path: 'admin/projects',
     component: ProjectManagementComponent,
     canActivate: [adminGuard],
+  },
+  { path: 'admin/edit-project/:id', 
+    component: EditProjectComponent, 
+    canActivate: [adminGuard] 
   },
   {
     path: 'admin/tracer',

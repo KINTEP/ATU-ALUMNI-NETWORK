@@ -1,370 +1,302 @@
+<!-- admin/dashboard/dashboard.component.html -->
 <div class="min-h-screen bg-gray-50">
-  <!-- Sidebar -->
   <app-sidebar></app-sidebar>
 
-  <!-- Main Content -->
-  <div class="lg:ml-64 transition-all duration-300 p-4 md:p-6 lg:p-8">
-    <!-- Loading State -->
-    <div *ngIf="isLoading" class="flex items-center justify-center h-screen">
-      <div class="text-center">
-        <i class="fas fa-spinner fa-spin text-primary text-6xl mb-4"></i>
-        <p class="text-gray-600 text-xl">Loading dashboard...</p>
-      </div>
-    </div>
+  <div class="lg:ml-64 transition-all duration-300">
+    <div class="p-4 md:p-6">
 
-    <!-- Dashboard Content -->
-    <div *ngIf="!isLoading" class="container mx-auto">
-      <!-- Header -->
-      <div class="bg-gradient-to-r from-primary to-accent text-white rounded-2xl shadow-lg p-5 mb-6 slide-in relative overflow-hidden">
-        <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-32 translate-x-32"></div>
-        <div class="relative z-10">
-          <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
-            <div>
-              <h1 class="text-2xl font-bold mb-2">Admin Dashboard</h1>
-              <p class="opacity-90 text-sm">Monitor platform activity, manage users, and oversee all operations</p>
-            </div>
-            <button 
-              (click)="refreshDashboard()"
-              class="mt-4 md:mt-0 bg-white/20 text-white px-5 py-2.5 rounded-xl hover:bg-white/30 transition-all duration-300 font-medium shadow-sm text-sm flex items-center border border-white/30">
-              <i class="fas fa-sync-alt mr-2"></i>Refresh
-            </button>
-          </div>
+      <!-- Loading -->
+      <div *ngIf="isLoading" class="flex items-center justify-center h-screen">
+        <div class="text-center">
+          <div class="animate-spin rounded-full h-10 w-10 border-2 border-gray-200 border-t-blue-600 mx-auto mb-4"></div>
+          <p class="text-gray-500 text-sm">Loading dashboard...</p>
         </div>
       </div>
 
-      <!-- Controls Section -->
-      <div class="bg-white rounded-xl shadow-sm p-5 mb-6 slide-in border border-gray-100">
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <!-- Search Bar -->
-          <div class="relative flex-1 max-w-md">
-            <input 
-              type="text" 
-              [(ngModel)]="searchQuery"
-              (keyup.enter)="onSearch()"
-              placeholder="Search users, events, jobs..." 
-              class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm">
-            <i class="fas fa-search absolute left-3 top-3.5 text-gray-400"></i>
-          </div>
-          
-          <!-- Quick Actions -->
-          <div class="flex gap-2">
-            <button 
-              (click)="navigateToUsers()"
-              class="px-4 py-2.5 bg-primary text-white rounded-xl hover:bg-opacity-90 transition-all duration-300 text-sm">
-              <i class="fas fa-users mr-2"></i>Users
-            </button>
-            <button 
-              (click)="navigateToEvents()"
-              class="px-4 py-2.5 bg-purple-600 text-white rounded-xl hover:bg-opacity-90 transition-all duration-300 text-sm">
-              <i class="fas fa-calendar mr-2"></i>Events
-            </button>
-          </div>
-        </div>
-      </div>
+      <div *ngIf="!isLoading">
 
-      <!-- Stats Grid - First Row -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <!-- Total Users -->
-        <div 
-          (click)="navigateToUsers()"
-          class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100 card-hover cursor-pointer">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-gray-500 text-sm font-medium">Total Users</p>
-              <h3 class="text-2xl font-bold text-gray-800 mt-1">{{ formatNumber(stats.totalUsers) }}</h3>
-              <div class="flex items-center mt-2">
-                <span [class]="'text-sm font-medium flex items-center ' + getGrowthIndicator(growthStats.users).color">
-                  <i [class]="'fas ' + getGrowthIndicator(growthStats.users).icon + ' mr-1'"></i>
-                  {{ growthStats.users }}%
-                </span>
-                <span class="text-gray-500 text-sm ml-2">from last month</span>
-              </div>
-            </div>
-            <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600">
-              <i class="fas fa-users text-xl"></i>
-            </div>
+        <!-- Page Header -->
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h1 class="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
+            <p class="text-sm text-gray-500 mt-0.5">Monitor platform activity and manage operations</p>
           </div>
+          <button (click)="refreshDashboard()"
+            class="flex items-center gap-2 border border-gray-200 text-gray-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors">
+            <i class="fas fa-sync-alt text-xs"></i> Refresh
+          </button>
         </div>
 
-        <!-- Active Alumni -->
-        <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100 card-hover">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-gray-500 text-sm font-medium">Active Alumni</p>
-              <h3 class="text-2xl font-bold text-gray-800 mt-1">{{ formatNumber(stats.activeAlumni) }}</h3>
-              <div class="flex items-center mt-2">
-                <span [class]="'text-sm font-medium flex items-center ' + getGrowthIndicator(growthStats.alumni).color">
-                  <i [class]="'fas ' + getGrowthIndicator(growthStats.alumni).icon + ' mr-1'"></i>
-                  {{ growthStats.alumni }}%
-                </span>
-                <span class="text-gray-500 text-sm ml-2">from last month</span>
-              </div>
+        <!-- Search + Quick Actions -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6">
+          <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
+            <div class="relative flex-1 max-w-md">
+              <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+              <input type="text" [(ngModel)]="searchQuery" (keyup.enter)="onSearch()"
+                placeholder="Search users, events, jobs..."
+                class="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
             </div>
-            <div class="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center text-green-600">
-              <i class="fas fa-user-graduate text-xl"></i>
-            </div>
-          </div>
-        </div>
-
-        <!-- Upcoming Events -->
-        <div 
-          (click)="navigateToEvents()"
-          class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100 card-hover cursor-pointer">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-gray-500 text-sm font-medium">Upcoming Events</p>
-              <h3 class="text-2xl font-bold text-gray-800 mt-1">{{ stats.upcomingEvents }}</h3>
-              <div class="flex items-center mt-2">
-                <span class="text-blue-500 text-sm font-medium flex items-center">
-                  <i class="fas fa-circle mr-1 text-xs"></i>
-                  {{ Math.ceil(stats.upcomingEvents / 3) }} this week
-                </span>
-              </div>
-            </div>
-            <div class="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center text-purple-600">
-              <i class="fas fa-calendar-alt text-xl"></i>
-            </div>
-          </div>
-        </div>
-
-        <!-- Total Jobs -->
-        <div 
-          (click)="navigateToJobs()"
-          class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100 card-hover cursor-pointer">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-gray-500 text-sm font-medium">Total Jobs</p>
-              <h3 class="text-2xl font-bold text-gray-800 mt-1">{{ stats.totalJobs }}</h3>
-              <div class="flex items-center mt-2">
-                <span [class]="'text-sm font-medium flex items-center ' + getGrowthIndicator(growthStats.jobs).color">
-                  <i [class]="'fas ' + getGrowthIndicator(growthStats.jobs).icon + ' mr-1'"></i>
-                  {{ growthStats.jobs }}%
-                </span>
-                <span class="text-gray-500 text-sm ml-2">from last month</span>
-              </div>
-            </div>
-            <div class="w-12 h-12 bg-orange-50 rounded-xl flex items-center justify-center text-orange-600">
-              <i class="fas fa-briefcase text-xl"></i>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Second Row Stats -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <!-- Total Forums/News -->
-        <div 
-          (click)="navigateToNews()"
-          class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100 card-hover cursor-pointer">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-gray-500 text-sm font-medium">Total Articles</p>
-              <h3 class="text-2xl font-bold text-gray-800 mt-1">{{ stats.totalForums }}</h3>
-              <div class="flex items-center mt-2">
-                <span [class]="'text-sm font-medium flex items-center ' + getGrowthIndicator(growthStats.forums).color">
-                  <i [class]="'fas ' + getGrowthIndicator(growthStats.forums).icon + ' mr-1'"></i>
-                  {{ growthStats.forums }}%
-                </span>
-                <span class="text-gray-500 text-sm ml-2">from last month</span>
-              </div>
-            </div>
-            <div class="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600">
-              <i class="fas fa-newspaper text-xl"></i>
-            </div>
-          </div>
-        </div>
-
-        <!-- Pending Approvals -->
-        <div 
-          (click)="navigateToPendingApprovals()"
-          class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100 card-hover cursor-pointer">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-gray-500 text-sm font-medium">Pending Approvals</p>
-              <h3 class="text-2xl font-bold text-gray-800 mt-1">{{ stats.pendingApprovals }}</h3>
-              <div class="flex items-center mt-2">
-                <span class="text-red-500 text-sm font-medium flex items-center">
-                  <i class="fas fa-exclamation-circle mr-1"></i>
-                  Requires attention
-                </span>
-              </div>
-            </div>
-            <div class="w-12 h-12 bg-red-50 rounded-xl flex items-center justify-center text-red-600">
-              <i class="fas fa-clock text-xl"></i>
-            </div>
-          </div>
-        </div>
-
-        <!-- System Health -->
-        <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100 card-hover">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-gray-500 text-sm font-medium">System Health</p>
-              <h3 class="text-2xl font-bold text-gray-800 mt-1">{{ stats.systemHealth }}%</h3>
-              <div class="flex items-center mt-2">
-                <span class="text-green-500 text-sm font-medium flex items-center">
-                  <i class="fas fa-check-circle mr-1"></i>
-                  All systems normal
-                </span>
-              </div>
-            </div>
-            <div class="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center text-green-600">
-              <i class="fas fa-heartbeat text-xl"></i>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Charts and Recent Activity -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        <!-- User Growth Chart -->
-        <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
-          <div class="flex justify-between items-center mb-6">
-            <h2 class="text-xl font-bold text-gray-800">User Growth</h2>
-            <div class="flex space-x-2">
-              <button 
-                (click)="changeChartPeriod('monthly')"
-                [class]="selectedChartPeriod === 'monthly' 
-                  ? 'text-sm bg-primary text-white px-3 py-1.5 rounded-lg transition-colors duration-300'
-                  : 'text-sm bg-gray-100 text-gray-700 px-3 py-1.5 rounded-lg hover:bg-gray-200 transition-colors duration-300'">
-                Monthly
+            <div class="flex gap-2">
+              <button (click)="navigateToUsers()"
+                class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors flex items-center gap-2">
+                <i class="fas fa-users text-xs"></i> Users
               </button>
-              <button 
-                (click)="changeChartPeriod('quarterly')"
-                [class]="selectedChartPeriod === 'quarterly' 
-                  ? 'text-sm bg-primary text-white px-3 py-1.5 rounded-lg transition-colors duration-300'
-                  : 'text-sm bg-gray-100 text-gray-700 px-3 py-1.5 rounded-lg hover:bg-gray-200 transition-colors duration-300'">
-                Quarterly
-              </button>
-              <button 
-                (click)="changeChartPeriod('yearly')"
-                [class]="selectedChartPeriod === 'yearly' 
-                  ? 'text-sm bg-primary text-white px-3 py-1.5 rounded-lg transition-colors duration-300'
-                  : 'text-sm bg-gray-100 text-gray-700 px-3 py-1.5 rounded-lg hover:bg-gray-200 transition-colors duration-300'">
-                Yearly
+              <button (click)="navigateToEvents()"
+                class="bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-purple-700 transition-colors flex items-center gap-2">
+                <i class="fas fa-calendar text-xs"></i> Events
               </button>
             </div>
           </div>
-          
-          <!-- Chart Placeholder -->
-          <div class="h-64 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl flex items-center justify-center">
-            <div class="text-center">
-              <i class="fas fa-chart-line text-4xl text-primary mb-3"></i>
-              <p class="text-gray-600">User growth visualization</p>
-              <p class="text-sm text-gray-500 mt-1">Showing {{ selectedChartPeriod }} data</p>
-              <p class="text-xs text-gray-400 mt-2">(Chart implementation with Chart.js or similar)</p>
+        </div>
+
+        <!-- Stats Row 1 -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+          <!-- Total Users -->
+          <div (click)="navigateToUsers()"
+            class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 cursor-pointer hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between mb-3">
+              <div class="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
+                <i class="fas fa-users text-blue-600 text-sm"></i>
+              </div>
+              <span [class]="'text-xs font-medium flex items-center gap-1 ' + getGrowthIndicator(growthStats.users).color">
+                <i [class]="'fas ' + getGrowthIndicator(growthStats.users).icon"></i>
+                {{ growthStats.users }}%
+              </span>
+            </div>
+            <p class="text-2xl font-bold text-gray-800">{{ formatNumber(stats.totalUsers) }}</p>
+            <p class="text-xs text-gray-500 mt-0.5">Total Users</p>
+          </div>
+
+          <!-- Active Alumni -->
+          <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between mb-3">
+              <div class="w-10 h-10 bg-green-50 rounded-lg flex items-center justify-center">
+                <i class="fas fa-user-graduate text-green-600 text-sm"></i>
+              </div>
+              <span [class]="'text-xs font-medium flex items-center gap-1 ' + getGrowthIndicator(growthStats.alumni).color">
+                <i [class]="'fas ' + getGrowthIndicator(growthStats.alumni).icon"></i>
+                {{ growthStats.alumni }}%
+              </span>
+            </div>
+            <p class="text-2xl font-bold text-gray-800">{{ formatNumber(stats.activeAlumni) }}</p>
+            <p class="text-xs text-gray-500 mt-0.5">Active Alumni</p>
+          </div>
+
+          <!-- Upcoming Events -->
+          <div (click)="navigateToEvents()"
+            class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 cursor-pointer hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between mb-3">
+              <div class="w-10 h-10 bg-purple-50 rounded-lg flex items-center justify-center">
+                <i class="fas fa-calendar-alt text-purple-600 text-sm"></i>
+              </div>
+              <span class="text-xs font-medium text-blue-500 flex items-center gap-1">
+                <i class="fas fa-circle text-xs"></i>
+                {{ Math.ceil(stats.upcomingEvents / 3) }} this week
+              </span>
+            </div>
+            <p class="text-2xl font-bold text-gray-800">{{ stats.upcomingEvents }}</p>
+            <p class="text-xs text-gray-500 mt-0.5">Upcoming Events</p>
+          </div>
+
+          <!-- Total Jobs -->
+          <div (click)="navigateToJobs()"
+            class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 cursor-pointer hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between mb-3">
+              <div class="w-10 h-10 bg-orange-50 rounded-lg flex items-center justify-center">
+                <i class="fas fa-briefcase text-orange-600 text-sm"></i>
+              </div>
+              <span [class]="'text-xs font-medium flex items-center gap-1 ' + getGrowthIndicator(growthStats.jobs).color">
+                <i [class]="'fas ' + getGrowthIndicator(growthStats.jobs).icon"></i>
+                {{ growthStats.jobs }}%
+              </span>
+            </div>
+            <p class="text-2xl font-bold text-gray-800">{{ stats.totalJobs }}</p>
+            <p class="text-xs text-gray-500 mt-0.5">Total Jobs</p>
+          </div>
+        </div>
+
+        <!-- Stats Row 2 -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+          <!-- Articles -->
+          <div (click)="navigateToNews()"
+            class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 cursor-pointer hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between mb-3">
+              <div class="w-10 h-10 bg-indigo-50 rounded-lg flex items-center justify-center">
+                <i class="fas fa-newspaper text-indigo-600 text-sm"></i>
+              </div>
+              <span [class]="'text-xs font-medium flex items-center gap-1 ' + getGrowthIndicator(growthStats.forums).color">
+                <i [class]="'fas ' + getGrowthIndicator(growthStats.forums).icon"></i>
+                {{ growthStats.forums }}%
+              </span>
+            </div>
+            <p class="text-2xl font-bold text-gray-800">{{ stats.totalForums }}</p>
+            <p class="text-xs text-gray-500 mt-0.5">Total Articles</p>
+          </div>
+
+          <!-- Pending Approvals -->
+          <div (click)="navigateToPendingApprovals()"
+            class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 cursor-pointer hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between mb-3">
+              <div class="w-10 h-10 bg-red-50 rounded-lg flex items-center justify-center">
+                <i class="fas fa-clock text-red-600 text-sm"></i>
+              </div>
+              <span class="text-xs font-medium text-red-500 flex items-center gap-1">
+                <i class="fas fa-exclamation-circle"></i> Needs attention
+              </span>
+            </div>
+            <p class="text-2xl font-bold text-gray-800">{{ stats.pendingApprovals }}</p>
+            <p class="text-xs text-gray-500 mt-0.5">Pending Approvals</p>
+          </div>
+
+          <!-- System Health -->
+          <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between mb-3">
+              <div class="w-10 h-10 bg-green-50 rounded-lg flex items-center justify-center">
+                <i class="fas fa-heartbeat text-green-600 text-sm"></i>
+              </div>
+              <span class="text-xs font-medium text-green-500 flex items-center gap-1">
+                <i class="fas fa-check-circle"></i> All normal
+              </span>
+            </div>
+            <p class="text-2xl font-bold text-gray-800">{{ stats.systemHealth }}%</p>
+            <p class="text-xs text-gray-500 mt-0.5">System Health</p>
+          </div>
+        </div>
+
+        <!-- Charts + Activity -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
+
+          <!-- User Growth Chart -->
+          <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+            <div class="flex items-center justify-between mb-5">
+              <h2 class="font-semibold text-gray-800 text-sm">User Growth</h2>
+              <div class="flex gap-1">
+                <button (click)="changeChartPeriod('monthly')"
+                  class="px-3 py-1 rounded-lg text-xs font-medium transition-colors"
+                  [class.bg-blue-600]="selectedChartPeriod === 'monthly'"
+                  [class.text-white]="selectedChartPeriod === 'monthly'"
+                  [class.bg-gray-100]="selectedChartPeriod !== 'monthly'"
+                  [class.text-gray-600]="selectedChartPeriod !== 'monthly'">Monthly</button>
+                <button (click)="changeChartPeriod('quarterly')"
+                  class="px-3 py-1 rounded-lg text-xs font-medium transition-colors"
+                  [class.bg-blue-600]="selectedChartPeriod === 'quarterly'"
+                  [class.text-white]="selectedChartPeriod === 'quarterly'"
+                  [class.bg-gray-100]="selectedChartPeriod !== 'quarterly'"
+                  [class.text-gray-600]="selectedChartPeriod !== 'quarterly'">Quarterly</button>
+                <button (click)="changeChartPeriod('yearly')"
+                  class="px-3 py-1 rounded-lg text-xs font-medium transition-colors"
+                  [class.bg-blue-600]="selectedChartPeriod === 'yearly'"
+                  [class.text-white]="selectedChartPeriod === 'yearly'"
+                  [class.bg-gray-100]="selectedChartPeriod !== 'yearly'"
+                  [class.text-gray-600]="selectedChartPeriod !== 'yearly'">Yearly</button>
+              </div>
+            </div>
+
+            <!-- Chart Placeholder -->
+            <div class="h-48 bg-gray-50 rounded-xl flex items-center justify-center border border-gray-100 mb-4">
+              <div class="text-center">
+                <i class="fas fa-chart-line text-3xl text-blue-300 mb-2"></i>
+                <p class="text-gray-400 text-xs">User growth · {{ selectedChartPeriod }} view</p>
+              </div>
+            </div>
+
+            <!-- Mini Stats -->
+            <div class="grid grid-cols-3 gap-3 pt-4 border-t border-gray-100">
+              <div class="text-center">
+                <p class="text-lg font-bold text-gray-800">{{ formatNumber(stats.totalUsers) }}</p>
+                <p class="text-xs text-gray-400 mt-0.5">Total</p>
+              </div>
+              <div class="text-center border-x border-gray-100">
+                <p class="text-lg font-bold text-green-600">+{{ Math.floor(stats.totalUsers * 0.12) }}</p>
+                <p class="text-xs text-gray-400 mt-0.5">This Month</p>
+              </div>
+              <div class="text-center">
+                <p class="text-lg font-bold text-blue-600">{{ Math.floor(stats.activeAlumni / stats.totalUsers * 100) }}%</p>
+                <p class="text-xs text-gray-400 mt-0.5">Active Rate</p>
+              </div>
             </div>
           </div>
 
-          <!-- Quick Stats Below Chart -->
-          <div class="grid grid-cols-3 gap-4 mt-6 pt-6 border-t border-gray-100">
-            <div class="text-center">
-              <p class="text-2xl font-bold text-gray-800">{{ formatNumber(stats.totalUsers) }}</p>
-              <p class="text-sm text-gray-500 mt-1">Total Users</p>
+          <!-- Recent Activity -->
+          <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+            <div class="flex items-center justify-between mb-5">
+              <h2 class="font-semibold text-gray-800 text-sm">Recent Activity</h2>
+              <button (click)="viewAllActivities()"
+                class="text-blue-600 hover:text-blue-700 text-xs font-medium transition-colors">
+                View All
+              </button>
             </div>
-            <div class="text-center">
-              <p class="text-2xl font-bold text-green-600">+{{ Math.floor(stats.totalUsers * 0.12) }}</p>
-              <p class="text-sm text-gray-500 mt-1">New This Month</p>
-            </div>
-            <div class="text-center">
-              <p class="text-2xl font-bold text-blue-600">{{ Math.floor(stats.activeAlumni / stats.totalUsers * 100) }}%</p>
-              <p class="text-sm text-gray-500 mt-1">Active Rate</p>
+            <div class="space-y-3 max-h-72 overflow-y-auto pr-1">
+              <div *ngFor="let activity of recentActivities"
+                class="flex items-start gap-3 p-2.5 rounded-lg hover:bg-gray-50 transition-colors">
+                <div [class]="'w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ' + activity.bgColor + ' ' + activity.textColor">
+                  <i [class]="'fas ' + activity.icon + ' text-sm'"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="font-medium text-gray-800 text-xs">{{ activity.title }}</p>
+                  <p class="text-xs text-gray-500 truncate">{{ activity.description }}</p>
+                  <p class="text-xs text-gray-400 mt-0.5">{{ activity.timestamp }}</p>
+                </div>
+              </div>
+              <div *ngIf="recentActivities.length === 0" class="text-center py-8">
+                <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <i class="fas fa-history text-gray-300 text-xl"></i>
+                </div>
+                <p class="text-gray-400 text-sm">No recent activity</p>
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- Recent Activity -->
-        <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
-          <div class="flex justify-between items-center mb-6">
-            <h2 class="text-xl font-bold text-gray-800">Recent Activity</h2>
-            <button 
-              (click)="viewAllActivities()"
-              class="text-primary hover:text-primary-dark text-sm font-medium transition-colors duration-300">
-              View All
+        <!-- Quick Actions -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+          <h2 class="font-semibold text-gray-800 text-sm mb-4">Quick Actions</h2>
+          <div class="grid grid-cols-3 sm:grid-cols-6 gap-3">
+            <button (click)="navigateToUsers()"
+              class="flex flex-col items-center p-3 rounded-xl hover:bg-gray-50 transition-colors border border-gray-100">
+              <div class="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 mb-2">
+                <i class="fas fa-users text-sm"></i>
+              </div>
+              <span class="text-xs font-medium text-gray-600 text-center">Manage Users</span>
+            </button>
+            <button (click)="navigateToEvents()"
+              class="flex flex-col items-center p-3 rounded-xl hover:bg-gray-50 transition-colors border border-gray-100">
+              <div class="w-10 h-10 bg-purple-50 rounded-xl flex items-center justify-center text-purple-600 mb-2">
+                <i class="fas fa-calendar-plus text-sm"></i>
+              </div>
+              <span class="text-xs font-medium text-gray-600 text-center">Add Event</span>
+            </button>
+            <button (click)="navigateToJobs()"
+              class="flex flex-col items-center p-3 rounded-xl hover:bg-gray-50 transition-colors border border-gray-100">
+              <div class="w-10 h-10 bg-orange-50 rounded-xl flex items-center justify-center text-orange-600 mb-2">
+                <i class="fas fa-briefcase text-sm"></i>
+              </div>
+              <span class="text-xs font-medium text-gray-600 text-center">Post Job</span>
+            </button>
+            <button (click)="navigateToNews()"
+              class="flex flex-col items-center p-3 rounded-xl hover:bg-gray-50 transition-colors border border-gray-100">
+              <div class="w-10 h-10 bg-green-50 rounded-xl flex items-center justify-center text-green-600 mb-2">
+                <i class="fas fa-newspaper text-sm"></i>
+              </div>
+              <span class="text-xs font-medium text-gray-600 text-center">News Article</span>
+            </button>
+            <button (click)="navigateToPendingApprovals()"
+              class="flex flex-col items-center p-3 rounded-xl hover:bg-gray-50 transition-colors border border-gray-100">
+              <div class="w-10 h-10 bg-red-50 rounded-xl flex items-center justify-center text-red-600 mb-2">
+                <i class="fas fa-check-circle text-sm"></i>
+              </div>
+              <span class="text-xs font-medium text-gray-600 text-center">Approvals</span>
+            </button>
+            <button
+              class="flex flex-col items-center p-3 rounded-xl hover:bg-gray-50 transition-colors border border-gray-100">
+              <div class="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600 mb-2">
+                <i class="fas fa-cog text-sm"></i>
+              </div>
+              <span class="text-xs font-medium text-gray-600 text-center">Settings</span>
             </button>
           </div>
-          
-          <!-- Activities List -->
-          <div class="space-y-4 max-h-96 overflow-y-auto">
-            <div 
-              *ngFor="let activity of recentActivities"
-              class="flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors duration-300">
-              <div [class]="'w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ' + activity.bgColor + ' ' + activity.textColor">
-                <i [class]="'fas ' + activity.icon"></i>
-              </div>
-              <div class="flex-1 min-w-0">
-                <p class="font-medium text-gray-800">{{ activity.title }}</p>
-                <p class="text-sm text-gray-600 truncate">{{ activity.description }}</p>
-                <p class="text-xs text-gray-500 mt-1">{{ activity.timestamp }}</p>
-              </div>
-            </div>
-
-            <!-- Empty State -->
-            <div *ngIf="recentActivities.length === 0" class="text-center py-8">
-              <i class="fas fa-history text-gray-300 text-4xl mb-3"></i>
-              <p class="text-gray-500">No recent activity</p>
-            </div>
-          </div>
         </div>
-      </div>
 
-      <!-- Quick Actions Panel -->
-      <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
-        <h2 class="text-xl font-bold text-gray-800 mb-4">Quick Actions</h2>
-        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-          <button 
-            (click)="navigateToUsers()"
-            class="flex flex-col items-center p-4 rounded-xl hover:bg-gray-50 transition-colors duration-300 border border-gray-100">
-            <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600 mb-2">
-              <i class="fas fa-users text-xl"></i>
-            </div>
-            <span class="text-sm font-medium text-gray-700">Manage Users</span>
-          </button>
-
-          <button 
-            (click)="navigateToEvents()"
-            class="flex flex-col items-center p-4 rounded-xl hover:bg-gray-50 transition-colors duration-300 border border-gray-100">
-            <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center text-purple-600 mb-2">
-              <i class="fas fa-calendar-plus text-xl"></i>
-            </div>
-            <span class="text-sm font-medium text-gray-700">Add Event</span>
-          </button>
-
-          <button 
-            (click)="navigateToJobs()"
-            class="flex flex-col items-center p-4 rounded-xl hover:bg-gray-50 transition-colors duration-300 border border-gray-100">
-            <div class="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center text-orange-600 mb-2">
-              <i class="fas fa-briefcase text-xl"></i>
-            </div>
-            <span class="text-sm font-medium text-gray-700">Post Job</span>
-          </button>
-
-          <button 
-            (click)="navigateToNews()"
-            class="flex flex-col items-center p-4 rounded-xl hover:bg-gray-50 transition-colors duration-300 border border-gray-100">
-            <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center text-green-600 mb-2">
-              <i class="fas fa-newspaper text-xl"></i>
-            </div>
-            <span class="text-sm font-medium text-gray-700">News Article</span>
-          </button>
-
-          <button 
-            (click)="navigateToPendingApprovals()"
-            class="flex flex-col items-center p-4 rounded-xl hover:bg-gray-50 transition-colors duration-300 border border-gray-100">
-            <div class="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center text-red-600 mb-2">
-              <i class="fas fa-check-circle text-xl"></i>
-            </div>
-            <span class="text-sm font-medium text-gray-700">Approvals</span>
-          </button>
-
-          <button 
-            class="flex flex-col items-center p-4 rounded-xl hover:bg-gray-50 transition-colors duration-300 border border-gray-100">
-            <div class="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center text-indigo-600 mb-2">
-              <i class="fas fa-cog text-xl"></i>
-            </div>
-            <span class="text-sm font-medium text-gray-700">Settings</span>
-          </button>
-        </div>
       </div>
     </div>
   </div>

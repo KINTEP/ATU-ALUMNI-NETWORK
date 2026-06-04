@@ -1,276 +1,219 @@
+<!-- src/app/admin/job-management/job-management.component.html -->
 <div class="min-h-screen bg-gray-50">
-  <!-- Sidebar -->
   <app-sidebar></app-sidebar>
 
-  <!-- Main Content -->
   <div class="lg:ml-64 transition-all duration-300">
-    <div class="p-4 md:p-6 lg:p-8">
-      <!-- Header -->
-      <div class="container mx-auto">
-        <div class="bg-gradient-to-r from-primary to-accent text-white rounded-2xl shadow-lg p-5 mb-6 slide-in relative overflow-hidden">
-          <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-32 translate-x-32"></div>
-          <div class="relative z-10">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
-              <div>
-                <h1 class="text-2xl font-bold mb-2">Job Management</h1>
-                <p class="opacity-90 text-sm">Manage job postings and applications from alumni companies</p>
-              </div>
-              <button 
-                (click)="navigateToPostJob()"
-                class="mt-4 md:mt-0 bg-white text-primary px-5 py-2.5 rounded-xl hover:bg-opacity-90 transition-all duration-300 font-medium shadow-sm text-sm flex items-center">
-                <i class="fas fa-plus mr-2"></i>Post New Job
-              </button>
-            </div>
-          </div>
+    <div class="p-4 md:p-6">
+
+      <!-- Page Header -->
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h1 class="text-2xl font-bold text-gray-900">Job Management</h1>
+          <p class="text-sm text-gray-500 mt-0.5">Manage job postings and applications from alumni companies</p>
         </div>
+        <button (click)="navigateToPostJob()"
+          class="bg-blue-600 text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors flex items-center gap-2">
+          <i class="fas fa-plus text-xs"></i> Post New Job
+        </button>
+      </div>
 
-        <!-- Controls Section -->
-        <div class="bg-white rounded-xl shadow-sm p-5 mb-6 slide-in border border-gray-100">
-          <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-            <!-- Search Bar -->
-            <div class="relative flex-1 max-w-lg">
-              <input 
-                type="text" 
-                [(ngModel)]="searchQuery"
-                (keyup.enter)="searchJobs()"
-                placeholder="Search jobs by title, company, or keywords..." 
-                class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm">
-              <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
-            </div>
-            
-            <!-- Filter Dropdowns -->
-            <div class="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
-              <div class="relative">
-                <select 
-                  [(ngModel)]="selectedJobType"
-                  (change)="filterByType()"
-                  class="appearance-none w-full sm:w-40 pl-4 pr-10 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-white text-sm">
-                  <option *ngFor="let type of jobTypes" [value]="type.value">{{ type.label }}</option>
-                </select>
-                <i class="fas fa-chevron-down absolute right-3 top-3 text-gray-400 pointer-events-none"></i>
-              </div>
-              
-              <div class="relative">
-                <select 
-                  [(ngModel)]="selectedStatus"
-                  (change)="filterByStatus()"
-                  class="appearance-none w-full sm:w-40 pl-4 pr-10 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-white text-sm">
-                  <option value="all">All Status</option>
-                  <option value="published">Published</option>
-                  <option value="draft">Draft</option>
-                  <option value="expired">Expired</option>
-                </select>
-                <i class="fas fa-chevron-down absolute right-3 top-3 text-gray-400 pointer-events-none"></i>
-              </div>
-            </div>
+      <!-- Stats -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+          <div class="w-9 h-9 bg-blue-50 rounded-lg flex items-center justify-center mb-3">
+            <i class="fas fa-briefcase text-blue-600 text-sm"></i>
           </div>
-
-          <!-- Tabs -->
-          <div class="flex overflow-x-auto mt-4 border-b border-gray-200 scrollbar-hide">
-            <button 
-              (click)="changeTab('all')"
-              [class]="currentTab === 'all' 
-                ? 'px-4 py-2 font-medium rounded-t-lg transition-colors duration-300 bg-primary text-white text-sm mr-2 whitespace-nowrap'
-                : 'px-4 py-2 font-medium text-gray-600 rounded-t-lg hover:bg-gray-100 transition-colors duration-300 text-sm mr-2 whitespace-nowrap'">
-              All Jobs
-            </button>
-            <button 
-              (click)="changeTab('published')"
-              [class]="currentTab === 'published' 
-                ? 'px-4 py-2 font-medium rounded-t-lg transition-colors duration-300 bg-primary text-white text-sm mr-2 whitespace-nowrap'
-                : 'px-4 py-2 font-medium text-gray-600 rounded-t-lg hover:bg-gray-100 transition-colors duration-300 text-sm mr-2 whitespace-nowrap'">
-              Published
-            </button>
-            <button 
-              (click)="changeTab('draft')"
-              [class]="currentTab === 'draft' 
-                ? 'px-4 py-2 font-medium rounded-t-lg transition-colors duration-300 bg-primary text-white text-sm mr-2 whitespace-nowrap'
-                : 'px-4 py-2 font-medium text-gray-600 rounded-t-lg hover:bg-gray-100 transition-colors duration-300 text-sm mr-2 whitespace-nowrap'">
-              Drafts
-            </button>
-            <button 
-              (click)="changeTab('expired')"
-              [class]="currentTab === 'expired' 
-                ? 'px-4 py-2 font-medium rounded-t-lg transition-colors duration-300 bg-primary text-white text-sm whitespace-nowrap'
-                : 'px-4 py-2 font-medium text-gray-600 rounded-t-lg hover:bg-gray-100 transition-colors duration-300 text-sm whitespace-nowrap'">
-              Expired
-            </button>
+          <p class="text-2xl font-bold text-gray-800">{{ stats.total }}</p>
+          <p class="text-xs text-gray-500 mt-0.5">Total Jobs</p>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+          <div class="w-9 h-9 bg-green-50 rounded-lg flex items-center justify-center mb-3">
+            <i class="fas fa-eye text-green-600 text-sm"></i>
           </div>
+          <p class="text-2xl font-bold text-gray-800">{{ stats.active }}</p>
+          <p class="text-xs text-gray-500 mt-0.5">Active Jobs</p>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+          <div class="w-9 h-9 bg-purple-50 rounded-lg flex items-center justify-center mb-3">
+            <i class="fas fa-file-alt text-purple-600 text-sm"></i>
+          </div>
+          <p class="text-2xl font-bold text-gray-800">{{ stats.applications }}</p>
+          <p class="text-xs text-gray-500 mt-0.5">Applications</p>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+          <div class="w-9 h-9 bg-orange-50 rounded-lg flex items-center justify-center mb-3">
+            <i class="fas fa-clock text-orange-600 text-sm"></i>
+          </div>
+          <p class="text-2xl font-bold text-gray-800">{{ stats.pendingReview }}</p>
+          <p class="text-xs text-gray-500 mt-0.5">Pending Review</p>
         </div>
       </div>
 
-      <!-- Jobs Statistics -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-gray-500 text-sm font-medium">Total Jobs</p>
-              <h3 class="text-2xl font-bold text-gray-800 mt-1">{{ stats.total }}</h3>
+      <!-- Search, Filters & Tabs -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-5">
+        <div class="flex flex-col sm:flex-row gap-3 mb-4">
+          <div class="relative flex-1">
+            <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+            <input type="text" [(ngModel)]="searchQuery" (keyup.enter)="searchJobs()"
+              placeholder="Search jobs by title, company, or keywords..."
+              class="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+          </div>
+          <div class="flex gap-2">
+            <div class="relative">
+              <select [(ngModel)]="selectedJobType" (change)="filterByType()"
+                class="appearance-none pl-3 pr-8 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-600 w-36">
+                <option *ngFor="let type of jobTypes" [value]="type.value">{{ type.label }}</option>
+              </select>
+              <i class="fas fa-chevron-down absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs pointer-events-none"></i>
             </div>
-            <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600">
-              <i class="fas fa-briefcase text-xl"></i>
+            <div class="relative">
+              <select [(ngModel)]="selectedStatus" (change)="filterByStatus()"
+                class="appearance-none pl-3 pr-8 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-600 w-36">
+                <option value="all">All Status</option>
+                <option value="published">Published</option>
+                <option value="draft">Draft</option>
+                <option value="expired">Expired</option>
+              </select>
+              <i class="fas fa-chevron-down absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs pointer-events-none"></i>
             </div>
           </div>
         </div>
 
-        <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-gray-500 text-sm font-medium">Active Jobs</p>
-              <h3 class="text-2xl font-bold text-gray-800 mt-1">{{ stats.active }}</h3>
-            </div>
-            <div class="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center text-green-600">
-              <i class="fas fa-eye text-xl"></i>
-            </div>
-          </div>
-        </div>
-
-        <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-gray-500 text-sm font-medium">Applications</p>
-              <h3 class="text-2xl font-bold text-gray-800 mt-1">{{ stats.applications }}</h3>
-            </div>
-            <div class="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center text-purple-600">
-              <i class="fas fa-file-alt text-xl"></i>
-            </div>
-          </div>
-        </div>
-
-        <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-gray-500 text-sm font-medium">Pending Review</p>
-              <h3 class="text-2xl font-bold text-gray-800 mt-1">{{ stats.pendingReview }}</h3>
-            </div>
-            <div class="w-12 h-12 bg-orange-50 rounded-xl flex items-center justify-center text-orange-600">
-              <i class="fas fa-clock text-xl"></i>
-            </div>
-          </div>
+        <!-- Tabs -->
+        <div class="flex gap-1 overflow-x-auto border-b border-gray-100 pb-0">
+          <button (click)="changeTab('all')"
+            class="px-4 py-2 text-sm font-medium rounded-t-lg transition-colors whitespace-nowrap"
+            [class.bg-blue-600]="currentTab === 'all'" [class.text-white]="currentTab === 'all'"
+            [class.text-gray-500]="currentTab !== 'all'" [class.hover:text-gray-700]="currentTab !== 'all'">
+            All Jobs
+          </button>
+          <button (click)="changeTab('published')"
+            class="px-4 py-2 text-sm font-medium rounded-t-lg transition-colors whitespace-nowrap"
+            [class.bg-blue-600]="currentTab === 'published'" [class.text-white]="currentTab === 'published'"
+            [class.text-gray-500]="currentTab !== 'published'" [class.hover:text-gray-700]="currentTab !== 'published'">
+            Published
+          </button>
+          <button (click)="changeTab('draft')"
+            class="px-4 py-2 text-sm font-medium rounded-t-lg transition-colors whitespace-nowrap"
+            [class.bg-blue-600]="currentTab === 'draft'" [class.text-white]="currentTab === 'draft'"
+            [class.text-gray-500]="currentTab !== 'draft'" [class.hover:text-gray-700]="currentTab !== 'draft'">
+            Drafts
+          </button>
+          <button (click)="changeTab('expired')"
+            class="px-4 py-2 text-sm font-medium rounded-t-lg transition-colors whitespace-nowrap"
+            [class.bg-blue-600]="currentTab === 'expired'" [class.text-white]="currentTab === 'expired'"
+            [class.text-gray-500]="currentTab !== 'expired'" [class.hover:text-gray-700]="currentTab !== 'expired'">
+            Expired
+          </button>
         </div>
       </div>
 
-      <!-- Loading State -->
-      <div *ngIf="isLoading" class="text-center py-12 bg-white rounded-xl shadow-md">
-        <i class="fas fa-spinner fa-spin text-primary text-4xl mb-4"></i>
-        <p class="text-gray-600">Loading jobs...</p>
+      <!-- Loading -->
+      <div *ngIf="isLoading" class="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
+        <div class="animate-spin rounded-full h-8 w-8 border-2 border-gray-200 border-t-blue-600 mx-auto mb-4"></div>
+        <p class="text-gray-400 text-sm">Loading jobs...</p>
       </div>
 
       <!-- Jobs Table -->
-      <div *ngIf="!isLoading" class="bg-white rounded-2xl shadow-sm overflow-hidden">
-        <!-- No Jobs -->
-        <div *ngIf="filteredJobs.length === 0" class="text-center py-12">
-          <i class="fas fa-briefcase text-gray-300 text-6xl mb-4"></i>
-          <h3 class="text-xl font-bold text-gray-700 mb-2">No Jobs Found</h3>
-          <p class="text-gray-500 mb-4">No jobs match your current filters</p>
-          <button 
-            (click)="navigateToPostJob()"
-            class="bg-primary text-white px-6 py-3 rounded-lg hover:bg-opacity-90 transition-colors duration-300">
+      <div *ngIf="!isLoading" class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-5">
+
+        <!-- Empty State -->
+        <div *ngIf="filteredJobs.length === 0" class="text-center py-16">
+          <div class="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+            <i class="fas fa-briefcase text-gray-300 text-2xl"></i>
+          </div>
+          <p class="text-gray-500 text-sm font-medium">No jobs found</p>
+          <p class="text-gray-400 text-xs mt-1 mb-4">No jobs match your current filters</p>
+          <button (click)="navigateToPostJob()"
+            class="bg-blue-600 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
             <i class="fas fa-plus mr-2"></i>Post New Job
           </button>
         </div>
 
-        <!-- Jobs List -->
+        <!-- Table -->
         <div *ngIf="filteredJobs.length > 0" class="overflow-x-auto">
-          <table class="w-full min-w-[900px]">
-            <thead class="bg-gray-50 border-b border-gray-200">
+          <table class="w-full min-w-[750px]">
+            <thead class="bg-gray-50 border-b border-gray-100">
               <tr>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  <div class="flex items-center space-x-2">
-                    <input 
-                      type="checkbox" 
-                      (change)="toggleSelectAll($event)"
+                <th class="px-4 py-3 text-left">
+                  <div class="flex items-center gap-2">
+                    <input type="checkbox" (change)="toggleSelectAll($event)"
                       [checked]="selectedJobs.length === filteredJobs.length && filteredJobs.length > 0"
-                      class="rounded border-gray-300">
-                    <span>Job Details</span>
+                      class="rounded border-gray-300 text-blue-600">
+                    <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Job Details</span>
                   </div>
                 </th>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Applications</th>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Posted</th>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Type</th>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider hidden md:table-cell">Applications</th>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider hidden lg:table-cell">Posted</th>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-              <tr 
-                *ngFor="let job of filteredJobs" 
-                class="hover:bg-gray-50 transition-colors duration-200">
-                <td class="px-4 py-4 whitespace-nowrap">
-                  <div class="flex items-center">
-                    <input 
-                      type="checkbox" 
-                      [checked]="isJobSelected(job.id)"
+            <tbody class="divide-y divide-gray-50">
+              <tr *ngFor="let job of filteredJobs" class="hover:bg-gray-50 transition-colors">
+                <!-- Job Details -->
+                <td class="px-4 py-3 whitespace-nowrap">
+                  <div class="flex items-center gap-3">
+                    <input type="checkbox" [checked]="isJobSelected(job.id)"
                       (change)="toggleJobSelection(job.id, $event)"
-                      class="rounded border-gray-300 mr-3">
-                    <div class="flex items-center space-x-3">
-                      <div 
-                        *ngIf="!job.company_logo"
-                        class="w-10 h-10 bg-gradient-to-r from-primary to-accent rounded-xl flex items-center justify-center text-white font-bold text-sm">
-                        {{ getCompanyInitials(job.company_name) }}
-                      </div>
-                      <img 
-                        *ngIf="job.company_logo"
-                        [src]="job.company_logo" 
-                        [alt]="job.company_name"
-                        class="w-10 h-10 rounded-xl object-cover">
-                      <div>
-                        <div class="text-sm font-medium text-gray-900">{{ job.job_title }}</div>
-                        <div class="text-sm text-gray-500">{{ job.company_name }} • {{ job.location }}</div>
-                        <div class="text-xs text-gray-400 mt-1">{{ job.views_count || 0 }} views</div>
-                      </div>
+                      class="rounded border-gray-300 text-blue-600 flex-shrink-0">
+                    <div *ngIf="!job.company_logo"
+                      class="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
+                      {{ getCompanyInitials(job.company_name) }}
+                    </div>
+                    <img *ngIf="job.company_logo" [src]="job.company_logo" [alt]="job.company_name"
+                      class="w-9 h-9 rounded-lg object-cover flex-shrink-0">
+                    <div class="min-w-0">
+                      <p class="text-sm font-medium text-gray-900 truncate">{{ job.job_title }}</p>
+                      <p class="text-xs text-gray-400 truncate">{{ job.company_name }} · {{ job.location }}</p>
+                      <p class="text-xs text-gray-300 mt-0.5">{{ job.views_count || 0 }} views</p>
                     </div>
                   </div>
                 </td>
-                <td class="px-4 py-4 whitespace-nowrap">
-                  <span [class]="'px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ' + getJobTypeClass(job.job_type)">
+                <!-- Type -->
+                <td class="px-4 py-3 whitespace-nowrap">
+                  <span class="px-2 py-0.5 text-xs font-semibold rounded-full" [class]="getJobTypeClass(job.job_type)">
                     {{ job.job_type }}
                   </span>
                 </td>
-                <td class="px-4 py-4 whitespace-nowrap">
-                  <div class="text-sm font-medium text-gray-900">{{ job.applications_count || 0 }}</div>
-                  <div class="text-xs text-gray-500">applications</div>
+                <!-- Applications -->
+                <td class="px-4 py-3 hidden md:table-cell">
+                  <p class="text-sm font-medium text-gray-800">{{ job.applications_count || 0 }}</p>
+                  <p class="text-xs text-gray-400">applications</p>
                 </td>
-                <td class="px-4 py-4 whitespace-nowrap">
-                  <span [class]="'px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ' + getStatusClass(job)">
+                <!-- Status -->
+                <td class="px-4 py-3 whitespace-nowrap">
+                  <span class="px-2 py-0.5 text-xs font-semibold rounded-full" [class]="getStatusClass(job)">
                     {{ getStatusText(job) }}
                   </span>
                 </td>
-                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                <!-- Posted -->
+                <td class="px-4 py-3 text-xs text-gray-500 hidden lg:table-cell whitespace-nowrap">
                   {{ formatDate(job.created_at) }}
                 </td>
-                <td class="px-4 py-4 whitespace-nowrap text-sm font-medium">
-                  <div class="flex space-x-2">
-                    <button 
-                      (click)="editJob(job.id)"
-                      class="text-blue-600 hover:text-blue-900 p-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 transition-colors duration-200" 
-                      title="Edit Job">
-                      <i class="fas fa-edit text-sm"></i>
+                <!-- Actions -->
+                <td class="px-4 py-3 whitespace-nowrap">
+                  <div class="flex items-center gap-1">
+                    <button (click)="editJob(job.id)" title="Edit"
+                      class="w-8 h-8 rounded-lg bg-blue-50 hover:bg-blue-100 flex items-center justify-center text-blue-600 transition-colors">
+                      <i class="fas fa-edit text-xs"></i>
                     </button>
-                    <button 
-                      (click)="viewApplications(job.id)"
-                      class="text-purple-600 hover:text-purple-900 p-1.5 rounded-lg bg-purple-50 hover:bg-purple-100 transition-colors duration-200" 
-                      title="View Applications">
-                      <i class="fas fa-file-alt text-sm"></i>
+                    <button (click)="viewApplications(job.id)" title="Applications"
+                      class="w-8 h-8 rounded-lg bg-purple-50 hover:bg-purple-100 flex items-center justify-center text-purple-600 transition-colors">
+                      <i class="fas fa-file-alt text-xs"></i>
                     </button>
-                    <button 
-                      (click)="viewJob(job.id)"
-                      class="text-green-600 hover:text-green-900 p-1.5 rounded-lg bg-green-50 hover:bg-green-100 transition-colors duration-200" 
-                      title="Preview">
-                      <i class="fas fa-eye text-sm"></i>
+                    <button (click)="viewJob(job.id)" title="Preview"
+                      class="w-8 h-8 rounded-lg bg-green-50 hover:bg-green-100 flex items-center justify-center text-green-600 transition-colors">
+                      <i class="fas fa-eye text-xs"></i>
                     </button>
-                    <button 
-                      *ngIf="!job.is_active"
-                      (click)="publishJob(job)"
-                      class="text-green-600 hover:text-green-900 p-1.5 rounded-lg bg-green-50 hover:bg-green-100 transition-colors duration-200" 
-                      title="Publish">
-                      <i class="fas fa-paper-plane text-sm"></i>
+                    <button *ngIf="!job.is_active" (click)="publishJob(job)" title="Publish"
+                      class="w-8 h-8 rounded-lg bg-indigo-50 hover:bg-indigo-100 flex items-center justify-center text-indigo-600 transition-colors">
+                      <i class="fas fa-paper-plane text-xs"></i>
                     </button>
-                    <button 
-                      (click)="deleteJob(job)"
-                      class="text-red-600 hover:text-red-900 p-1.5 rounded-lg bg-red-50 hover:bg-red-100 transition-colors duration-200" 
-                      title="Delete Job">
-                      <i class="fas fa-trash text-sm"></i>
+                    <button (click)="deleteJob(job)" title="Delete"
+                      class="w-8 h-8 rounded-lg bg-red-50 hover:bg-red-100 flex items-center justify-center text-red-500 transition-colors">
+                      <i class="fas fa-trash text-xs"></i>
                     </button>
                   </div>
                 </td>
@@ -280,63 +223,61 @@
         </div>
 
         <!-- Pagination -->
-        <div *ngIf="filteredJobs.length > 0" class="bg-white px-4 py-4 border-t border-gray-200">
-          <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div class="text-sm text-gray-700">
-              Showing <span class="font-medium">{{ (currentPage - 1) * pageSize + 1 }}</span> to 
-              <span class="font-medium">{{ Math.min(currentPage * pageSize, totalJobs) }}</span> of 
-              <span class="font-medium">{{ totalJobs }}</span> jobs
-            </div>
-            <div class="flex space-x-1">
-              <button 
-                (click)="changePage(currentPage - 1)"
-                [disabled]="currentPage === 1"
-                class="px-3 py-1.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
-                Previous
-              </button>
-              
-              <button 
-                *ngFor="let page of [].constructor(Math.min(totalPages, 5)); let i = index"
-                (click)="changePage(i + 1)"
-                [class]="(i + 1) === currentPage 
-                  ? 'px-3 py-1.5 border border-primary bg-primary text-white rounded-lg text-sm font-medium'
-                  : 'px-3 py-1.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200'">
-                {{ i + 1 }}
-              </button>
-              
-              <button 
-                (click)="changePage(currentPage + 1)"
-                [disabled]="currentPage === totalPages"
-                class="px-3 py-1.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
-                Next
-              </button>
-            </div>
+        <div *ngIf="filteredJobs.length > 0" class="px-4 py-3 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <p class="text-xs text-gray-500">
+            Showing <span class="font-semibold text-gray-700">{{ (currentPage - 1) * pageSize + 1 }}</span>
+            to <span class="font-semibold text-gray-700">{{ Math.min(currentPage * pageSize, totalJobs) }}</span>
+            of <span class="font-semibold text-gray-700">{{ totalJobs }}</span> jobs
+          </p>
+          <div class="flex gap-1">
+            <button (click)="changePage(currentPage - 1)" [disabled]="currentPage === 1"
+              class="px-3 py-1.5 border border-gray-200 rounded-lg text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+              Previous
+            </button>
+            <button *ngFor="let page of [].constructor(Math.min(totalPages, 5)); let i = index"
+              (click)="changePage(i + 1)"
+              class="px-3 py-1.5 border rounded-lg text-xs font-medium transition-colors"
+              [class.bg-blue-600]="(i + 1) === currentPage" [class.text-white]="(i + 1) === currentPage"
+              [class.border-blue-600]="(i + 1) === currentPage"
+              [class.border-gray-200]="(i + 1) !== currentPage" [class.text-gray-600]="(i + 1) !== currentPage"
+              [class.hover:bg-gray-50]="(i + 1) !== currentPage">
+              {{ i + 1 }}
+            </button>
+            <button (click)="changePage(currentPage + 1)" [disabled]="currentPage === totalPages"
+              class="px-3 py-1.5 border border-gray-200 rounded-lg text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+              Next
+            </button>
           </div>
         </div>
       </div>
 
       <!-- Bulk Actions -->
-      <div *ngIf="selectedJobs.length > 0" class="mt-6 bg-white rounded-2xl shadow-sm p-6">
-        <div class="flex flex-col lg:flex-row items-center justify-between gap-4">
-          <div class="flex flex-col sm:flex-row items-center gap-4">
-            <span class="text-sm text-gray-600">{{ selectedJobs.length }} jobs selected</span>
-            <select class="w-full sm:w-48 border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
-              <option>Bulk Actions</option>
-              <option>Publish</option>
-              <option>Unpublish</option>
-              <option>Duplicate</option>
-              <option>Delete</option>
-            </select>
-            <button class="w-full sm:w-auto bg-primary text-white px-4 py-2.5 rounded-lg text-sm hover:bg-opacity-90 transition-colors duration-300">
-              Apply
-            </button>
+      <div *ngIf="selectedJobs.length > 0" class="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <span class="text-xs text-gray-500">{{ selectedJobs.length }} jobs selected</span>
+            <div class="flex gap-2">
+              <div class="relative">
+                <select class="appearance-none pl-3 pr-8 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-600">
+                  <option>Bulk Actions</option>
+                  <option>Publish</option>
+                  <option>Unpublish</option>
+                  <option>Duplicate</option>
+                  <option>Delete</option>
+                </select>
+                <i class="fas fa-chevron-down absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs pointer-events-none"></i>
+              </div>
+              <button class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
+                Apply
+              </button>
+            </div>
           </div>
-          <button class="w-full lg:w-auto text-gray-500 hover:text-gray-700 text-sm flex items-center justify-center space-x-2 px-4 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-300">
-            <i class="fas fa-download"></i>
-            <span>Export Jobs</span>
+          <button class="flex items-center gap-2 border border-gray-200 text-gray-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors">
+            <i class="fas fa-download text-xs"></i> Export Jobs
           </button>
         </div>
       </div>
+
     </div>
   </div>
 </div>

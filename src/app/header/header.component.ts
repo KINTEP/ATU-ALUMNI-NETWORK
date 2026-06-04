@@ -2,7 +2,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
-import { Subject } from 'rxjs';
+import { Subject } from 'rxjs'; 
 import { takeUntil } from 'rxjs/operators';
 
 import { AuthService } from '../../services/auth.service';

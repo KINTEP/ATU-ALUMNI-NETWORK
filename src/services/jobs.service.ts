@@ -123,4 +123,6 @@ updateJob(id: number, data: Partial<Job>): Observable<ApiResponse<Job>> {
 createJob(jobData: any): Observable<ApiResponse<Job>> {
   return this.http.post<ApiResponse<Job>>(this.apiUrl, jobData);
 }
+
+
 }

@@ -93,7 +93,6 @@
             <div class="space-y-2">
               <div class="flex items-center justify-between">
                 <label class="text-sm font-medium text-gray-700">Password</label>
-                <!-- ✅ Fixed: routerLink instead of href="#" -->
                 <a routerLink="/forgot-password" class="text-sm text-blue-600 hover:underline">Forgot password?</a>
               </div>
               <div class="relative">
@@ -151,6 +150,18 @@
 
           </form>
         </div>
+
+        <!-- ↓ New: register prompt -->
+        <div class="mt-6 pt-6 border-t border-gray-100 text-center">
+          <p class="text-sm text-gray-600">
+            Don't have an account?
+            <a routerLink="/open-register"
+               class="text-blue-600 hover:underline font-medium">
+              Create one here
+            </a>
+          </p>
+        </div>
+
       </div>
     </div>
 

@@ -9,10 +9,14 @@ import { Subject } from 'rxjs';
 import { UserService } from '../../services/user.service';
 import { AuthService } from '../../services/auth.service';
 import { ConnectionService } from '../../services/connection.service';
-import { UploadService } from '../../services/upload.service'; // ADD THIS
+import { UploadService } from '../../services/upload.service';
 import { User } from '../../models/user';
 import { ApiResponse } from '../../models/api-response';
 import { ImageService } from '../../services/image.service';
+import {
+  PROGRAMME_LEVELS, PROGRAMMES, FACULTIES, DEPARTMENTS,
+  ProgrammeLevel, Programme, Faculty, Department
+} from '../open-register/programme-data';
 
 @Component({
   selector: 'app-profile',
@@ -26,13 +30,21 @@ export class ProfileComponent implements OnInit, OnDestroy {
   currentUser: User | null = null;
   loading = true;
   error: string | null = null;
-  
+
   isEditing = false;
   isOwnProfile = false;
   isConnected = false;
   hasPendingRequest = false;
   editForm: Partial<User> = {};
-  
+
+  // Programme dropdowns
+  readonly programLevels: ProgrammeLevel[] = PROGRAMME_LEVELS;
+  readonly faculties: Faculty[] = FACULTIES;
+  readonly departments: Department[] = DEPARTMENTS;
+  editLevel = '';
+  editFilteredPrograms: Programme[] = PROGRAMMES;
+  editFilteredDepartments: Department[] = [];
+
   // Image upload
   profilePictureFile: File | null = null;
   profilePicturePreview: string | null = null;
@@ -40,41 +52,31 @@ export class ProfileComponent implements OnInit, OnDestroy {
   coverPhotoPreview: string | null = null;
   uploadingProfilePicture = false;
   uploadingCoverPhoto = false;
-  
-  // Unsubscribe subject
+
   private destroy$ = new Subject<void>();
-  
+
   constructor(
     private authService: AuthService,
     private userService: UserService,
     private connectionService: ConnectionService,
-    private uploadService: UploadService, // ADD THIS
+    private uploadService: UploadService,
     private route: ActivatedRoute,
     private router: Router,
-    public imageService: ImageService 
+    public imageService: ImageService
   ) {}
-  
+
   ngOnInit(): void {
-    // Get current logged-in user
-    this.authService.currentUser$.pipe(
-      takeUntil(this.destroy$)
-    ).subscribe(loggedInUser => {
+    this.authService.currentUser$.pipe(takeUntil(this.destroy$)).subscribe(loggedInUser => {
       this.currentUser = loggedInUser;
-      
-      // Check if there's a user ID in the route
-      this.route.paramMap.pipe(
-        takeUntil(this.destroy$)
-      ).subscribe(params => {
+      this.route.paramMap.pipe(takeUntil(this.destroy$)).subscribe(params => {
         const userId = params.get('id');
-        
         if (userId) {
-          // Viewing someone else's profile
           this.loadUserProfile(parseInt(userId));
         } else if (loggedInUser) {
-          // Viewing own profile (no ID in route)
           this.isOwnProfile = true;
           this.user = loggedInUser;
           this.editForm = { ...loggedInUser };
+          this.initEditSelects();
           this.loading = false;
         } else {
           this.error = 'Please log in to view profiles';
@@ -83,28 +85,22 @@ export class ProfileComponent implements OnInit, OnDestroy {
       });
     });
   }
-  
+
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
   }
-  
-  /**
-   * Load a specific user's profile
-   */
+
   loadUserProfile(userId: number): void {
     this.loading = true;
     this.isOwnProfile = userId === this.currentUser?.id;
-    
-    this.userService.getUserById(userId).pipe(
-      takeUntil(this.destroy$)
-    ).subscribe({
+
+    this.userService.getUserById(userId).pipe(takeUntil(this.destroy$)).subscribe({
       next: (response: ApiResponse<User>) => {
         if (response.success && response.data) {
           this.user = response.data;
           this.editForm = { ...response.data };
-          
-          // Check connection status if not own profile
+          this.initEditSelects();
           if (!this.isOwnProfile && this.currentUser) {
             this.checkConnectionStatus();
           }
@@ -120,14 +116,85 @@ export class ProfileComponent implements OnInit, OnDestroy {
       }
     });
   }
-  
+
+  // ── Dropdown helpers ─────────────────────────────────────────────────────
+
   /**
-   * Check if connected with this user
+   * On entering edit mode, pre-select level/faculty/department
+   * based on what's already saved in the user's profile.
    */
+  initEditSelects(): void {
+    const currentProgram = this.editForm.program_of_study;
+    const currentFaculty = this.editForm.faculty;
+
+    // Pre-select level from saved programme
+    if (currentProgram && !this.isNumeric(currentProgram)) {
+      const match = PROGRAMMES.find(
+        p => p.name.toLowerCase() === currentProgram.toLowerCase()
+      );
+      this.editLevel = match?.level ?? '';
+      this.editFilteredPrograms = this.editLevel
+        ? PROGRAMMES.filter(p => p.level === this.editLevel)
+        : PROGRAMMES;
+    } else {
+      this.editLevel = '';
+      this.editFilteredPrograms = PROGRAMMES;
+      // Clear the bad numeric value
+      if (currentProgram && this.isNumeric(currentProgram)) {
+        this.editForm.program_of_study = '';
+      }
+    }
+
+    // Pre-populate departments from saved faculty
+    if (currentFaculty) {
+      this.editFilteredDepartments = DEPARTMENTS.filter(d => d.faculty === currentFaculty);
+    } else {
+      this.editFilteredDepartments = [];
+    }
+  }
+
+  onEditLevelChange(levelCode: string): void {
+    this.editLevel = levelCode;
+    this.editForm.program_of_study = '';
+    this.editFilteredPrograms = levelCode
+      ? PROGRAMMES.filter(p => p.level === levelCode)
+      : PROGRAMMES;
+  }
+
+  onEditProgrammeChange(programmeName: string): void {
+    this.editForm.program_of_study = programmeName;
+    if (!programmeName) return;
+
+    const match = PROGRAMMES.find(p => p.name === programmeName);
+    if (match) {
+      this.editForm.faculty    = match.faculty;
+      this.editForm.department = match.department;
+      this.editFilteredDepartments = DEPARTMENTS.filter(d => d.faculty === match.faculty);
+    }
+  }
+
+  onEditFacultyChange(facultyName: string): void {
+    this.editForm.faculty = facultyName;
+    this.editForm.department = '';
+    this.editFilteredDepartments = facultyName
+      ? DEPARTMENTS.filter(d => d.faculty === facultyName)
+      : [];
+  }
+
+  /** Returns true if a string is purely numeric (bad old ID data) */
+  isNumeric(value: string | null | undefined): boolean {
+    if (!value) return false;
+    return /^\d+$/.test(value.trim());
+  }
+
+  /** Safe display for programme — hides numeric IDs */
+  safeProgram(value: string | null | undefined): string {
+    if (!value || this.isNumeric(value)) return '';
+    return value;
+  }
+
   checkConnectionStatus(): void {
     if (!this.currentUser || !this.user) return;
-    
-    // Check if already connected
     this.connectionService.getMyConnections(1, 100, '').subscribe({
       next: (response) => {
         if (response.success && response.data) {
@@ -135,8 +202,6 @@ export class ProfileComponent implements OnInit, OnDestroy {
         }
       }
     });
-    
-    // Check if there's a pending request
     this.connectionService.getSentRequests().subscribe({
       next: (response) => {
         if (response.success && response.data) {
@@ -145,238 +210,130 @@ export class ProfileComponent implements OnInit, OnDestroy {
       }
     });
   }
-  
-  /**
-   * Handle profile picture file selection
-   */
+
+  // ── Image handling ────────────────────────────────────────────────────────
+
   onProfilePictureSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
-    if (input.files && input.files[0]) {
-      const file = input.files[0];
-      
-      // Validate file type
-      if (!file.type.startsWith('image/')) {
-        alert('Please select an image file');
-        return;
-      }
-      
-      // Validate file size (5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        alert('Image size must be less than 5MB');
-        return;
-      }
-      
-      this.profilePictureFile = file;
-      
-      // Create preview
-      const reader = new FileReader();
-      reader.onload = (e: ProgressEvent<FileReader>) => {
-        this.profilePicturePreview = e.target?.result as string;
-      };
-      reader.readAsDataURL(file);
-    }
+    if (!input.files?.length) return;
+    const file = input.files[0];
+    if (!file.type.startsWith('image/')) { alert('Please select an image file'); return; }
+    if (file.size > 5 * 1024 * 1024) { alert('Image size must be less than 5MB'); return; }
+    this.profilePictureFile = file;
+    const reader = new FileReader();
+    reader.onload = (e: ProgressEvent<FileReader>) => {
+      this.profilePicturePreview = e.target?.result as string;
+    };
+    reader.readAsDataURL(file);
   }
-  
-  /**
-   * Handle cover photo file selection
-   */
+
   onCoverPhotoSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
-    if (input.files && input.files[0]) {
-      const file = input.files[0];
-      
-      // Validate file type
-      if (!file.type.startsWith('image/')) {
-        alert('Please select an image file');
-        return;
-      }
-      
-      // Validate file size (10MB)
-      if (file.size > 10 * 1024 * 1024) {
-        alert('Image size must be less than 10MB');
-        return;
-      }
-      
-      this.coverPhotoFile = file;
-      
-      // Create preview
-      const reader = new FileReader();
-      reader.onload = (e: ProgressEvent<FileReader>) => {
-        this.coverPhotoPreview = e.target?.result as string;
-      };
-      reader.readAsDataURL(file);
-    }
+    if (!input.files?.length) return;
+    const file = input.files[0];
+    if (!file.type.startsWith('image/')) { alert('Please select an image file'); return; }
+    if (file.size > 10 * 1024 * 1024) { alert('Image size must be less than 10MB'); return; }
+    this.coverPhotoFile = file;
+    const reader = new FileReader();
+    reader.onload = (e: ProgressEvent<FileReader>) => {
+      this.coverPhotoPreview = e.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+    this.uploadCoverPhoto();
   }
-  
-  /**
-   * Upload profile picture to Firebase Storage
-   */
+
   uploadProfilePicture(): void {
     if (!this.profilePictureFile || !this.user?.id) return;
-    
     this.uploadingProfilePicture = true;
-    
-    const oldImageUrl = this.user.profile_picture;
-    
-    // Use Firebase Storage upload service
     this.uploadService.uploadAndSaveProfilePicture(
-      this.user.id, 
-      this.profilePictureFile, 
-      oldImageUrl
+      this.user.id, this.profilePictureFile, this.user.profile_picture
     ).subscribe({
       next: (response) => {
-        console.log('Firebase upload response:', response);
-        
         if (response.success && response.data) {
-          // Update local user object with Firebase Storage URL
           this.user!.profile_picture = response.data.profile_picture;
           this.editForm.profile_picture = response.data.profile_picture;
           this.authService.updateCurrentUser(this.user!);
-          
-          // Clear the file and preview
           this.profilePictureFile = null;
           this.profilePicturePreview = null;
-          
-          alert('Profile picture uploaded successfully!');
-        } else {
-          alert('Failed to upload profile picture');
-        }
+          alert('Profile picture updated successfully!');
+        } else { alert('Failed to upload profile picture'); }
         this.uploadingProfilePicture = false;
       },
       error: (err) => {
-        console.error('Firebase upload error:', err);
         alert(err.message || 'Failed to upload profile picture');
         this.uploadingProfilePicture = false;
       }
     });
   }
-  
-  /**
-   * Upload cover photo to Firebase Storage
-   */
+
   uploadCoverPhoto(): void {
     if (!this.coverPhotoFile || !this.user?.id) return;
-    
     this.uploadingCoverPhoto = true;
-    
-    const oldImageUrl = this.user.cover_photo;
-    
-    // Use Firebase Storage upload service
     this.uploadService.uploadAndSaveCoverPhoto(
-      this.user.id,
-      this.coverPhotoFile,
-      oldImageUrl
+      this.user.id, this.coverPhotoFile, this.user.cover_photo
     ).subscribe({
       next: (response) => {
-        console.log('Firebase upload response:', response);
-        
         if (response.success && response.data) {
-          // Update local user object with Firebase Storage URL
           this.user!.cover_photo = response.data.cover_photo;
           this.editForm.cover_photo = response.data.cover_photo;
           this.authService.updateCurrentUser(this.user!);
-          
-          // Clear the file and preview
           this.coverPhotoFile = null;
           this.coverPhotoPreview = null;
-          
-          alert('Cover photo uploaded successfully!');
-        } else {
-          alert('Failed to upload cover photo');
-        }
+          alert('Cover photo updated successfully!');
+        } else { alert('Failed to upload cover photo'); }
         this.uploadingCoverPhoto = false;
       },
       error: (err) => {
-        console.error('Firebase upload error:', err);
         alert(err.message || 'Failed to upload cover photo');
         this.uploadingCoverPhoto = false;
       }
     });
   }
-  
-  /**
-   * Remove profile picture preview
-   */
-  removeProfilePicturePreview(): void {
-    this.profilePictureFile = null;
-    this.profilePicturePreview = null;
-  }
-  
-  /**
-   * Remove cover photo preview
-   */
-  removeCoverPhotoPreview(): void {
-    this.coverPhotoFile = null;
-    this.coverPhotoPreview = null;
-  }
-  
+
+  removeProfilePicturePreview(): void { this.profilePictureFile = null; this.profilePicturePreview = null; }
+  removeCoverPhotoPreview(): void { this.coverPhotoFile = null; this.coverPhotoPreview = null; }
+
   getProfilePictureUrl(picturePath: string | null | undefined): string {
-    // Show preview if available, otherwise use the stored image
-    if (this.profilePicturePreview) {
-      return this.profilePicturePreview;
-    }
+    if (this.profilePicturePreview) return this.profilePicturePreview;
     return this.imageService.getProfilePictureUrl(picturePath, this.getUserFullName());
   }
 
-  /**
-   * Check if user has profile picture
-   */
+  getCoverPhotoUrl(): string {
+    if (this.coverPhotoPreview) return this.coverPhotoPreview;
+    return this.imageService.getImageUrl(this.user?.cover_photo) || '';
+  }
+
   hasProfilePicture(picturePath: string | null | undefined): boolean {
     return this.imageService.hasImage(picturePath) || !!this.profilePicturePreview;
   }
 
-  getCoverPhotoUrl(): string {
-    if (this.coverPhotoPreview) {
-      return this.coverPhotoPreview;
-    }
-    return this.imageService.getImageUrl(this.user?.cover_photo) || '';
-  }
-  
-  /**
-   * Send connection request
-   */
+  // ── Profile actions ───────────────────────────────────────────────────────
+
   sendConnectionRequest(): void {
     if (!this.user || !this.currentUser) return;
-    
     this.connectionService.sendConnectionRequest(this.user.id).subscribe({
-      next: (response) => {
-        if (response.success) {
-          this.hasPendingRequest = true;
-          alert('Connection request sent!');
-        }
-      },
-      error: (err) => {
-        console.error('Error sending request:', err);
-        alert('Failed to send connection request');
-      }
+      next: (response) => { if (response.success) { this.hasPendingRequest = true; alert('Connection request sent!'); } },
+      error: () => alert('Failed to send connection request')
     });
   }
-  
-  /**
-   * Message user
-   */
+
   messageUser(): void {
     if (!this.user) return;
     this.router.navigate(['/messages'], { queryParams: { user: this.user.id } });
   }
-  
-  /**
-   * Go back
-   */
-  goBack(): void {
-    this.router.navigate(['/networks']);
-  }
-  
+
+  goBack(): void { this.router.navigate(['/networks']); }
+
   toggleEdit(): void {
     this.isEditing = !this.isEditing;
     if (this.isEditing && this.user) {
       this.editForm = { ...this.user };
+      this.initEditSelects();
     }
   }
-  
+
   saveProfile(): void {
     if (!this.user?.id) return;
-    
     this.userService.updateUser(this.user.id, this.editForm).subscribe({
       next: (response: ApiResponse<User>) => {
         if (response.success && response.data) {
@@ -386,40 +343,38 @@ export class ProfileComponent implements OnInit, OnDestroy {
           this.isEditing = false;
           alert('Profile updated successfully!');
         } else {
-          alert(response.error || 'Failed to update profile');
+          alert((response as any).error || 'Failed to update profile');
         }
       },
-      error: (err) => {
-        console.error('Update error:', err);
-        alert('Failed to update profile');
-      }
+      error: () => alert('Failed to update profile')
     });
   }
-  
+
   cancelEdit(): void {
     this.isEditing = false;
     this.profilePictureFile = null;
     this.profilePicturePreview = null;
     this.coverPhotoFile = null;
     this.coverPhotoPreview = null;
+    if (this.user) { this.editForm = { ...this.user }; this.initEditSelects(); }
   }
-  
+
+  // ── Helpers ───────────────────────────────────────────────────────────────
+
   getInitials(): string {
     if (!this.user) return '??';
-    const first = this.user.first_name?.[0] || '';
-    const last = this.user.last_name?.[0] || '';
-    return (first + last).toUpperCase();
+    return ((this.user.first_name?.[0] || '') + (this.user.last_name?.[0] || '')).toUpperCase();
   }
-  
+
   getUserFullName(): string {
     if (!this.user) return 'User';
     return `${this.user.first_name} ${this.user.last_name}`.trim();
   }
-  
+
   getUserGraduationInfo(): string {
     if (!this.user) return '';
-    const program = this.user.program_of_study || 'Alumni';
+    const program = this.safeProgram(this.user.program_of_study) || 'Alumni';
     const year = this.user.graduation_year;
-    return year ? `${program}, ${year}` : program;
+    return year ? `${program} · Class of ${year}` : program;
   }
 }

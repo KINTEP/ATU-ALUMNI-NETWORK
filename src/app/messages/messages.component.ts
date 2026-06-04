@@ -1,5 +1,5 @@
 // src/app/components/messages/messages.component.ts
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
@@ -24,27 +24,23 @@ export class MessagesComponent implements OnInit, OnDestroy {
   private typingTimeout: any;
   private lastMessageCount = 0;
 
-  // User data
+  isMobileView = window.innerWidth < 1024;
+
   currentUser: User | null = null;
-  
-  // Conversations
+
   conversations: Conversation[] = [];
   selectedConversation: Conversation | null = null;
-  
-  // Messages
+
   messages: Message[] = [];
   newMessage: string = '';
-  
-  // Search
+
   searchQuery: string = '';
-  
-  // Loading states
+
   isLoadingConversations: boolean = false;
   isLoadingMessages: boolean = false;
   isSendingMessage: boolean = false;
   isInitialLoad: boolean = true;
-  
-  // Typing indicator
+
   isOtherUserTyping: boolean = false;
   otherUserTypingName: string = '';
 
@@ -54,6 +50,11 @@ export class MessagesComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private imageService: ImageService,
   ) {}
+
+  @HostListener('window:resize')
+  onResize(): void {
+    this.isMobileView = window.innerWidth < 1024;
+  }
 
   ngOnInit(): void {
     this.authService.currentUser$.pipe(takeUntil(this.destroy$)).subscribe(user => {
@@ -89,30 +90,37 @@ export class MessagesComponent implements OnInit, OnDestroy {
     }
   }
 
+  goBackToList(): void {
+    this.selectedConversation = null;
+  }
+
   createOrOpenConversation(otherUserId: number): void {
     if (!this.currentUser) return;
 
     const existingConv = this.conversations.find(c => c.other_user_id === otherUserId);
-    
+
     if (existingConv) {
       this.selectConversation(existingConv);
     } else {
-      this.messageService.getOrCreateConversationWithUser(this.currentUser.id, otherUserId)
+      // ✅ FIX: only pass otherUserId — backend gets currentUser from token
+      this.messageService.getOrCreateConversation(otherUserId)
         .pipe(takeUntil(this.destroy$))
         .subscribe({
           next: (response) => {
             if (response.success && response.data) {
-              const rawConv = response.data;
+              // Cast to any — getOrCreateConversation returns a raw DB row,
+              // not a shaped Conversation object
+              const rawConv = response.data as any;
               const isUser1 = rawConv.user1_id === this.currentUser?.id;
-              const otherUserId = isUser1 ? rawConv.user2_id : rawConv.user1_id;
-              const otherUserName = isUser1 ? rawConv.user2_name : rawConv.user1_name;
-              const otherUserPicture = isUser1 ? rawConv.user2_picture : rawConv.user1_picture;
-              
+              const otherId = isUser1 ? rawConv.user2_id : rawConv.user1_id;
+              const otherName = isUser1 ? rawConv.user2_name : rawConv.user1_name;
+              const otherPicture = isUser1 ? rawConv.user2_picture : rawConv.user1_picture;
+
               const conversation: Conversation = {
                 conversation_id: rawConv.id,
-                other_user_id: otherUserId,
-                other_user_name: otherUserName || 'User',
-                other_user_picture: otherUserPicture,
+                other_user_id: otherId,
+                other_user_name: otherName || 'User',
+                other_user_picture: otherPicture,
                 unread_count: 0,
                 is_archived: rawConv.is_archived_by_user1 || rawConv.is_archived_by_user2 || false,
                 is_blocked: rawConv.is_blocked_by_user1 || rawConv.is_blocked_by_user2 || false,
@@ -120,11 +128,11 @@ export class MessagesComponent implements OnInit, OnDestroy {
                 last_message_preview: rawConv.last_message_preview || '',
                 conversation_created_at: rawConv.created_at || new Date().toISOString()
               };
-              
+
               if (!this.conversations.find(c => c.conversation_id === conversation.conversation_id)) {
                 this.conversations.unshift(conversation);
               }
-              
+
               this.selectConversation(conversation);
             }
           },
@@ -140,7 +148,8 @@ export class MessagesComponent implements OnInit, OnDestroy {
     if (!this.currentUser) return;
 
     this.isLoadingConversations = true;
-    this.messageService.getUserConversations(this.currentUser.id)
+    // ✅ FIX: no userId arg — backend reads from token
+    this.messageService.getUserConversations()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
@@ -167,7 +176,8 @@ export class MessagesComponent implements OnInit, OnDestroy {
     if (!this.currentUser) return;
 
     this.isLoadingMessages = true;
-    this.messageService.getConversationMessages(conversationId, this.currentUser.id)
+    // ✅ FIX: no userId arg
+    this.messageService.getConversationMessages(conversationId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
@@ -192,23 +202,22 @@ export class MessagesComponent implements OnInit, OnDestroy {
   refreshMessagesQuietly(): void {
     if (!this.currentUser || !this.selectedConversation) return;
 
-    this.messageService.getConversationMessages(
-      this.selectedConversation.conversation_id,
-      this.currentUser.id
-    ).pipe(takeUntil(this.destroy$))
-    .subscribe({
-      next: (response) => {
-        if (response.success && response.data) {
-          const newMessages = response.data;
-          if (newMessages.length > this.lastMessageCount) {
-            this.messages = newMessages;
-            this.lastMessageCount = newMessages.length;
-            setTimeout(() => this.scrollToBottom(), 100);
+    // ✅ FIX: no userId arg
+    this.messageService.getConversationMessages(this.selectedConversation.conversation_id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          if (response.success && response.data) {
+            const newMessages = response.data;
+            if (newMessages.length > this.lastMessageCount) {
+              this.messages = newMessages;
+              this.lastMessageCount = newMessages.length;
+              setTimeout(() => this.scrollToBottom(), 100);
+            }
           }
-        }
-      },
-      error: (error) => console.error('Error refreshing messages:', error)
-    });
+        },
+        error: (error) => console.error('Error refreshing messages:', error)
+      });
   }
 
   sendMessage(): void {
@@ -218,9 +227,9 @@ export class MessagesComponent implements OnInit, OnDestroy {
 
     this.isSendingMessage = true;
 
+    // ✅ FIX: no sender_id — backend reads from token
     const messageData = {
       conversation_id: this.selectedConversation.conversation_id,
-      sender_id: this.currentUser.id,
       message_text: this.newMessage.trim()
     };
 
@@ -248,7 +257,8 @@ export class MessagesComponent implements OnInit, OnDestroy {
   loadConversationsQuietly(): void {
     if (!this.currentUser) return;
 
-    this.messageService.getUserConversations(this.currentUser.id)
+    // ✅ FIX: no userId arg
+    this.messageService.getUserConversations()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
@@ -263,7 +273,8 @@ export class MessagesComponent implements OnInit, OnDestroy {
   markAsRead(conversationId: number): void {
     if (!this.currentUser) return;
 
-    this.messageService.markMessagesAsRead(conversationId, this.currentUser.id)
+    // ✅ FIX: no userId arg
+    this.messageService.markMessagesAsRead(conversationId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
@@ -283,38 +294,34 @@ export class MessagesComponent implements OnInit, OnDestroy {
       clearTimeout(this.typingTimeout);
     }
 
-    this.messageService.setTypingIndicator(
-      this.selectedConversation.conversation_id,
-      this.currentUser.id
-    ).subscribe();
+    // ✅ FIX: no userId arg
+    this.messageService.setTypingIndicator(this.selectedConversation.conversation_id)
+      .subscribe();
 
-    this.typingTimeout = setTimeout(() => {
-      // Typing stopped
-    }, 3000);
+    this.typingTimeout = setTimeout(() => {}, 3000);
   }
 
   checkTypingStatus(): void {
     if (!this.currentUser || !this.selectedConversation) return;
 
-    this.messageService.getTypingStatus(
-      this.selectedConversation.conversation_id,
-      this.currentUser.id
-    ).pipe(takeUntil(this.destroy$))
-    .subscribe({
-      next: (response) => {
-        if (response.success) {
-          this.isOtherUserTyping = response.data?.user_name ? true : false;
-          this.otherUserTypingName = response.data?.user_name || '';
-        }
-      },
-      error: (error) => console.error('Error checking typing:', error)
-    });
+    // ✅ FIX: no userId arg
+    this.messageService.getTypingStatus(this.selectedConversation.conversation_id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          if (response.success) {
+            this.isOtherUserTyping = !!response.data?.user_name;
+            this.otherUserTypingName = response.data?.user_name || '';
+          }
+        },
+        error: (error) => console.error('Error checking typing:', error)
+      });
   }
 
   scrollToBottom(): void {
     try {
       if (this.messagesContainer) {
-        this.messagesContainer.nativeElement.scrollTop = 
+        this.messagesContainer.nativeElement.scrollTop =
           this.messagesContainer.nativeElement.scrollHeight;
       }
     } catch (err) {
@@ -326,14 +333,14 @@ export class MessagesComponent implements OnInit, OnDestroy {
     if (!this.searchQuery.trim()) {
       return this.conversations;
     }
-    return this.conversations.filter(conv => 
+    return this.conversations.filter(conv =>
       conv.other_user_name.toLowerCase().includes(this.searchQuery.toLowerCase())
     );
   }
 
   formatTime(dateString: string): string {
     if (!dateString) return '';
-    
+
     const date = new Date(dateString);
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
@@ -347,7 +354,7 @@ export class MessagesComponent implements OnInit, OnDestroy {
     if (diffDays === 1) return 'Yesterday';
     if (diffDays < 7) return `${diffDays} days ago`;
     if (diffDays < 30) return `${Math.floor(diffDays / 7)} week ago`;
-    
+
     return date.toLocaleDateString();
   }
 
@@ -373,11 +380,7 @@ export class MessagesComponent implements OnInit, OnDestroy {
     return this.imageService.getProfilePictureUrl(picturePath);
   }
 
-  /**
-   * Check if user has profile picture
-   */
   hasProfilePicture(picturePath: string | null | undefined): boolean {
     return this.imageService.hasImage(picturePath);
   }
-
 }

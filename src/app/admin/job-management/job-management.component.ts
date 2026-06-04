@@ -226,7 +226,7 @@ export class JobManagementComponent implements OnInit {
    * Navigate to post job
    */
   navigateToPostJob(): void {
-    this.router.navigate(['/postJob']);
+    this.router.navigate(['admin/post-job']);
   }
 
   /**
